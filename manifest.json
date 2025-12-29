@@ -1,22 +1,21 @@
+
 {
-    "name": "Pro Finance System",
-    "short_name": "ProFinance",
-    "description": "A comprehensive mobile financial tracking system.",
-    "start_url": "index.html",
-    "display": "standalone",
-    "orientation": "portrait",
-    "background_color": "#F7F9FC",
-    "theme_color": "#007ACC",
-    "icons": [
-        {
-            "src": "icons/icon-192x192.png",
-            "sizes": "192x192",
-            "type": "image/png"
-        },
-        {
-            "src": "icons/icon-512x512.png",
-            "sizes": "512x512",
-            "type": "image/png"
-        }
-    ]
+  "name": "Pro Finance System",
+  "short_name": "ProFinance",
+  "start_url": "./index.html",
+  "display": "standalone",
+  "background_color": "#F7F9FC",
+  "theme_color": "#007ACC",
+  "icons": [
+    {
+      "src": "icons/icon-192x192.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "icons/icon-512x512.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
 }
