@@ -792,14 +792,18 @@
         }
 
         function exportDashboardPDF(){
-             const doc = new window.jspdf.jsPDF(); doc.text("Dashboard Summary", 14, 20);
+             const doc = new window.jspdf.jsPDF(); 
+             doc.text("Pro Finance by Srikanta Banerjee", 14, 20); // UPDATED TITLE
              doc.autoTable({ startY: 30, head: [['Metric', 'Value']], body: [ ['Yearly Income', document.getElementById('yearlyIncome').textContent], ['Yearly Expense', document.getElementById('yearlyExpense').textContent], ['Net Balance', document.getElementById('currentBalance').textContent] ]});
              doc.save(`dashboard_${new Date().toISOString().split('T')[0]}.pdf`);
         }
         function exportHistoryPDF(){
-             const doc = new window.jspdf.jsPDF(); doc.text("Transaction History", 14, 20);
-             const rows = transactions.map(t => [t.date, t.category, t.type, t.amount]);
-             doc.autoTable({ startY: 30, head: [['Date', 'Category', 'Type', 'Amount']], body: rows });
+             const doc = new window.jspdf.jsPDF(); 
+             doc.text("Pro Finance by Srikanta Banerjee", 14, 20); // UPDATED TITLE
+             // ADDED DETAILS TO ROWS
+             const rows = transactions.map(t => [t.date, t.category, t.type, t.amount, t.details || '']);
+             // ADDED DETAILS TO HEADER
+             doc.autoTable({ startY: 30, head: [['Date', 'Category', 'Type', 'Amount', 'Details']], body: rows });
              doc.save(`history_${new Date().toISOString().split('T')[0]}.pdf`);
         }
 
