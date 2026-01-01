@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -542,17 +541,41 @@
             const periods = new Set([curY, curM]);
             transactions.forEach(t => { periods.add(getY(t.date)); periods.add(getYM(t.date)); });
             const arr = Array.from(periods).sort().reverse();
+            
+            // For Dashboard Filters (Income/Expense)
             ['incomeChartFilter', 'expenseChartFilter'].forEach(id => {
                 const sel = document.getElementById(id); sel.innerHTML = '';
                 arr.forEach(p => sel.add(new Option(p.length===4 ? `Year ${p}` : new Date(p+"-01").toLocaleDateString('en-IN',{month:'long',year:'numeric'}), p)));
-                sel.value = curM;
+                
+                // --- DROPDOWN PERSISTENCE LOGIC START ---
+                const saved = localStorage.getItem('pref_' + id);
+                // Set saved value if exists, else default to Current Month
+                sel.value = (saved && [...sel.options].some(o => o.value === saved)) ? saved : curM;
+                
+                // Override onchange to save to localStorage + render
+                sel.onchange = function() {
+                    localStorage.setItem('pref_' + id, this.value);
+                    if(id === 'incomeChartFilter') renderIncomeChart(); else renderExpenseChart();
+                };
+                // --- DROPDOWN PERSISTENCE LOGIC END ---
             });
+
+            // For History Filter
             const hist = document.getElementById('monthFilter'); hist.innerHTML = '';
             hist.add(new Option('--- VIEW TRANSACTIONS ---', ''));
             hist.add(new Option('All Transactions (Lifetime)', 'lifetime'));
             hist.add(new Option('All Months (Current Year)', 'current_year'));
             arr.forEach(p => hist.add(new Option(p.length===4 ? `Year ${p} Total` : new Date(p+"-01").toLocaleDateString('en-IN',{month:'long',year:'numeric'}), p)));
-            hist.value = curM;
+            
+            // --- DROPDOWN PERSISTENCE LOGIC START ---
+            const savedHist = localStorage.getItem('pref_monthFilter');
+            hist.value = (savedHist && [...hist.options].some(o => o.value === savedHist)) ? savedHist : curM;
+            
+            hist.onchange = function() {
+                localStorage.setItem('pref_monthFilter', this.value);
+                renderTransactions();
+            };
+            // --- DROPDOWN PERSISTENCE LOGIC END ---
         }
 
         Chart.register({
@@ -608,7 +631,18 @@
             years.sort((a,b)=>b-a);
             const saved = sel.value; sel.innerHTML='';
             years.forEach(y=> sel.add(new Option(y,y)));
-            sel.value = saved || String(curr);
+            
+            // --- DROPDOWN PERSISTENCE LOGIC START ---
+            const savedPref = localStorage.getItem('pref_analysisYearFilter');
+            const defaultYear = String(curr);
+            // Use saved pref if valid, otherwise use default
+            sel.value = (savedPref && [...sel.options].some(o => o.value === savedPref)) ? savedPref : defaultYear;
+            
+            sel.onchange = function() {
+                localStorage.setItem('pref_analysisYearFilter', this.value);
+                renderAllAnalysisCharts();
+            };
+            // --- DROPDOWN PERSISTENCE LOGIC END ---
         }
         function getMonthlyData(year, type){
             const data = Array(12).fill(0);
@@ -793,16 +827,14 @@
 
         function exportDashboardPDF(){
              const doc = new window.jspdf.jsPDF(); 
-             doc.text("Pro Finance by Srikanta Banerjee", 14, 20); // UPDATED TITLE
+             doc.text("Pro Finance by Srikanta Banerjee", 14, 20); 
              doc.autoTable({ startY: 30, head: [['Metric', 'Value']], body: [ ['Yearly Income', document.getElementById('yearlyIncome').textContent], ['Yearly Expense', document.getElementById('yearlyExpense').textContent], ['Net Balance', document.getElementById('currentBalance').textContent] ]});
              doc.save(`dashboard_${new Date().toISOString().split('T')[0]}.pdf`);
         }
         function exportHistoryPDF(){
              const doc = new window.jspdf.jsPDF(); 
-             doc.text("Pro Finance by Srikanta Banerjee", 14, 20); // UPDATED TITLE
-             // ADDED DETAILS TO ROWS
+             doc.text("Pro Finance by Srikanta Banerjee", 14, 20); 
              const rows = transactions.map(t => [t.date, t.category, t.type, t.amount, t.details || '']);
-             // ADDED DETAILS TO HEADER
              doc.autoTable({ startY: 30, head: [['Date', 'Category', 'Type', 'Amount', 'Details']], body: rows });
              doc.save(`history_${new Date().toISOString().split('T')[0]}.pdf`);
         }
