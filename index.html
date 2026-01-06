@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -10,18 +9,18 @@
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black">
     <meta name="apple-mobile-web-app-title" content="ProFinance">
-    
+     
     <link rel="apple-touch-icon" href="icon-192x192.png"> 
     <link rel="manifest" href="manifest.json">
-    
+     
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    
+     
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script> 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.25/jspdf.plugin.autotable.min.js"></script>
-    
+     
     <style>
         /* --- General Variables and Reset (FinTech 3.0 Theme) --- */
         :root {
@@ -181,9 +180,12 @@
         }
         .legend-item {
             display: flex; justify-content: space-between; align-items: center;
-            padding: 5px 0; font-size: 13px; color: var(--text-main);
+            padding: 8px 5px; font-size: 13px; color: var(--text-main);
             border-bottom: 1px dashed #f0f0f0;
+            transition: background 0.2s;
+            border-radius: 5px;
         }
+        .legend-item:hover { background-color: #f9f9f9; }
         .legend-label { display: flex; align-items: center; gap: 8px; }
         .legend-color { width: 12px; height: 12px; border-radius: 3px; }
         
@@ -389,10 +391,15 @@
 
         <div id="history" class="tab-content">
             <div class="card">
-                <div class="list-header" style="display:flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
-                    <h2 style="font-size: 20px; margin: 0; color: var(--text-main); font-weight: 600;"><i class="fas fa-list-ul"></i> History</h2>
-                    <div class="form-group" style="margin: 0; width: 50%;">
-                        <select id="monthFilter" onchange="renderTransactions()"></select>
+                <div class="list-header" style="margin-bottom: 10px;">
+                    <div style="display:flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+                        <h2 style="font-size: 20px; margin: 0; color: var(--text-main); font-weight: 600;"><i class="fas fa-list-ul"></i> History</h2>
+                        <div class="form-group" style="margin: 0; width: 50%;">
+                            <select id="monthFilter" onchange="renderTransactions()"></select>
+                        </div>
+                    </div>
+                    <div style="margin-top: 5px;">
+                        <input type="text" id="searchInput" placeholder="Search (Category, Details, Amount)..." onkeyup="renderTransactions()" style="border: 1px solid var(--info);">
                     </div>
                 </div>
                 <button class="btn-style btn-primary btn-block" onclick="secureAction(exportHistoryPDF)"><i class="fas fa-file-pdf"></i> Export History PDF</button>
@@ -493,7 +500,6 @@
         const getYM = (d) => d.substring(0, 7);
         const getY = (d) => d.substring(0, 4);
         
-        // Helper to set datetime-local to current time correctly
         function setDateTimeLocalNow() {
             const now = new Date();
             now.setMinutes(now.getMinutes() - now.getTimezoneOffset());
@@ -621,7 +627,7 @@
             const labels = Object.keys(dataMap), data = Object.values(dataMap);
             const total = data.reduce((a, b) => a + b, 0);
             
-            // Render Legend manually to allow scrolling
+            // Render Legend manually to allow scrolling & Click event
             const legendContainer = document.getElementById(type === 'income' ? 'incomeLegend' : 'expenseLegend');
             const colors = type === 'income' ? INCOME_COLORS : EXPENSE_COLORS; 
             
@@ -632,8 +638,9 @@
                 labels.forEach((label, i) => {
                     const pct = Math.round(data[i]/total*100);
                     const color = colors[i % colors.length];
+                    // Added onClick here to show details
                     legendHTML += `
-                        <div class="legend-item">
+                        <div class="legend-item" style="cursor: pointer;" onclick="showCategoryHistory('${label}', '${type}', '${filter}')">
                             <div class="legend-label">
                                 <div class="legend-color" style="background:${color}"></div>
                                 <span>${label} (${pct}%)</span>
@@ -646,7 +653,6 @@
 
             const container = document.getElementById(canvasId).parentElement;
             if (total === 0) { 
-                // Clear canvas context if no data to avoid old chart ghosting
                 const ctx = document.getElementById(canvasId).getContext('2d');
                 ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
                 return; 
@@ -662,7 +668,7 @@
                 options: {
                     responsive: true, maintainAspectRatio: false, cutout: '70%',
                     plugins: { 
-                        legend: { display: false }, // Disable default legend
+                        legend: { display: false }, 
                         tooltip: { enabled: true }
                     },
                     elements: { center: { text: formatCurrency(total), label: `Total ${type}`, color: type==='income'?'#00B894':'#E84118' } },
@@ -680,7 +686,6 @@
         function renderIncomeChart() { renderChart('income', 'incomeChart', 'incomeChartFilter'); }
         function renderExpenseChart() { renderChart('expense', 'expenseChart', 'expenseChartFilter'); }
 
-        // --- NEW FUNCTION: Show history when chart clicked ---
         function showCategoryHistory(category, type, filterPeriod) {
             const isY = filterPeriod.length === 4;
             const filtered = transactions.filter(t => 
@@ -692,7 +697,6 @@
             showTransactionsModal(`${category} - ${type.toUpperCase()}`, filtered);
         }
 
-        // --- NEW FUNCTION: Show history when Summary Card clicked ---
         function showSummaryDetails(scope, type) {
             const now = new Date();
             const curY = now.getFullYear().toString();
@@ -710,7 +714,6 @@
             showTransactionsModal(title, filtered);
         }
 
-        // --- HELPER: Generic Transaction Modal ---
         function showTransactionsModal(title, list) {
             let htmlContent = '<ul class="swal-list">';
             if (list.length === 0) {
@@ -798,19 +801,33 @@
 
         function renderTransactions() {
             const filter = document.getElementById('monthFilter').value;
+            const searchInput = document.getElementById('searchInput'); // Get Search Input
+            const searchTerm = searchInput ? searchInput.value.toLowerCase() : '';
+
             const list = document.getElementById('transactionList');
             const filtered = transactions.filter(t => {
-                if(filter==='lifetime') return true;
-                if(filter==='current_year') return getY(t.date) === new Date().getFullYear().toString();
-                if(filter.length===4) return getY(t.date) === filter;
-                return getYM(t.date) === (filter || getYM(new Date().toISOString()));
+                // 1. Date Filter Logic
+                let dateMatch = false;
+                if(filter==='lifetime') dateMatch = true;
+                else if(filter==='current_year') dateMatch = (getY(t.date) === new Date().getFullYear().toString());
+                else if(filter.length===4) dateMatch = (getY(t.date) === filter);
+                else dateMatch = (getYM(t.date) === (filter || getYM(new Date().toISOString())));
+
+                // 2. Search Filter Logic
+                let searchMatch = true;
+                if (searchTerm) {
+                    const searchStr = (t.category + ' ' + (t.details || '') + ' ' + t.amount).toLowerCase();
+                    searchMatch = searchStr.includes(searchTerm);
+                }
+
+                return dateMatch && searchMatch;
             }).sort((a,b)=>new Date(b.date)-new Date(a.date));
+
             list.innerHTML = '';
             document.getElementById('noTransactionsMsg').style.display = filtered.length ? 'none' : 'block';
             filtered.forEach(t => {
                 const li = document.createElement('li');
                 li.className = t.type === 'income' ? 'income-item' : 'expense-item';
-                // Only showing Date in list to keep it clean, full details on click
                 const dateDisplay = new Date(t.date).toLocaleDateString('en-IN', {day:'numeric', month:'short'});
                 
                 li.innerHTML = `
@@ -827,7 +844,6 @@
             updateSummary();
         }
 
-        // --- NEW FUNCTION: Show full details on history item click ---
         function showDetails(id) {
             const t = transactions.find(x => x.id === id);
             if(!t) return;
@@ -852,7 +868,6 @@
             document.getElementById('amount').value = t.amount;
             document.getElementById('type').value = t.type;
             document.getElementById('category').value = t.category;
-            // Set DateTime Local value for edit
             document.getElementById('date').value = t.date; 
             document.getElementById('details').value = t.details;
             editingTransactionId = id;
@@ -866,7 +881,7 @@
         function cancelEdit() {
             editingTransactionId = null;
             document.getElementById('transactionForm').reset();
-            setDateTimeLocalNow(); // Reset to current time
+            setDateTimeLocalNow();
             const saveBtn = document.getElementById('saveBtn');
             saveBtn.innerHTML = '<i class="fas fa-save"></i> Save Record';
             document.getElementById('cancelEditBtn').style.display = 'none';
