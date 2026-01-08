@@ -9,18 +9,18 @@
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black">
     <meta name="apple-mobile-web-app-title" content="ProFinance">
-     
+      
     <link rel="apple-touch-icon" href="icon-192x192.png"> 
     <link rel="manifest" href="manifest.json">
-     
+      
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-     
+      
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script> 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.25/jspdf.plugin.autotable.min.js"></script>
-     
+      
     <style>
         /* --- General Variables and Reset (FinTech 3.0 Theme) --- */
         :root {
@@ -37,6 +37,21 @@
             --shadow-btn: 0 4px 10px -2px rgba(0, 122, 204, 0.4);
             --lock-bg: #E6F0FF;
             --lock-text: #007ACC;
+            --input-bg: #FAFAFA;
+            --border-color: #E0E0E0;
+        }
+
+        /* --- Dark Theme Variables --- */
+        [data-theme="dark"] {
+            --bg-body: #121212;
+            --bg-card: #1E1E1E;
+            --text-main: #E0E0E0;
+            --text-muted: #A0A0A0;
+            --shadow: 0 5px 15px -5px rgba(0, 0, 0, 0.5);
+            --lock-bg: #000000;
+            --lock-text: #00B894;
+            --input-bg: #2C2C2C;
+            --border-color: #333333;
         }
 
         html, body, #securityOverlay { height: 100%; }
@@ -48,6 +63,7 @@
             margin: 0; padding: 0; 
             -webkit-font-smoothing: antialiased;
             overflow: auto; 
+            transition: background-color 0.3s, color 0.3s;
         }
 
         .container { 
@@ -60,14 +76,14 @@
             padding: 18px; 
             box-shadow: var(--shadow); 
             margin-bottom: 15px; 
-            border: 1px solid #E0E0E0; 
+            border: 1px solid var(--border-color); 
             transition: all 0.3s;
         }
         
         /* Header */
         header { 
             text-align: center; padding: 15px 18px; margin-bottom: 20px; 
-            background: #E6F0FF; border-radius: var(--radius);
+            background: var(--bg-card); border-radius: var(--radius);
             box-shadow: 0 6px 15px rgba(0, 122, 204, 0.1); 
             border: 2px solid var(--info); color: var(--info);
         }
@@ -92,7 +108,7 @@
         .btn-primary { background-color: var(--info); color: white; box-shadow: var(--shadow-btn); }
         .btn-success { background-color: var(--primary); color: white; box-shadow: 0 4px 8px rgba(0, 184, 148, 0.4); }
         .btn-danger { background-color: var(--danger); color: white; box-shadow: 0 4px 8px rgba(232, 65, 24, 0.4); }
-        .btn-warning { background-color: var(--warning); color: var(--text-main); box-shadow: 0 4px 8px rgba(253, 203, 110, 0.4); }
+        .btn-warning { background-color: var(--warning); color: #1C2833; box-shadow: 0 4px 8px rgba(253, 203, 110, 0.4); }
         .btn-settings { width: 100%; margin-top: 5px; justify-content: flex-start; }
         .btn-block { width: 100%; margin-top: 15px; }
 
@@ -102,6 +118,7 @@
             background-color: var(--bg-card); padding: 8px;
             border-radius: 15px; box-shadow: 0 2px 5px rgba(0,0,0,0.05);
             margin-bottom: 20px; overflow-x: auto;
+            border: 1px solid var(--border-color);
         }
         .tab-button {
             flex-grow: 0; 
@@ -115,16 +132,24 @@
         @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
 
         /* Summary Cards - Clickable */
-        .summary-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
-        .summary-row { margin-bottom: 15px; }
+        .summary-header-card {
+            text-align: center; margin-bottom: 10px; cursor: pointer;
+            background: var(--bg-card); border: 2px solid var(--info); 
+        }
+        .summary-header-card h3 { font-size: 14px; text-transform: uppercase; margin: 0 0 5px 0; color: var(--text-muted); }
+        .summary-header-card p { font-size: 24px; font-weight: 800; margin: 0; color: var(--info); }
+        .summary-header-card.today { border-color: var(--warning); background-color: rgba(253, 203, 110, 0.1); }
+        .summary-header-card.monthly { border-color: var(--primary); background-color: rgba(0, 184, 148, 0.1); }
+        .summary-header-card.yearly { border-color: var(--info); background-color: rgba(0, 122, 204, 0.1); }
+
+        .summary-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 25px; }
         .summary-item { padding: 15px; border-radius: 10px; text-align: center; box-shadow: 0 2px 4px rgba(0,0,0,0.05); cursor: pointer; transition: transform 0.2s; }
         .summary-item:active { transform: scale(0.98); }
         .summary-item h3 { font-size: 13px; text-transform: uppercase; margin: 0 0 5px 0; font-weight: 500; color: var(--text-muted); }
         .summary-item p { font-size: 18px; font-weight: 700; margin: 0; }
         
-        .yearly-summary { background-color: #E6F0FF; border: 1px solid var(--info); } 
-        .income-summary { background-color: #E6FFF6; border: 1px solid var(--primary); } 
-        .expense-summary { background-color: #FFF2F2; border: 1px solid var(--danger); } 
+        .income-summary { background-color: rgba(0, 184, 148, 0.1); border: 1px solid var(--primary); } 
+        .expense-summary { background-color: rgba(232, 65, 24, 0.1); border: 1px solid var(--danger); } 
         .income-text { color: var(--primary); }
         .expense-text { color: var(--danger); }
 
@@ -132,8 +157,9 @@
         label { display: block; margin-bottom: 4px; font-weight: 500; font-size: 13px; color: var(--text-main); }
         input, select, textarea { 
             width: 100%; padding: 12px 14px; font-size: 14px;
-            border: 1px solid #DCDCDC; border-radius: 8px;
-            box-sizing: border-box; background-color: #FAFAFA;
+            border: 1px solid var(--border-color); border-radius: 8px;
+            box-sizing: border-box; background-color: var(--input-bg);
+            color: var(--text-main);
             transition: border-color 0.2s, box-shadow 0.2s;
         }
         input:focus, select:focus, textarea:focus { border-color: var(--info); outline: none; box-shadow: 0 0 0 3px rgba(0, 122, 204, 0.2); }
@@ -145,25 +171,25 @@
 
         /* Transactions */
         .transaction-list { list-style: none; padding: 0; margin: 0; }
-        .transaction-list li { display: flex; justify-content: space-between; align-items: center; padding: 12px 0; border-bottom: 1px solid #F0F0F0; }
+        .transaction-list li { display: flex; justify-content: space-between; align-items: center; padding: 12px 0; border-bottom: 1px solid var(--border-color); }
         .transaction-click-area { flex-grow: 1; cursor: pointer; }
-        .transaction-info strong { font-size: 15px; }
+        .transaction-info strong { font-size: 15px; color: var(--text-main); }
         .transaction-info span { font-size: 12px; color: var(--text-muted); margin-right: 10px; }
-        .transaction-info em { font-size: 12px; font-style: normal; color: #9A9A9A; display: block; margin-top: 3px; }
+        .transaction-info em { font-size: 12px; font-style: normal; color: var(--text-muted); display: block; margin-top: 3px; opacity: 0.8; }
         .transaction-amount { font-size: 16px; font-weight: 700; }
         .income-item .transaction-amount { color: var(--primary); }
         .expense-item .transaction-amount { color: var(--danger); }
         
         .action-buttons { display: flex; gap: 10px; align-items: center; padding-left: 10px; }
         .edit-btn, .delete-btn { background: none; border: none; cursor: pointer; transition: color 0.2s; font-size: 14px; }
-        .delete-btn { color: #ccc; }
+        .delete-btn { color: var(--text-muted); }
         .delete-btn:hover { color: var(--danger); }
-        .edit-btn { color: #ccc; }
+        .edit-btn { color: var(--text-muted); }
         .edit-btn:hover { color: var(--info); }
 
         /* Charts & Custom Legends */
         .chart-grid { display: grid; grid-template-columns: 1fr; gap: 20px; margin-top: 20px; }
-        .chart-card { background: var(--bg-card); border-radius: var(--radius); padding: 18px; box-shadow: var(--shadow); margin-bottom: 15px; border: 1px solid #E0E0E0; position: relative; }
+        .chart-card { background: var(--bg-card); border-radius: var(--radius); padding: 18px; box-shadow: var(--shadow); margin-bottom: 15px; border: 1px solid var(--border-color); position: relative; }
         .chart-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; }
         .chart-header h2 { font-size: 18px; font-weight: 600; margin: 0; display: flex; align-items: center; }
         .chart-container { 
@@ -175,17 +201,17 @@
             max-height: 150px; /* Limit height */
             overflow-y: auto;  /* Enable scrolling */
             margin-top: 15px;
-            border-top: 1px solid #eee;
+            border-top: 1px solid var(--border-color);
             padding-top: 10px;
         }
         .legend-item {
             display: flex; justify-content: space-between; align-items: center;
             padding: 8px 5px; font-size: 13px; color: var(--text-main);
-            border-bottom: 1px dashed #f0f0f0;
+            border-bottom: 1px dashed var(--border-color);
             transition: background 0.2s;
             border-radius: 5px;
         }
-        .legend-item:hover { background-color: #f9f9f9; }
+        .legend-item:hover { background-color: rgba(0,0,0,0.02); }
         .legend-label { display: flex; align-items: center; gap: 8px; }
         .legend-color { width: 12px; height: 12px; border-radius: 3px; }
         
@@ -211,12 +237,12 @@
         .pin-pad { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; max-width: 300px; }
         .pin-btn {
             width: 70px; height: 70px; font-size: 24px; background: var(--bg-card); 
-            border: 1px solid #DCDCDC; color: var(--text-main); font-weight: 600;
+            border: 1px solid var(--border-color); color: var(--text-main); font-weight: 600;
             border-radius: 50%; box-shadow: 0 4px 8px rgba(0,0,0,0.1);
             display: flex; align-items: center; justify-content: center; 
             cursor: pointer; transition: all 0.2s; user-select: none;
         }
-        .pin-btn:active { transform: scale(0.95); background-color: #F0F0F0; }
+        .pin-btn:active { transform: scale(0.95); opacity: 0.8; }
         .action-btn.red { background: #FFEDED !important; color: var(--danger) !important; border-color: var(--danger) !important; }
         .action-btn.green { background: #EDFFF3 !important; color: var(--primary) !important; border-color: var(--primary) !important; }
         #closePinScreen {
@@ -267,18 +293,26 @@
         </div>
 
         <div id="dashboard" class="tab-content">
-            <div class="summary-grid summary-row">
-                <div class="card summary-item yearly-summary" onclick="showSummaryDetails('yearly', 'income')">
-                    <h3><i class="fas fa-calendar-alt"></i> YEARLY INCOME</h3>
-                    <p id="yearlyIncome" class="income-text">₹0.00</p>
+            <div class="card summary-header-card today" onclick="showSummaryDetails('today', 'all')">
+                <h3><i class="fas fa-calendar-day"></i> Today's Balance</h3>
+                <p id="todayBalance">₹0.00</p>
+            </div>
+            <div class="summary-grid">
+                <div class="card summary-item income-summary" onclick="showSummaryDetails('today', 'income')">
+                    <h3><i class="fas fa-plus"></i> TODAY INCOME</h3>
+                    <p id="todayIncome" class="income-text">₹0.00</p>
                 </div>
-                <div class="card summary-item yearly-summary" onclick="showSummaryDetails('yearly', 'expense')">
-                    <h3><i class="fas fa-calendar-alt"></i> YEARLY EXPENSE</h3>
-                    <p id="yearlyExpense" class="expense-text">₹0.00</p>
+                <div class="card summary-item expense-summary" onclick="showSummaryDetails('today', 'expense')">
+                    <h3><i class="fas fa-minus"></i> TODAY EXPENSE</h3>
+                    <p id="todayExpense" class="expense-text">₹0.00</p>
                 </div>
             </div>
 
-            <div class="summary-grid summary-row">
+            <div class="card summary-header-card monthly" onclick="showSummaryDetails('monthly', 'all')">
+                <h3><i class="fas fa-calendar-alt"></i> Monthly Balance</h3>
+                <p id="monthlyBalance">₹0.00</p>
+            </div>
+            <div class="summary-grid">
                 <div class="card summary-item income-summary" onclick="showSummaryDetails('monthly', 'income')">
                     <h3><i class="fas fa-plus"></i> MONTHLY INCOME</h3>
                     <p id="monthlyIncome" class="income-text">₹0.00</p>
@@ -286,6 +320,21 @@
                 <div class="card summary-item expense-summary" onclick="showSummaryDetails('monthly', 'expense')">
                     <h3><i class="fas fa-minus"></i> MONTHLY EXPENSE</h3>
                     <p id="monthlyExpense" class="expense-text">₹0.00</p>
+                </div>
+            </div>
+
+            <div class="card summary-header-card yearly" onclick="showSummaryDetails('yearly', 'all')">
+                <h3><i class="fas fa-calendar"></i> Yearly Balance</h3>
+                <p id="yearlyBalance">₹0.00</p>
+            </div>
+            <div class="summary-grid">
+                <div class="card summary-item income-summary" onclick="showSummaryDetails('yearly', 'income')">
+                    <h3><i class="fas fa-plus"></i> YEARLY INCOME</h3>
+                    <p id="yearlyIncome" class="income-text">₹0.00</p>
+                </div>
+                <div class="card summary-item expense-summary" onclick="showSummaryDetails('yearly', 'expense')">
+                    <h3><i class="fas fa-minus"></i> YEARLY EXPENSE</h3>
+                    <p id="yearlyExpense" class="expense-text">₹0.00</p>
                 </div>
             </div>
 
@@ -318,11 +367,11 @@
 
         <div id="analysis" class="tab-content">
             <div class="card">
-                <div style="margin-bottom:15px; border-bottom: 1px solid #eee; padding-bottom: 15px;">
+                <div style="margin-bottom:15px; border-bottom: 1px solid var(--border-color); padding-bottom: 15px;">
                    <h2 style="font-size: 20px; margin-top: 0; color: var(--info);"><i class="fas fa-chart-bar"></i> Multi-Year Analysis</h2>
                    <label for="analysisYearFilter">Select Base Year:</label>
                    <select id="analysisYearFilter" onchange="renderAllAnalysisCharts()"></select>
-                   <p style="font-size:11px; color:#666; margin:5px 0 0;">* Comparing selected year vs previous 2 years.</p>
+                   <p style="font-size:11px; color:var(--text-muted); margin:5px 0 0;">* Comparing selected year vs previous 2 years.</p>
                </div>
 
                <div style="margin-bottom:30px;">
@@ -412,6 +461,10 @@
             <div class="card">
                 <h2 style="font-size: 20px; margin-top: 0; color: var(--info);"><i class="fas fa-cogs"></i> App Settings</h2>
                 <div class="settings-grid">
+                    <div class="settings-item" style="grid-column: span 2;">
+                        <button class="btn-style btn-primary btn-settings" onclick="toggleTheme()"><i class="fas fa-adjust"></i> Toggle Dark/Light Mode</button>
+                    </div>
+
                     <div class="settings-item" style="grid-column: span 2;">
                         <label>Update Security PIN</label>
                         <input type="password" id="newAppPin" placeholder="New 4-Digit PIN" maxlength="4" style="margin-bottom: 5px;">
@@ -529,16 +582,38 @@
         }
 
         function updateSummary() {
-            const now = new Date(), curM = getYM(now.toISOString()), curY = now.getFullYear().toString();
+            const now = new Date();
+            const curM = getYM(now.toISOString());
+            const curY = now.getFullYear().toString();
+            const todayStr = now.toISOString().split('T')[0]; // YYYY-MM-DD
             const prevY = (now.getFullYear() - 1).toString();
             const activeTab = document.querySelector('.tab-content.active')?.id;
+            
+            // Vars for calculation
             let mInc=0, mExp=0, yInc=0, yExp=0, lInc=0, lExp=0, pYInc=0, pYExp=0, fInc=0, fExp=0;
+            let dInc=0, dExp=0; // Today
+
             const filterVal = document.getElementById('monthFilter')?.value || curM;
 
             transactions.forEach(t => {
                 const ym = getYM(t.date), y = getY(t.date);
-                if (t.type === 'income') { lInc += t.amount; if (y === curY) yInc += t.amount; if (y === prevY) pYInc += t.amount; if (ym === curM) mInc += t.amount; }
-                else { lExp += t.amount; if (y === curY) yExp += t.amount; if (y === prevY) pYExp += t.amount; if (ym === curM) mExp += t.amount; }
+                const tDateStr = t.date.split('T')[0];
+
+                if (t.type === 'income') { 
+                    lInc += t.amount; 
+                    if (y === curY) yInc += t.amount; 
+                    if (y === prevY) pYInc += t.amount; 
+                    if (ym === curM) mInc += t.amount; 
+                    if (tDateStr === todayStr) dInc += t.amount;
+                } else { 
+                    lExp += t.amount; 
+                    if (y === curY) yExp += t.amount; 
+                    if (y === prevY) pYExp += t.amount; 
+                    if (ym === curM) mExp += t.amount; 
+                    if (tDateStr === todayStr) dExp += t.amount;
+                }
+
+                // For history filtering
                 let include = false;
                 if (filterVal === 'lifetime') include = true;
                 else if (filterVal === 'current_year') include = (y === curY);
@@ -547,11 +622,33 @@
                 if (include) { if(t.type==='income') fInc+=t.amount; else fExp+=t.amount; }
             });
 
+            // Update Dashboard DOM
             document.getElementById('yearlyIncome').textContent = formatCurrency(yInc);
             document.getElementById('yearlyExpense').textContent = formatCurrency(yExp);
             document.getElementById('monthlyIncome').textContent = formatCurrency(mInc);
             document.getElementById('monthlyExpense').textContent = formatCurrency(mExp);
+            
+            // New Dashboard Elements
+            document.getElementById('todayIncome').textContent = formatCurrency(dInc);
+            document.getElementById('todayExpense').textContent = formatCurrency(dExp);
+            
+            const todayBal = dInc - dExp;
+            const monthBal = mInc - mExp;
+            const yearBal = yInc - yExp;
 
+            document.getElementById('todayBalance').textContent = formatCurrency(todayBal);
+            document.getElementById('todayBalance').className = todayBal >= 0 ? 'positive' : 'negative';
+            if(todayBal === 0) document.getElementById('todayBalance').className = '';
+
+            document.getElementById('monthlyBalance').textContent = formatCurrency(monthBal);
+            document.getElementById('monthlyBalance').className = monthBal >= 0 ? 'positive' : 'negative';
+            if(monthBal === 0) document.getElementById('monthlyBalance').className = '';
+
+            document.getElementById('yearlyBalance').textContent = formatCurrency(yearBal);
+            document.getElementById('yearlyBalance').className = yearBal >= 0 ? 'positive' : 'negative';
+            if(yearBal === 0) document.getElementById('yearlyBalance').className = '';
+
+            // Header Balance Logic
             let bal = lInc - lExp, title = 'Total Net Balance (Lifetime)';
             if (activeTab === 'settings') { bal = pYInc - pYExp; title = `Net Balance (Year ${prevY})`; }
             else if (activeTab === 'addTransaction') { bal = yInc - yExp; title = 'Net Balance (Current Year)'; }
@@ -627,7 +724,6 @@
             const labels = Object.keys(dataMap), data = Object.values(dataMap);
             const total = data.reduce((a, b) => a + b, 0);
             
-            // Render Legend manually to allow scrolling & Click event
             const legendContainer = document.getElementById(type === 'income' ? 'incomeLegend' : 'expenseLegend');
             const colors = type === 'income' ? INCOME_COLORS : EXPENSE_COLORS; 
             
@@ -638,7 +734,6 @@
                 labels.forEach((label, i) => {
                     const pct = Math.round(data[i]/total*100);
                     const color = colors[i % colors.length];
-                    // Added onClick here to show details
                     legendHTML += `
                         <div class="legend-item" style="cursor: pointer;" onclick="showCategoryHistory('${label}', '${type}', '${filter}')">
                             <div class="legend-label">
@@ -701,16 +796,29 @@
             const now = new Date();
             const curY = now.getFullYear().toString();
             const curM = getYM(now.toISOString());
+            const todayStr = now.toISOString().split('T')[0];
             
             const filtered = transactions.filter(t => {
                 const ym = getYM(t.date), y = getY(t.date);
-                if (t.type !== type) return false;
-                if (scope === 'yearly') return y === curY;
-                if (scope === 'monthly') return ym === curM;
-                return false;
+                const tDateStr = t.date.split('T')[0];
+                
+                // Filter by scope
+                let scopeMatch = false;
+                if (scope === 'yearly') scopeMatch = (y === curY);
+                else if (scope === 'monthly') scopeMatch = (ym === curM);
+                else if (scope === 'today') scopeMatch = (tDateStr === todayStr);
+
+                // Filter by type (income/expense/all)
+                let typeMatch = true;
+                if (type !== 'all') typeMatch = (t.type === type);
+
+                return scopeMatch && typeMatch;
             }).sort((a,b) => new Date(b.date) - new Date(a.date));
             
-            const title = `${scope === 'yearly' ? 'Yearly' : 'Monthly'} ${type.charAt(0).toUpperCase() + type.slice(1)}`;
+            let title = scope.charAt(0).toUpperCase() + scope.slice(1);
+            if(type !== 'all') title += ` ${type.charAt(0).toUpperCase() + type.slice(1)}`;
+            else title += " Transactions";
+
             showTransactionsModal(title, filtered);
         }
 
@@ -723,7 +831,7 @@
                     const dateStr = new Date(t.date).toLocaleString('en-IN', { dateStyle: 'medium', timeStyle: 'short' });
                     htmlContent += `
                         <li>
-                            <span class="swal-amt">${formatCurrency(t.amount)}</span>
+                            <span class="swal-amt" style="color: ${t.type==='income'?'var(--primary)':'var(--danger)'}">${formatCurrency(t.amount)}</span>
                             <strong>${t.category}</strong>
                             <span>${dateStr}</span>
                             ${t.details ? `<br><span style="font-style:italic;">"${t.details}"</span>` : ''}
@@ -801,19 +909,17 @@
 
         function renderTransactions() {
             const filter = document.getElementById('monthFilter').value;
-            const searchInput = document.getElementById('searchInput'); // Get Search Input
+            const searchInput = document.getElementById('searchInput'); 
             const searchTerm = searchInput ? searchInput.value.toLowerCase() : '';
 
             const list = document.getElementById('transactionList');
             const filtered = transactions.filter(t => {
-                // 1. Date Filter Logic
                 let dateMatch = false;
                 if(filter==='lifetime') dateMatch = true;
                 else if(filter==='current_year') dateMatch = (getY(t.date) === new Date().getFullYear().toString());
                 else if(filter.length===4) dateMatch = (getY(t.date) === filter);
                 else dateMatch = (getYM(t.date) === (filter || getYM(new Date().toISOString())));
 
-                // 2. Search Filter Logic
                 let searchMatch = true;
                 if (searchTerm) {
                     const searchStr = (t.category + ' ' + (t.details || '') + ' ' + t.amount).toLowerCase();
@@ -976,13 +1082,20 @@
         function exportDashboardPDF(){
              const doc = new window.jspdf.jsPDF(); 
              doc.text("Pro Finance by Srikanta Banerjee", 14, 20); 
-             doc.autoTable({ startY: 30, head: [['Metric', 'Value']], body: [ ['Yearly Income', document.getElementById('yearlyIncome').textContent], ['Yearly Expense', document.getElementById('yearlyExpense').textContent], ['Net Balance', document.getElementById('currentBalance').textContent] ]});
+             doc.autoTable({ startY: 30, head: [['Metric', 'Value']], body: [ 
+                 ['Today Income', document.getElementById('todayIncome').textContent],
+                 ['Today Expense', document.getElementById('todayExpense').textContent],
+                 ['Monthly Income', document.getElementById('monthlyIncome').textContent],
+                 ['Monthly Expense', document.getElementById('monthlyExpense').textContent],
+                 ['Yearly Income', document.getElementById('yearlyIncome').textContent],
+                 ['Yearly Expense', document.getElementById('yearlyExpense').textContent],
+                 ['Total Net Balance', document.getElementById('currentBalance').textContent] 
+             ]});
              doc.save(`dashboard_${new Date().toISOString().split('T')[0]}.pdf`);
         }
         function exportHistoryPDF(){
              const doc = new window.jspdf.jsPDF(); 
              doc.text("Pro Finance by Srikanta Banerjee", 14, 20); 
-             // Updated to handle full datetime string
              const rows = transactions.map(t => {
                  const dateStr = new Date(t.date).toLocaleString('en-IN');
                  return [dateStr, t.category, t.type, t.amount, t.details || ''];
@@ -991,9 +1104,29 @@
              doc.save(`history_${new Date().toISOString().split('T')[0]}.pdf`);
         }
 
+        // Theme Toggle Function
+        function toggleTheme() {
+            const html = document.documentElement;
+            if (html.getAttribute('data-theme') === 'dark') {
+                html.removeAttribute('data-theme');
+                localStorage.setItem('theme', 'light');
+            } else {
+                html.setAttribute('data-theme', 'dark');
+                localStorage.setItem('theme', 'dark');
+            }
+        }
+
+        // Apply Theme on Load
+        function applyTheme() {
+            const savedTheme = localStorage.getItem('theme');
+            if (savedTheme === 'dark') {
+                document.documentElement.setAttribute('data-theme', 'dark');
+            }
+        }
+
         async function initApp() {
             await loadFromDB();
-            setDateTimeLocalNow(); // Set current date/time on load
+            setDateTimeLocalNow(); 
             document.getElementById('transactionForm').addEventListener('submit', addTransaction);
             renderCategoryList(); updateCatOpts(); renderTransactions();
             document.getElementById('mainAppContent').style.display = 'block';
@@ -1001,6 +1134,7 @@
         }
 
         document.addEventListener('DOMContentLoaded', async () => {
+            applyTheme(); // Apply theme first
             try { await openDB(); const pin = await dbGet(STORE_PIN, 'pin'); if(!pin) await dbSet(STORE_PIN, {key:'pin', value:DEFAULT_PIN}); } catch(e) { console.log('Init DB error', e); }
             document.getElementById('securityOverlay').style.display = 'flex';
             document.getElementById('closePinScreen').style.display = 'none';
