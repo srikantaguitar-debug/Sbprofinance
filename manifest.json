@@ -1,6 +1,5 @@
-
 {
-  "name": "Pro Finance System",
+  "name": "Pro Finance Manager",
   "short_name": "ProFinance",
   "start_url": "./index.html",
   "display": "standalone",
