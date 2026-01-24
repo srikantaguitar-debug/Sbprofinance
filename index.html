@@ -20,6 +20,63 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script> 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.25/jspdf.plugin.autotable.min.js"></script>
+    <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+    import { getAuth, onAuthStateChanged, signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+    import { getFirestore, doc, setDoc, collection, onSnapshot, query, enableIndexedDbPersistence, deleteDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+
+    const firebaseConfig = {
+        apiKey: "AIzaSyBkxNKAIAWmCIqHesiO-Pj_J7etPcQ9zuY",
+        authDomain: "music-student-management.firebaseapp.com",
+        projectId: "music-student-management",
+        storageBucket: "music-student-management.firebasestorage.app",
+        messagingSenderId: "593272401152",
+        appId: "1:593272401152:web:0336fdd8c530ffd097d7e5"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+    const db = getFirestore(app);
+
+    // অফলাইন সাপোর্ট এনাবল করা
+    enableIndexedDbPersistence(db).catch(err => console.error("Offline sync error:", err));
+
+    // গ্লোবাল এক্সেস দেওয়া
+    window.auth = auth;
+    window.db = db;
+    window.fbSetDoc = setDoc;
+    window.fbDoc = doc;
+    window.fbCollection = collection;
+    window.fbDeleteDoc = deleteDoc;
+    window.firebaseFunctions = { signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut };
+
+    // ইউজার লগইন স্ট্যাটাস চেক করা
+    onAuthStateChanged(auth, (user) => {
+        if (user) {
+            document.getElementById('authOverlay').style.display = 'none';
+            document.getElementById('securityOverlay').style.display = 'flex'; 
+            startOnlineSync(user.uid); 
+        } else {
+            document.getElementById('authOverlay').style.display = 'flex';
+            document.getElementById('mainAppContent').style.display = 'none';
+            document.getElementById('securityOverlay').style.display = 'none';
+        }
+    });
+
+    // অনলাইন থেকে ডেটা রিয়েল-টাইম সিঙ্ক করা
+    function startOnlineSync(uid) {
+        const q = query(collection(db, "users", uid, "transactions"));
+        onSnapshot(q, (snapshot) => {
+            let cloudData = [];
+            snapshot.forEach((doc) => cloudData.push(doc.data()));
+            if(cloudData.length > 0) {
+                transactions = cloudData;
+                renderTransactions();
+                updateSummary();
+            }
+        });
+    }
+</script>
       
     <style>
         /* --- General Variables and Reset (FinTech 3.0 Theme) --- */
@@ -52,6 +109,43 @@
             --lock-text: #00B894;
             --input-bg: #2C2C2C;
             --border-color: #333333;
+        }
+        /* --- SweetAlert2 Theme Integration --- */
+        
+        /* ডার্ক মোডে পপআপের স্টাইল */
+        [data-theme="dark"] .swal2-popup {
+            background: var(--bg-card) !important;
+            color: var(--text-main) !important;
+            border: 1px solid var(--border-color);
+        }
+        
+        [data-theme="dark"] .swal2-title {
+            color: var(--text-main) !important;
+        }
+        
+        [data-theme="dark"] .swal2-html-container {
+            color: var(--text-muted) !important;
+        }
+        
+        [data-theme="dark"] .swal2-close {
+            color: var(--text-muted) !important;
+        }
+        
+        [data-theme="dark"] .swal2-close:hover {
+            color: var(--danger) !important;
+        }
+
+        /* যদি পপআপের ভেতরে ইনপুট ফিল্ড থাকে */
+        [data-theme="dark"] .swal2-input, 
+        [data-theme="dark"] .swal2-textarea {
+            background-color: var(--input-bg) !important;
+            color: var(--text-main) !important;
+            border-color: var(--border-color) !important;
+        }
+
+        /* লিস্ট আইটেমগুলোর বর্ডার কালার ঠিক করা */
+        [data-theme="dark"] .swal-list li {
+            border-bottom: 1px solid var(--border-color) !important;
         }
 
         html, body, #securityOverlay { height: 100%; }
@@ -253,6 +347,25 @@
     </style>
 </head>
 <body>
+    <div id="authOverlay" style="display: flex; flex-direction: column; align-items: center; justify-content: center; position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 10000; background: var(--bg-body);">
+    <div class="card" style="width: 90%; max-width: 400px; text-align: center; border: 2px solid var(--info);">
+        <h2 style="color: var(--info);"><i class="fas fa-wallet"></i> Pro Finance</h2>
+        <p id="authTitle" style="font-weight: 600;">Login to Sync Online</p>
+        
+        <input type="email" id="authEmail" placeholder="Email Address" style="margin-bottom: 12px;">
+        <input type="password" id="authPassword" placeholder="Password" style="margin-bottom: 12px;">
+        
+        <div id="loginBtnGroup">
+            <button class="btn-style btn-primary btn-block" onclick="handleAuth('login')">LOGIN</button>
+            <p style="font-size: 13px; margin-top: 15px;">New User? <a href="javascript:void(0)" onclick="toggleAuthMode(true)" style="color: var(--info); font-weight: bold;">Create Account</a></p>
+        </div>
+
+        <div id="signupBtnGroup" style="display: none;">
+            <button class="btn-style btn-success btn-block" onclick="handleAuth('signup')">CREATE ACCOUNT</button>
+            <p style="font-size: 13px; margin-top: 15px;">Already have an account? <a href="javascript:void(0)" onclick="toggleAuthMode(false)" style="color: var(--info); font-weight: bold;">Login here</a></p>
+        </div>
+    </div>
+</div>
     <div id="securityOverlay">
         <span id="closePinScreen" onclick="closePinScreen()" style="display: none;"><i class="fas fa-times"></i></span>
         <div class="pin-title"><i class="fas fa-lock"></i> Security Access</div>
@@ -476,6 +589,9 @@
                         <button class="btn-style btn-warning btn-settings" onclick="secureAction(() => document.getElementById('importFile').click())"><i class="fas fa-upload"></i> Import Data</button>
                         <input type="file" id="importFile" accept=".json" style="display: none;" onchange="importData(event)">
                         <button class="btn-style btn-danger btn-settings" onclick="secureAction(resetApp)"><i class="fas fa-trash"></i> Reset All Data</button>
+                        <button class="btn-style btn-danger btn-block" onclick="window.firebaseFunctions.signOut(window.auth)">
+    <i class="fas fa-sign-out-alt"></i> LOGOUT FROM ACCOUNT
+</button>
                     </div>
                 </div>
             </div>
@@ -490,6 +606,30 @@
     </div>
 
     <script>
+        // ১. লগইন এবং সাইনআপ বাটন কন্ট্রোল করার ফাংশন
+function toggleAuthMode(isSignup) {
+    document.getElementById('authTitle').innerText = isSignup ? "Create New Account" : "Login to Sync Online";
+    document.getElementById('loginBtnGroup').style.display = isSignup ? "none" : "block";
+    document.getElementById('signupBtnGroup').style.display = isSignup ? "block" : "none";
+}
+
+// ২. লগইন এবং একাউন্ট তৈরির কাজ (Firebase Call)
+async function handleAuth(type) {
+    const email = document.getElementById('authEmail').value;
+    const password = document.getElementById('authPassword').value;
+    if (!email || !password) { Swal.fire('Error', 'Email and Password are required!', 'error'); return; }
+
+    try {
+        if (type === 'signup') {
+            await window.firebaseFunctions.createUserWithEmailAndPassword(window.auth, email, password);
+            Swal.fire('Success', 'Account Created Successfully!', 'success');
+        } else {
+            await window.firebaseFunctions.signInWithEmailAndPassword(window.auth, email, password);
+        }
+    } catch (error) {
+        Swal.fire('Auth Error', error.message, 'error');
+    }
+}
         const DB_NAME = 'ProFinanceDB', DB_VERSION = 1, STORE_TX = 'transactions', STORE_CATS = 'categories', STORE_PIN = 'appSettings';
         const DEFAULT_CATEGORIES = ['Class', 'Shows', 'Others'], DEFAULT_PIN = '1234';
         const INCOME_COLORS = ['#00B894', '#007ACC', '#5DADE2', '#3498DB', '#1ABC9C', '#2ECC71', '#48C9B0', '#76D7C4'];
@@ -1010,6 +1150,11 @@
             } else {
                 const tx = { id: Date.now(), amount: amt, type, category: cat, date, details: dets };
                 transactions.push(tx); await dbSet(STORE_TX, tx);
+                // ক্লাউডে সিঙ্ক করা
+const user = window.auth.currentUser;
+if (user) {
+    await window.fbSetDoc(window.fbDoc(window.db, "users", user.uid, "transactions", String(tx.id)), tx);
+}
                 Swal.fire('Saved', '', 'success');
             }
             cancelEdit(); 
@@ -1018,7 +1163,12 @@
         
         async function deleteTransaction(id) {
             Swal.fire({ title: 'Delete?', icon: 'warning', showCancelButton: true }).then(async r => {
-                if (r.isConfirmed) { transactions = transactions.filter(t => t.id !== id); await dbDelete(STORE_TX, id); renderTransactions(); renderIncomeChart(); renderExpenseChart(); updateSummary(); }
+                if (r.isConfirmed) { transactions = transactions.filter(t => t.id !== id); await dbDelete(STORE_TX, id);
+                // ক্লাউড থেকে ডিলিট করা
+const user = window.auth.currentUser;
+if (user) {
+    await window.fbDeleteDoc(window.fbDoc(window.db, "users", user.uid, "transactions", String(id)));
+}renderTransactions(); renderIncomeChart(); renderExpenseChart(); updateSummary(); }
             });
         }
         
