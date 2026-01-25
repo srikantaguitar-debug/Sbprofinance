@@ -463,7 +463,7 @@
         <div id="addTransaction" class="tab-content">
              <div class="card">
                 <h2 style="font-size: 20px; margin-top: 0; color: var(--info);"><i class="fas fa-plus-circle"></i> Add / Edit Transaction</h2>
-                <form id="transactionForm">
+                <form id="transactionForm" onsubmit="addTransaction(event)">
                     <div class="form-grid">
                         <div class="form-group half">
                             <label for="amount">Amount (₹):</label>
@@ -835,10 +835,17 @@
         document.querySelectorAll('.tab-button').forEach(b => b.classList.remove('active'));
         document.getElementById(name).classList.add('active');
         btn.classList.add('active');
+        
         if (name === 'dashboard') { populateChartFilters(); renderIncomeChart(); renderExpenseChart(); }
         else if (name === 'history') { populateChartFilters(); renderTransactions(); }
         else if (name === 'settings') { renderCategoryList(); updateEmailDisplay(); }
         else if (name === 'analysis') { populateAnalysisYear(); requestAnimationFrame(() => { requestAnimationFrame(() => { renderAllAnalysisCharts(); }); }); }
+        
+        // --- নতুন লাইন: Add ট্যাবে ক্লিক করলে কারেন্ট টাইম সেট হবে ---
+        else if (name === 'addTransaction') {
+            if(!editingTransactionId) setDateTimeLocalNow(); // এডিট মোডে না থাকলে টাইম আপডেট হবে
+        }
+
         updateSummary();
     }
 
@@ -1132,32 +1139,55 @@
     }
 
     async function addTransaction(e) {
-        e.preventDefault();
-        const amt = parseFloat(document.getElementById('amount').value);
-        const type = document.getElementById('type').value, cat = document.getElementById('category').value;
-        const date = document.getElementById('date').value, dets = document.getElementById('details').value;
-        if (amt <= 0 || !cat || !date) { Swal.fire('Error', 'Invalid Input', 'error'); return; }
+        // ১. রিফ্রেশ আটকানো (সবচেয়ে জরুরি)
+        if(e) e.preventDefault(); 
         
+        const amt = parseFloat(document.getElementById('amount').value);
+        const type = document.getElementById('type').value;
+        const cat = document.getElementById('category').value;
+        const date = document.getElementById('date').value;
+        const dets = document.getElementById('details').value;
+
+        // ২. ভ্যালিডেশন
+        if (isNaN(amt) || amt <= 0) { 
+            Swal.fire('Error', 'Please enter a valid amount.', 'warning'); return; 
+        }
+        if (!cat) { 
+            Swal.fire('Error', 'Select a category.', 'warning'); return; 
+        }
+        if (!date) { 
+            Swal.fire('Error', 'Select a date.', 'warning'); return; 
+        }
+
         const txObj = { amount: amt, type, category: cat, date, details: dets };
 
-        if (editingTransactionId) {
-            const index = transactions.findIndex(t => t.id === editingTransactionId);
-            if(index !== -1) {
-                const updatedTx = { ...txObj, id: editingTransactionId };
-                transactions[index] = updatedTx;
-                await dbSet(STORE_TX, updatedTx);
-                await saveToFirestore(updatedTx); 
-                Swal.fire('Updated', '', 'success');
+        try {
+            if (editingTransactionId) {
+                // Edit Mode
+                const index = transactions.findIndex(t => t.id === editingTransactionId);
+                if(index !== -1) {
+                    const updatedTx = { ...txObj, id: editingTransactionId };
+                    transactions[index] = updatedTx; 
+                    await dbSet(STORE_TX, updatedTx); // Local Save
+                    saveToFirestore(updatedTx);       // Cloud Save
+                    Swal.fire({ title: 'Updated', icon: 'success', timer: 1500, showConfirmButton: false });
+                }
+            } else {
+                // New Add Mode
+                const tx = { ...txObj, id: Date.now() };
+                transactions.push(tx); 
+                await dbSet(STORE_TX, tx); // Local Save
+                saveToFirestore(tx);       // Cloud Save
+                Swal.fire({ title: 'Saved', icon: 'success', timer: 1500, showConfirmButton: false });
             }
-        } else {
-            const tx = { ...txObj, id: Date.now() };
-            transactions.push(tx); 
-            await dbSet(STORE_TX, tx);
-            await saveToFirestore(tx);
-            Swal.fire('Saved', '', 'success');
+            
+            cancelEdit(); 
+            openTab('dashboard', document.getElementById('tabButtonDashboard'));
+            
+        } catch (error) {
+            console.error(error);
+            Swal.fire('Error', 'Save failed locally.', 'error');
         }
-        cancelEdit(); 
-        openTab('dashboard', document.getElementById('tabButtonDashboard'));
     }
     
     async function deleteTransaction(id) {
@@ -1220,16 +1250,69 @@
         } catch (err) { if (err.name !== 'AbortError') Swal.fire('Error', 'Failed to save backup.', 'error'); }
     }
     function importData(e) {
-        const f = e.target.files[0]; if(!f) return;
+        const f = e.target.files[0]; 
+        if(!f) return;
+        
+        // Show loading immediately
+        Swal.fire({
+            title: 'Importing & Syncing...',
+            text: 'Please wait, uploading to cloud.',
+            allowOutsideClick: false,
+            didOpen: () => { Swal.showLoading(); }
+        });
+
         const r = new FileReader();
         r.onload = async (ev) => {
             try {
                 const d = JSON.parse(ev.target.result);
-                if(d.transactions) { await dbStoreAction(STORE_TX, 'readwrite', s=>s.clear()); for(const t of d.transactions) { await dbSet(STORE_TX, t); if(currentUser) saveToFirestore(t); } }
-                if(d.categories) { await dbStoreAction(STORE_CATS, 'readwrite', s=>s.clear()); for(const c of d.categories) await dbSet(STORE_CATS, {name:c}); }
+                const syncPromises = []; // To track all upload tasks
+
+                // 1. Transactions Import
+                if(d.transactions) { 
+                    await dbStoreAction(STORE_TX, 'readwrite', s=>s.clear()); 
+                    for(const t of d.transactions) { 
+                        await dbSet(STORE_TX, t); 
+                        // If logged in, add upload task to list
+                        if(currentUser) {
+                            syncPromises.push(saveToFirestore(t)); 
+                        }
+                    } 
+                }
+
+                // 2. Categories Import
+                if(d.categories) { 
+                    await dbStoreAction(STORE_CATS, 'readwrite', s=>s.clear()); 
+                    for(const c of d.categories) await dbSet(STORE_CATS, {name:c}); 
+                    // Sync Categories too
+                    if(currentUser) {
+                        categories = d.categories; // Update memory variable
+                        syncPromises.push(saveCategoriesToFirestore());
+                    }
+                }
+
+                // 3. PIN Import
                 if(d.pin) await dbSet(STORE_PIN, {key:'pin', value:d.pin});
-                window.location.reload();
-            } catch(err) { Swal.fire('Error', 'Invalid File', 'error'); }
+
+                // 4. WAIT for all uploads to finish
+                if(syncPromises.length > 0) {
+                    await Promise.all(syncPromises);
+                }
+
+                // Success Message & Reload
+                Swal.fire({
+                    icon: 'success',
+                    title: 'Import Complete!',
+                    text: 'Data synced to cloud successfully.',
+                    timer: 2000,
+                    showConfirmButton: false
+                }).then(() => {
+                    window.location.reload();
+                });
+
+            } catch(err) { 
+                console.error(err);
+                Swal.fire('Error', 'Invalid File or Sync Failed', 'error'); 
+            }
         };
         r.readAsText(f);
     }
