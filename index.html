@@ -20,6 +20,9 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script> 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.25/jspdf.plugin.autotable.min.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
       
     <style>
         /* --- General Variables and Reset (FinTech 3.0 Theme) --- */
@@ -250,9 +253,69 @@
             font-size: 30px; cursor: pointer; opacity: 0.8; transition: opacity 0.2s;
         }
         #closePinScreen:hover { opacity: 1; }
+        /* --- SweetAlert2 Theme Integration (Dark/Light) --- */
+.swal2-popup {
+    background-color: var(--bg-card) !important;
+    color: var(--text-main) !important;
+    border: 1px solid var(--border-color);
+    border-radius: 15px !important;
+}
+.swal2-title, .swal2-html-container, .swal2-content {
+    color: var(--text-main) !important;
+}
+/* Input fields inside popups */
+.swal2-input, .swal2-textarea {
+    background-color: var(--input-bg) !important;
+    color: var(--text-main) !important;
+    border-color: var(--border-color) !important;
+}
+/* Close button */
+.swal2-close {
+    color: var(--text-muted) !important;
+}
+.swal2-close:hover {
+    color: var(--danger) !important;
+}
     </style>
 </head>
 <body>
+    <div id="authOverlay" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: var(--bg-body); z-index: 10000; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 20px; box-sizing: border-box;">
+    <div class="card" style="width: 100%; max-width: 400px; padding: 30px; text-align: center;">
+        <h2 style="color: var(--info); margin-bottom: 20px;"><i class="fas fa-cloud"></i> ProFinance Cloud</h2>
+        
+        <div id="authForms">
+            <form id="loginForm" onsubmit="handleLogin(event)">
+                <div class="form-group">
+                    <input type="email" id="loginEmail" placeholder="Email Address" required>
+                </div>
+                <div class="form-group">
+                    <input type="password" id="loginPass" placeholder="Password" required>
+                </div>
+                <button type="submit" class="btn-style btn-primary btn-block">Login</button>
+            </form>
+            <p style="margin-top: 15px; font-size: 13px;">
+                Don't have an account? <a href="#" onclick="toggleAuthMode('signup')" style="color: var(--primary);">Create New</a>
+            </p>
+        </div>
+
+        <div id="signupFormDiv" style="display: none;">
+            <form id="signupForm" onsubmit="handleSignup(event)">
+                <div class="form-group">
+                    <input type="email" id="signupEmail" placeholder="New Email" required>
+                </div>
+                <div class="form-group">
+                    <input type="password" id="signupPass" placeholder="New Password (Min 6 chars)" required minlength="6">
+                </div>
+                <button type="submit" class="btn-style btn-success btn-block">Create Account</button>
+            </form>
+            <p style="margin-top: 15px; font-size: 13px;">
+                Already have an account? <a href="#" onclick="toggleAuthMode('login')" style="color: var(--info);">Login here</a>
+            </p>
+        </div>
+        
+        <div id="authMessage" style="margin-top: 10px; color: var(--danger); font-size: 12px; min-height: 20px;"></div>
+    </div>
+</div>
     <div id="securityOverlay">
         <span id="closePinScreen" onclick="closePinScreen()" style="display: none;"><i class="fas fa-times"></i></span>
         <div class="pin-title"><i class="fas fa-lock"></i> Security Access</div>
@@ -458,688 +521,772 @@
         </div>
 
         <div id="settings" class="tab-content">
-            <div class="card">
-                <h2 style="font-size: 20px; margin-top: 0; color: var(--info);"><i class="fas fa-cogs"></i> App Settings</h2>
-                <div class="settings-grid">
-                    <div class="settings-item" style="grid-column: span 2;">
-                        <button class="btn-style btn-primary btn-settings" onclick="toggleTheme()"><i class="fas fa-adjust"></i> Toggle Dark/Light Mode</button>
-                    </div>
-
-                    <div class="settings-item" style="grid-column: span 2;">
-                        <label>Update Security PIN</label>
-                        <input type="password" id="newAppPin" placeholder="New 4-Digit PIN" maxlength="4" style="margin-bottom: 5px;">
-                        <button class="btn-style btn-primary btn-settings" onclick="changeAppPin()"><i class="fas fa-key"></i> Update PIN</button>
-                    </div>
-                    <div class="settings-item">
-                        <label>Data Management</label>
-                        <button class="btn-style btn-primary btn-settings" onclick="secureAction(exportData)"><i class="fas fa-download"></i> Export Data</button>
-                        <button class="btn-style btn-warning btn-settings" onclick="secureAction(() => document.getElementById('importFile').click())"><i class="fas fa-upload"></i> Import Data</button>
-                        <input type="file" id="importFile" accept=".json" style="display: none;" onchange="importData(event)">
-                        <button class="btn-style btn-danger btn-settings" onclick="secureAction(resetApp)"><i class="fas fa-trash"></i> Reset All Data</button>
-                    </div>
-                </div>
+    <div class="card">
+        <h2 style="font-size: 20px; margin-top: 0; color: var(--info);"><i class="fas fa-cogs"></i> App Settings</h2>
+        
+        <div class="settings-grid">
+            <div class="settings-item" style="grid-column: span 2;">
+                <button class="btn-style btn-primary btn-settings" onclick="toggleTheme()"><i class="fas fa-adjust"></i> Toggle Dark/Light Mode</button>
             </div>
-            <div class="card">
-                <h2 style="font-size: 20px; margin-top: 0; color: var(--primary);"><i class="fas fa-tags"></i> Custom Categories</h2>
-                <p style="font-size: 13px; color: var(--text-muted);">Define categories for clear tracking.</p>
-                <div id="categoryListDisplay" style="margin-bottom: 10px; font-size: 14px;"></div>
-                <input type="text" id="newCategoryName" placeholder="New Category Name">
-                <button class="btn-style btn-success btn-block" style="margin-top: 10px;" onclick="addCategory()"><i class="fas fa-plus"></i> Add New Category</button>
+
+            <div class="settings-item" style="grid-column: span 2;">
+                <label>Update Security PIN</label>
+                <input type="password" id="newAppPin" placeholder="New 4-Digit PIN" maxlength="4" style="margin-bottom: 5px;">
+                <button class="btn-style btn-primary btn-settings" onclick="changeAppPin()"><i class="fas fa-key"></i> Update PIN</button>
+            </div>
+
+            <div class="settings-item" style="grid-column: span 2; margin-top: 10px; border-top: 1px solid var(--border-color); padding-top: 15px;">
+                <label style="text-align: center; color: var(--info); margin-bottom: 5px;">Currently Logged In</label>
+                <div style="text-align: center; font-weight: 600; font-size: 16px; margin-bottom: 15px; color: var(--text-main);">
+                    <i class="fas fa-user-circle"></i> <span id="userEmailDisplay">Loading...</span>
+                </div>
+                
+                <button class="btn-style btn-danger btn-settings" onclick="handleLogout()" style="background-color: rgba(232, 65, 24, 0.1); color: var(--danger); border: 1px solid var(--danger); justify-content: center;">
+                    <i class="fas fa-sign-out-alt"></i> Logout / Switch Account
+                </button>
+            </div>
+
+            <div class="settings-item" style="grid-column: span 2;">
+                <label>Data Management (Local Backup)</label>
+                <button class="btn-style btn-primary btn-settings" onclick="secureAction(exportData)"><i class="fas fa-download"></i> Export JSON Data</button>
+                <button class="btn-style btn-warning btn-settings" onclick="secureAction(() => document.getElementById('importFile').click())"><i class="fas fa-upload"></i> Import JSON Data</button>
+                <input type="file" id="importFile" accept=".json" style="display: none;" onchange="importData(event)">
+                <button class="btn-style btn-danger btn-settings" onclick="secureAction(resetApp)"><i class="fas fa-trash"></i> Reset All Data</button>
             </div>
         </div>
     </div>
 
+    <div class="card">
+        <h2 style="font-size: 20px; margin-top: 0; color: var(--primary);"><i class="fas fa-tags"></i> Custom Categories</h2>
+        <p style="font-size: 13px; color: var(--text-muted);">Define categories for clear tracking.</p>
+        <div id="categoryListDisplay" style="margin-bottom: 10px; font-size: 14px;"></div>
+        <input type="text" id="newCategoryName" placeholder="New Category Name">
+        <button class="btn-style btn-success btn-block" style="margin-top: 10px;" onclick="addCategory()"><i class="fas fa-plus"></i> Add New Category</button>
+    </div>
+</div>
+
     <script>
-        const DB_NAME = 'ProFinanceDB', DB_VERSION = 1, STORE_TX = 'transactions', STORE_CATS = 'categories', STORE_PIN = 'appSettings';
-        const DEFAULT_CATEGORIES = ['Class', 'Shows', 'Others'], DEFAULT_PIN = '1234';
-        const INCOME_COLORS = ['#00B894', '#007ACC', '#5DADE2', '#3498DB', '#1ABC9C', '#2ECC71', '#48C9B0', '#76D7C4'];
-        const EXPENSE_COLORS = ['#E84118', '#FF7F50', '#F39C12', '#C0392B', '#E74C3C', '#E67E22', '#D35400', '#F9E79F'];
-        let db, transactions = [], categories = DEFAULT_CATEGORIES;
-        let expenseChartInstance = null, incomeChartInstance = null;
-        let balChart = null, incChart = null, expChart = null;
-        let dbInitialized = false;
-        let editingTransactionId = null;
+    // --- 1. FIREBASE CONFIGURATION ---
+    const firebaseConfig = {
+        apiKey: "AIzaSyB7NPqzXP7mNA0ZttVarX1vCS-mOSjtkGg",
+        authDomain: "pro-finance-management-system.firebaseapp.com",
+        projectId: "pro-finance-management-system",
+        storageBucket: "pro-finance-management-system.firebasestorage.app",
+        messagingSenderId: "114544686552",
+        appId: "1:114544686552:web:59911cddf0896ff60feead"
+    };
 
-        function openDB() {
-            return new Promise((resolve, reject) => {
-                const request = indexedDB.open(DB_NAME, DB_VERSION);
-                request.onupgradeneeded = (event) => {
-                    db = event.target.result;
-                    if (!db.objectStoreNames.contains(STORE_TX)) db.createObjectStore(STORE_TX, { keyPath: 'id' });
-                    if (!db.objectStoreNames.contains(STORE_CATS)) db.createObjectStore(STORE_CATS, { keyPath: 'name' });
-                    if (!db.objectStoreNames.contains(STORE_PIN)) db.createObjectStore(STORE_PIN, { keyPath: 'key' });
-                };
-                request.onsuccess = (event) => { db = event.target.result; dbInitialized = true; resolve(db); };
-                request.onerror = (event) => { reject('Database error: ' + event.target.errorCode); };
-            });
+    // Initialize Firebase
+    firebase.initializeApp(firebaseConfig);
+    const auth = firebase.auth();
+    const firestore = firebase.firestore();
+
+    // Enable Offline Persistence (Data will load even without internet)
+    firestore.enablePersistence().catch(err => {
+        if (err.code == 'failed-precondition') {
+            console.log('Multiple tabs open, persistence disabled.');
+        } else if (err.code == 'unimplemented') {
+            console.log('Browser does not support offline persistence.');
         }
-        function dbStoreAction(storeName, mode, callback) {
-            return new Promise((resolve, reject) => {
-                if (!dbInitialized || !db) { reject("DB not initialized."); return; }
-                const transaction = db.transaction([storeName], mode);
-                const store = transaction.objectStore(storeName);
-                transaction.oncomplete = () => resolve();
-                transaction.onerror = () => reject(transaction.error);
-                callback(store, resolve, reject);
-            });
-        }
-        function dbGetAll(storeName) { return new Promise((res, rej) => dbStoreAction(storeName, 'readonly', (s) => { const r = s.getAll(); r.onsuccess = () => res(r.result); r.onerror = () => rej(r.error); }).catch(rej)); }
-        function dbSet(storeName, value) { return dbStoreAction(storeName, 'readwrite', (s) => s.put(value)); }
-        function dbDelete(storeName, key) { return dbStoreAction(storeName, 'readwrite', (s) => s.delete(key)); }
-        function dbGet(storeName, key) { return new Promise((res, rej) => dbStoreAction(storeName, 'readonly', (s) => { const r = s.get(key); r.onsuccess = (e) => res(e.target.result); r.onerror = () => rej(r.error); }).catch(rej)); }
+    });
 
-        let pendingAction = null, pinInput = "";
-        function updatePinDots() { document.querySelectorAll('.pin-dot').forEach((d, i) => d.classList.toggle('filled', i < pinInput.length)); }
-        function pressPin(k) { if (k === 'C') pinInput = ""; else if (pinInput.length < 4) pinInput += k; updatePinDots(); }
-        async function getAppPin() { try { await openDB(); const pinRecord = await dbGet(STORE_PIN, 'pin'); return pinRecord ? pinRecord.value : DEFAULT_PIN; } catch (error) { return DEFAULT_PIN; } }
-        async function submitPin() {
-            if (pinInput.length !== 4) { Swal.fire('Error', 'PIN must be 4 digits.', 'error'); return; }
-            try {
-                const currentPin = await getAppPin();
-                if (pinInput === currentPin) {
-                    document.getElementById('securityOverlay').style.display = 'none';
-                    document.getElementById('closePinScreen').style.display = 'none';
-                    if (pendingAction) { pendingAction(); pendingAction = null; }
-                    else if (document.getElementById('mainAppContent').style.display === 'none') initApp();
-                } else { Swal.fire('Error', 'Incorrect PIN', 'error'); }
-            } catch (e) { Swal.fire('Error', 'Database access failed. Please restart app.', 'error'); }
-            pinInput = ""; updatePinDots();
-        }
-        function closePinScreen() { document.getElementById('securityOverlay').style.display = 'none'; pinInput = ""; updatePinDots(); pendingAction = null; }
-        async function secureAction(cb) { pendingAction = cb; pinInput = ""; updatePinDots(); await openDB(); document.getElementById('closePinScreen').style.display = 'block'; document.getElementById('securityOverlay').style.display = 'flex'; }
+    // --- 2. LOCAL DATABASE CONSTANTS ---
+    const DB_NAME = 'ProFinanceDB', DB_VERSION = 1, STORE_TX = 'transactions', STORE_CATS = 'categories', STORE_PIN = 'appSettings';
+    const DEFAULT_CATEGORIES = ['Class', 'Shows', 'Others'], DEFAULT_PIN = '1234';
+    const INCOME_COLORS = ['#00B894', '#007ACC', '#5DADE2', '#3498DB', '#1ABC9C', '#2ECC71', '#48C9B0', '#76D7C4'];
+    const EXPENSE_COLORS = ['#E84118', '#FF7F50', '#F39C12', '#C0392B', '#E74C3C', '#E67E22', '#D35400', '#F9E79F'];
+    
+    // Global Variables
+    let db, transactions = [], categories = DEFAULT_CATEGORIES;
+    let expenseChartInstance = null, incomeChartInstance = null;
+    let balChart = null, incChart = null, expChart = null;
+    let dbInitialized = false;
+    let editingTransactionId = null;
+    let currentUser = null; 
 
-        const formatCurrency = (amt) => new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR' }).format(amt || 0);
-        const formatSimple = (amt) => new Intl.NumberFormat('en-IN', { minimumFractionDigits: 2 }).format(amt || 0);
-        const getYM = (d) => d.substring(0, 7);
-        const getY = (d) => d.substring(0, 4);
-        
-        function setDateTimeLocalNow() {
-            const now = new Date();
-            now.setMinutes(now.getMinutes() - now.getTimezoneOffset());
-            document.getElementById('date').value = now.toISOString().slice(0, 16);
-        }
-
-        async function loadFromDB() {
-            await openDB();
-            transactions = await dbGetAll(STORE_TX) || [];
-            const savedCats = await dbGetAll(STORE_CATS);
-            categories = (savedCats && savedCats.length) ? savedCats.map(c => c.name) : DEFAULT_CATEGORIES;
-            if (!savedCats || !savedCats.length) { const catPromises = DEFAULT_CATEGORIES.map(c => dbSet(STORE_CATS, { name: c })); await Promise.all(catPromises); }
-            const pin = await dbGet(STORE_PIN, 'pin');
-            if (!pin) await dbSet(STORE_PIN, { key: 'pin', value: DEFAULT_PIN });
-        }
-
-        function openTab(name, btn) {
-            document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
-            document.querySelectorAll('.tab-button').forEach(b => b.classList.remove('active'));
-            document.getElementById(name).classList.add('active');
-            btn.classList.add('active');
-            if (name === 'dashboard') { populateChartFilters(); renderIncomeChart(); renderExpenseChart(); }
-            else if (name === 'history') { populateChartFilters(); renderTransactions(); }
-            else if (name === 'settings') renderCategoryList();
-            else if (name === 'analysis') { populateAnalysisYear(); requestAnimationFrame(() => { requestAnimationFrame(() => { renderAllAnalysisCharts(); }); }); }
-            updateSummary();
-        }
-
-        function updateSummary() {
-            const now = new Date();
-            const curM = getYM(now.toISOString());
-            const curY = now.getFullYear().toString();
-            const todayStr = now.toISOString().split('T')[0]; // YYYY-MM-DD
-            const prevY = (now.getFullYear() - 1).toString();
-            const activeTab = document.querySelector('.tab-content.active')?.id;
-            
-            // Vars for calculation
-            let mInc=0, mExp=0, yInc=0, yExp=0, lInc=0, lExp=0, pYInc=0, pYExp=0, fInc=0, fExp=0;
-            let dInc=0, dExp=0; // Today
-
-            const filterVal = document.getElementById('monthFilter')?.value || curM;
-
-            transactions.forEach(t => {
-                const ym = getYM(t.date), y = getY(t.date);
-                const tDateStr = t.date.split('T')[0];
-
-                if (t.type === 'income') { 
-                    lInc += t.amount; 
-                    if (y === curY) yInc += t.amount; 
-                    if (y === prevY) pYInc += t.amount; 
-                    if (ym === curM) mInc += t.amount; 
-                    if (tDateStr === todayStr) dInc += t.amount;
-                } else { 
-                    lExp += t.amount; 
-                    if (y === curY) yExp += t.amount; 
-                    if (y === prevY) pYExp += t.amount; 
-                    if (ym === curM) mExp += t.amount; 
-                    if (tDateStr === todayStr) dExp += t.amount;
-                }
-
-                // For history filtering
-                let include = false;
-                if (filterVal === 'lifetime') include = true;
-                else if (filterVal === 'current_year') include = (y === curY);
-                else if (filterVal.length === 4) include = (y === filterVal);
-                else include = (ym === filterVal);
-                if (include) { if(t.type==='income') fInc+=t.amount; else fExp+=t.amount; }
-            });
-
-            // Update Dashboard DOM
-            document.getElementById('yearlyIncome').textContent = formatCurrency(yInc);
-            document.getElementById('yearlyExpense').textContent = formatCurrency(yExp);
-            document.getElementById('monthlyIncome').textContent = formatCurrency(mInc);
-            document.getElementById('monthlyExpense').textContent = formatCurrency(mExp);
-            
-            // New Dashboard Elements
-            document.getElementById('todayIncome').textContent = formatCurrency(dInc);
-            document.getElementById('todayExpense').textContent = formatCurrency(dExp);
-            
-            const todayBal = dInc - dExp;
-            const monthBal = mInc - mExp;
-            const yearBal = yInc - yExp;
-
-            document.getElementById('todayBalance').textContent = formatCurrency(todayBal);
-            document.getElementById('todayBalance').className = todayBal >= 0 ? 'positive' : 'negative';
-            if(todayBal === 0) document.getElementById('todayBalance').className = '';
-
-            document.getElementById('monthlyBalance').textContent = formatCurrency(monthBal);
-            document.getElementById('monthlyBalance').className = monthBal >= 0 ? 'positive' : 'negative';
-            if(monthBal === 0) document.getElementById('monthlyBalance').className = '';
-
-            document.getElementById('yearlyBalance').textContent = formatCurrency(yearBal);
-            document.getElementById('yearlyBalance').className = yearBal >= 0 ? 'positive' : 'negative';
-            if(yearBal === 0) document.getElementById('yearlyBalance').className = '';
-
-            // Header Balance Logic
-            let bal = lInc - lExp, title = 'Total Net Balance (Lifetime)';
-            if (activeTab === 'settings') { bal = pYInc - pYExp; title = `Net Balance (Year ${prevY})`; }
-            else if (activeTab === 'addTransaction') { bal = yInc - yExp; title = 'Net Balance (Current Year)'; }
-            else if (activeTab === 'history') { bal = fInc - fExp; title = 'Net Balance (Selected Period)'; }
-            else if (activeTab === 'analysis') {
-                const selectedYear = document.getElementById('analysisYearFilter').value;
-                if(selectedYear) {
-                    let ayInc = 0, ayExp = 0;
-                    transactions.forEach(t => { if(getY(t.date) === selectedYear) { if(t.type === 'income') ayInc += t.amount; else ayExp += t.amount; } });
-                    bal = ayInc - ayExp; title = `Net Balance (${selectedYear})`;
-                } else { bal = lInc - lExp; title = 'Net Balance (Lifetime)'; }
-            }
-            const balEl = document.getElementById('currentBalance');
-            balEl.textContent = formatCurrency(bal);
-            document.getElementById('balanceTitle').textContent = title;
-            balEl.className = `balance ${bal > 0 ? 'positive' : (bal < 0 ? 'negative' : 'zero')}`;
-        }
-
-        function populateChartFilters() {
-            const cur = new Date(), curM = getYM(cur.toISOString()), curY = cur.getFullYear().toString();
-            const periods = new Set([curY, curM]);
-            transactions.forEach(t => { periods.add(getY(t.date)); periods.add(getYM(t.date)); });
-            const arr = Array.from(periods).sort().reverse();
-            
-            ['incomeChartFilter', 'expenseChartFilter'].forEach(id => {
-                const sel = document.getElementById(id); sel.innerHTML = '';
-                arr.forEach(p => sel.add(new Option(p.length===4 ? `Year ${p}` : new Date(p+"-01").toLocaleDateString('en-IN',{month:'long',year:'numeric'}), p)));
-                const saved = localStorage.getItem('pref_' + id);
-                sel.value = (saved && [...sel.options].some(o => o.value === saved)) ? saved : curM;
-                sel.onchange = function() {
-                    localStorage.setItem('pref_' + id, this.value);
-                    if(id === 'incomeChartFilter') renderIncomeChart(); else renderExpenseChart();
-                };
-            });
-
-            const hist = document.getElementById('monthFilter'); hist.innerHTML = '';
-            hist.add(new Option('--- VIEW TRANSACTIONS ---', ''));
-            hist.add(new Option('All Transactions (Lifetime)', 'lifetime'));
-            hist.add(new Option('All Months (Current Year)', 'current_year'));
-            arr.forEach(p => hist.add(new Option(p.length===4 ? `Year ${p} Total` : new Date(p+"-01").toLocaleDateString('en-IN',{month:'long',year:'numeric'}), p)));
-            
-            const savedHist = localStorage.getItem('pref_monthFilter');
-            hist.value = (savedHist && [...hist.options].some(o => o.value === savedHist)) ? savedHist : curM;
-            
-            hist.onchange = function() {
-                localStorage.setItem('pref_monthFilter', this.value);
-                renderTransactions();
+    // --- 3. DATABASE FUNCTIONS (INDEXEDDB) ---
+    function openDB() {
+        return new Promise((resolve, reject) => {
+            const request = indexedDB.open(DB_NAME, DB_VERSION);
+            request.onupgradeneeded = (event) => {
+                db = event.target.result;
+                if (!db.objectStoreNames.contains(STORE_TX)) db.createObjectStore(STORE_TX, { keyPath: 'id' });
+                if (!db.objectStoreNames.contains(STORE_CATS)) db.createObjectStore(STORE_CATS, { keyPath: 'name' });
+                if (!db.objectStoreNames.contains(STORE_PIN)) db.createObjectStore(STORE_PIN, { keyPath: 'key' });
             };
-        }
+            request.onsuccess = (event) => { db = event.target.result; dbInitialized = true; resolve(db); };
+            request.onerror = (event) => { reject('Database error: ' + event.target.errorCode); };
+        });
+    }
 
-        Chart.register({
-            id: 'centerText',
-            beforeDraw: (chart) => {
-                if (chart.config.options.elements?.center) {
-                    const ctx = chart.ctx, { width, height } = chart;
-                    ctx.save();
-                    ctx.font = '700 24px Poppins'; ctx.fillStyle = chart.config.options.elements.center.color; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
-                    ctx.fillText(chart.config.options.elements.center.text, width/2, height/2 - 10);
-                    ctx.font = '500 12px Poppins'; ctx.fillStyle = '#666';
-                    ctx.fillText(chart.config.options.elements.center.label, width/2, height/2 + 15);
-                    ctx.restore();
+    function dbStoreAction(storeName, mode, callback) {
+        return new Promise((resolve, reject) => {
+            if (!dbInitialized || !db) { reject("DB not initialized."); return; }
+            const transaction = db.transaction([storeName], mode);
+            const store = transaction.objectStore(storeName);
+            transaction.oncomplete = () => resolve();
+            transaction.onerror = () => reject(transaction.error);
+            callback(store, resolve, reject);
+        });
+    }
+    
+    function dbGetAll(storeName) { return new Promise((res, rej) => dbStoreAction(storeName, 'readonly', (s) => { const r = s.getAll(); r.onsuccess = () => res(r.result); r.onerror = () => rej(r.error); }).catch(rej)); }
+    function dbSet(storeName, value) { return dbStoreAction(storeName, 'readwrite', (s) => s.put(value)); }
+    function dbDelete(storeName, key) { return dbStoreAction(storeName, 'readwrite', (s) => s.delete(key)); }
+    function dbGet(storeName, key) { return new Promise((res, rej) => dbStoreAction(storeName, 'readonly', (s) => { const r = s.get(key); r.onsuccess = (e) => res(e.target.result); r.onerror = () => rej(r.error); }).catch(rej)); }
+
+    // --- 4. AUTHENTICATION LOGIC ---
+    function toggleAuthMode(mode) {
+        const loginDiv = document.getElementById('authForms');
+        const signupDiv = document.getElementById('signupFormDiv');
+        const msg = document.getElementById('authMessage');
+        msg.textContent = '';
+        if(mode === 'signup') {
+            loginDiv.style.display = 'none';
+            signupDiv.style.display = 'block';
+        } else {
+            loginDiv.style.display = 'block';
+            signupDiv.style.display = 'none';
+        }
+    }
+
+    async function handleLogin(e) {
+        e.preventDefault();
+        const email = document.getElementById('loginEmail').value;
+        const pass = document.getElementById('loginPass').value;
+        const msg = document.getElementById('authMessage');
+        msg.textContent = 'Authenticating...';
+        
+        try {
+            // Persistence is LOCAL by default, so it remembers user offline
+            await auth.setPersistence(firebase.auth.Auth.Persistence.LOCAL);
+            await auth.signInWithEmailAndPassword(email, pass);
+        } catch (error) {
+            msg.textContent = "Error: " + error.message;
+        }
+    }
+
+    async function handleSignup(e) {
+        e.preventDefault();
+        const email = document.getElementById('signupEmail').value;
+        const pass = document.getElementById('signupPass').value;
+        const msg = document.getElementById('authMessage');
+        msg.textContent = 'Creating Account...';
+
+        try {
+            await auth.createUserWithEmailAndPassword(email, pass);
+        } catch (error) {
+            msg.textContent = "Error: " + error.message;
+        }
+    }
+
+    async function handleLogout() {
+        Swal.fire({ 
+            title: 'Logout?', 
+            text: 'You will need internet to login again.', 
+            icon: 'warning', 
+            showCancelButton: true,
+            confirmButtonColor: '#d63031',
+            confirmButtonText: 'Yes, Logout'
+        }).then(async r => {
+            if (r.isConfirmed) {
+                await auth.signOut();
+                window.location.reload();
+            }
+        });
+    }
+
+    // --- 5. SYNC LOGIC ---
+    async function syncDataWithFirestore() {
+        if(!currentUser) return;
+
+        // Sync Categories
+        const userDocRef = firestore.collection('users').doc(currentUser.uid);
+        try {
+            // Try to get from server/cache
+            const userDoc = await userDocRef.get();
+            if(userDoc.exists) {
+                const data = userDoc.data();
+                if(data.categories) {
+                    categories = data.categories; 
+                    await dbStoreAction(STORE_CATS, 'readwrite', s => s.clear());
+                    for(const c of categories) await dbSet(STORE_CATS, {name: c});
                 }
+            } else if(navigator.onLine) {
+                // If new user and online, save defaults
+                await userDocRef.set({ email: currentUser.email, categories: categories }, { merge: true });
+            }
+        } catch(e) { console.log("Offline mode: Using local categories"); }
+
+        // Sync Transactions (Snapshot listener works offline too!)
+        userDocRef.collection('transactions').onSnapshot(async (snapshot) => {
+            if(snapshot.metadata.hasPendingWrites) return; // Ignore local writes to prevent loops
+            
+            let changes = false;
+            snapshot.docChanges().forEach(async (change) => {
+                const txData = change.doc.data();
+                const txId = parseInt(change.doc.id); 
+                
+                if (change.type === "added" || change.type === "modified") {
+                    const newTx = { ...txData, id: txId };
+                    await dbSet(STORE_TX, newTx);
+                    
+                    // Update Memory array
+                    const idx = transactions.findIndex(t => t.id === txId);
+                    if(idx > -1) transactions[idx] = newTx;
+                    else transactions.push(newTx);
+                    changes = true;
+                }
+                if (change.type === "removed") {
+                    await dbDelete(STORE_TX, txId);
+                    transactions = transactions.filter(t => t.id !== txId);
+                    changes = true;
+                }
+            });
+
+            // If changes detected and we have UI rendered
+            if(changes && document.getElementById('mainAppContent').style.display === 'block') {
+               refreshUI();
+            }
+        });
+    }
+
+    function refreshUI() {
+        updateSummary();
+        if(document.getElementById('history').classList.contains('active')) renderTransactions();
+        if(document.getElementById('dashboard').classList.contains('active')) {
+            renderIncomeChart(); renderExpenseChart();
+        }
+    }
+
+    async function saveToFirestore(tx) {
+        if(!currentUser) return;
+        try {
+            await firestore.collection('users').doc(currentUser.uid).collection('transactions').doc(String(tx.id)).set(tx);
+        } catch (e) { console.log("Saved locally. Will sync when online."); }
+    }
+
+    async function deleteFromFirestore(id) {
+        if(!currentUser) return;
+        try {
+            await firestore.collection('users').doc(currentUser.uid).collection('transactions').doc(String(id)).delete();
+        } catch (e) { console.log("Deleted locally. Will sync when online."); }
+    }
+
+    async function saveCategoriesToFirestore() {
+        if(!currentUser) return;
+        try {
+            await firestore.collection('users').doc(currentUser.uid).set({ categories: categories }, { merge: true });
+        } catch(e) { console.log("Category saved locally."); }
+    }
+
+    // --- 6. PIN & UI LOGIC ---
+    let pendingAction = null, pinInput = "";
+    function updatePinDots() { document.querySelectorAll('.pin-dot').forEach((d, i) => d.classList.toggle('filled', i < pinInput.length)); }
+    function pressPin(k) { if (k === 'C') pinInput = ""; else if (pinInput.length < 4) pinInput += k; updatePinDots(); }
+    
+    async function getAppPin() { 
+        try { await openDB(); const pinRecord = await dbGet(STORE_PIN, 'pin'); return pinRecord ? pinRecord.value : DEFAULT_PIN; } catch (error) { return DEFAULT_PIN; } 
+    }
+    
+    async function submitPin() {
+        if (pinInput.length !== 4) { Swal.fire('Error', 'PIN must be 4 digits.', 'error'); return; }
+        try {
+            const currentPin = await getAppPin();
+            if (pinInput === currentPin) {
+                document.getElementById('securityOverlay').style.display = 'none';
+                document.getElementById('closePinScreen').style.display = 'none';
+                if (pendingAction) { pendingAction(); pendingAction = null; }
+                else if (document.getElementById('mainAppContent').style.display === 'none') {
+                    initAppUI();
+                }
+            } else { Swal.fire('Error', 'Incorrect PIN', 'error'); }
+        } catch (e) { Swal.fire('Error', 'Database access failed.', 'error'); }
+        pinInput = ""; updatePinDots();
+    }
+    
+    function closePinScreen() { document.getElementById('securityOverlay').style.display = 'none'; pinInput = ""; updatePinDots(); pendingAction = null; }
+    async function secureAction(cb) { pendingAction = cb; pinInput = ""; updatePinDots(); await openDB(); document.getElementById('closePinScreen').style.display = 'block'; document.getElementById('securityOverlay').style.display = 'flex'; }
+
+    // --- 7. UTILITIES ---
+    const formatCurrency = (amt) => new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR' }).format(amt || 0);
+    const getYM = (d) => d.substring(0, 7);
+    const getY = (d) => d.substring(0, 4);
+    
+    function setDateTimeLocalNow() {
+        const now = new Date();
+        now.setMinutes(now.getMinutes() - now.getTimezoneOffset());
+        document.getElementById('date').value = now.toISOString().slice(0, 16);
+    }
+
+    // --- 8. CORE APP FUNCTIONS ---
+    async function loadLocalData() {
+        await openDB();
+        transactions = await dbGetAll(STORE_TX) || [];
+        const savedCats = await dbGetAll(STORE_CATS);
+        categories = (savedCats && savedCats.length) ? savedCats.map(c => c.name) : DEFAULT_CATEGORIES;
+        if (!savedCats || !savedCats.length) { const catPromises = DEFAULT_CATEGORIES.map(c => dbSet(STORE_CATS, { name: c })); await Promise.all(catPromises); }
+        const pin = await dbGet(STORE_PIN, 'pin');
+        if (!pin) await dbSet(STORE_PIN, { key: 'pin', value: DEFAULT_PIN });
+    }
+
+    function openTab(name, btn) {
+        document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+        document.querySelectorAll('.tab-button').forEach(b => b.classList.remove('active'));
+        document.getElementById(name).classList.add('active');
+        btn.classList.add('active');
+        if (name === 'dashboard') { populateChartFilters(); renderIncomeChart(); renderExpenseChart(); }
+        else if (name === 'history') { populateChartFilters(); renderTransactions(); }
+        else if (name === 'settings') { renderCategoryList(); updateEmailDisplay(); }
+        else if (name === 'analysis') { populateAnalysisYear(); requestAnimationFrame(() => { requestAnimationFrame(() => { renderAllAnalysisCharts(); }); }); }
+        updateSummary();
+    }
+
+    function updateEmailDisplay() {
+        const disp = document.getElementById('userEmailDisplay');
+        if(disp && currentUser) disp.textContent = currentUser.email;
+        else if(disp) disp.textContent = 'Offline User';
+    }
+
+    function updateSummary() {
+        const now = new Date();
+        const curM = getYM(now.toISOString());
+        const curY = now.getFullYear().toString();
+        const todayStr = now.toISOString().split('T')[0];
+        const prevY = (now.getFullYear() - 1).toString();
+        const activeTab = document.querySelector('.tab-content.active')?.id;
+        
+        let mInc=0, mExp=0, yInc=0, yExp=0, lInc=0, lExp=0, pYInc=0, pYExp=0, fInc=0, fExp=0, dInc=0, dExp=0;
+        const filterVal = document.getElementById('monthFilter')?.value || curM;
+
+        transactions.forEach(t => {
+            const ym = getYM(t.date), y = getY(t.date), tDateStr = t.date.split('T')[0];
+            if (t.type === 'income') { 
+                lInc += t.amount; 
+                if (y === curY) yInc += t.amount; 
+                if (y === prevY) pYInc += t.amount; 
+                if (ym === curM) mInc += t.amount; 
+                if (tDateStr === todayStr) dInc += t.amount;
+            } else { 
+                lExp += t.amount; 
+                if (y === curY) yExp += t.amount; 
+                if (y === prevY) pYExp += t.amount; 
+                if (ym === curM) mExp += t.amount; 
+                if (tDateStr === todayStr) dExp += t.amount;
+            }
+            let include = false;
+            if (filterVal === 'lifetime') include = true;
+            else if (filterVal === 'current_year') include = (y === curY);
+            else if (filterVal.length === 4) include = (y === filterVal);
+            else include = (ym === filterVal);
+            if (include) { if(t.type==='income') fInc+=t.amount; else fExp+=t.amount; }
+        });
+
+        document.getElementById('yearlyIncome').textContent = formatCurrency(yInc);
+        document.getElementById('yearlyExpense').textContent = formatCurrency(yExp);
+        document.getElementById('monthlyIncome').textContent = formatCurrency(mInc);
+        document.getElementById('monthlyExpense').textContent = formatCurrency(mExp);
+        document.getElementById('todayIncome').textContent = formatCurrency(dInc);
+        document.getElementById('todayExpense').textContent = formatCurrency(dExp);
+        
+        const todayBal = dInc - dExp; document.getElementById('todayBalance').textContent = formatCurrency(todayBal); document.getElementById('todayBalance').className = todayBal > 0 ? 'positive' : (todayBal < 0 ? 'negative' : '');
+        const monthBal = mInc - mExp; document.getElementById('monthlyBalance').textContent = formatCurrency(monthBal); document.getElementById('monthlyBalance').className = monthBal > 0 ? 'positive' : (monthBal < 0 ? 'negative' : '');
+        const yearBal = yInc - yExp; document.getElementById('yearlyBalance').textContent = formatCurrency(yearBal); document.getElementById('yearlyBalance').className = yearBal > 0 ? 'positive' : (yearBal < 0 ? 'negative' : '');
+
+        let bal = lInc - lExp, title = 'Total Net Balance (Lifetime)';
+        if (activeTab === 'settings') { bal = pYInc - pYExp; title = `Net Balance (Year ${prevY})`; }
+        else if (activeTab === 'addTransaction') { bal = yInc - yExp; title = 'Net Balance (Current Year)'; }
+        else if (activeTab === 'history') { bal = fInc - fExp; title = 'Net Balance (Selected Period)'; }
+        else if (activeTab === 'analysis') {
+            const selectedYear = document.getElementById('analysisYearFilter').value;
+            if(selectedYear) {
+                let ayInc = 0, ayExp = 0;
+                transactions.forEach(t => { if(getY(t.date) === selectedYear) { if(t.type === 'income') ayInc += t.amount; else ayExp += t.amount; } });
+                bal = ayInc - ayExp; title = `Net Balance (${selectedYear})`;
+            }
+        }
+        const balEl = document.getElementById('currentBalance');
+        balEl.textContent = formatCurrency(bal);
+        document.getElementById('balanceTitle').textContent = title;
+        balEl.className = `balance ${bal > 0 ? 'positive' : (bal < 0 ? 'negative' : 'zero')}`;
+    }
+
+    function populateChartFilters() {
+        const cur = new Date(), curM = getYM(cur.toISOString()), curY = cur.getFullYear().toString();
+        const periods = new Set([curY, curM]);
+        transactions.forEach(t => { periods.add(getY(t.date)); periods.add(getYM(t.date)); });
+        const arr = Array.from(periods).sort().reverse();
+        ['incomeChartFilter', 'expenseChartFilter'].forEach(id => {
+            const sel = document.getElementById(id); sel.innerHTML = '';
+            arr.forEach(p => sel.add(new Option(p.length===4 ? `Year ${p}` : new Date(p+"-01").toLocaleDateString('en-IN',{month:'long',year:'numeric'}), p)));
+            const saved = localStorage.getItem('pref_' + id);
+            sel.value = (saved && [...sel.options].some(o => o.value === saved)) ? saved : curM;
+            sel.onchange = function() { localStorage.setItem('pref_' + id, this.value); if(id === 'incomeChartFilter') renderIncomeChart(); else renderExpenseChart(); };
+        });
+        const hist = document.getElementById('monthFilter'); hist.innerHTML = '';
+        hist.add(new Option('--- VIEW TRANSACTIONS ---', ''));
+        hist.add(new Option('All Transactions (Lifetime)', 'lifetime'));
+        hist.add(new Option('All Months (Current Year)', 'current_year'));
+        arr.forEach(p => hist.add(new Option(p.length===4 ? `Year ${p} Total` : new Date(p+"-01").toLocaleDateString('en-IN',{month:'long',year:'numeric'}), p)));
+        const savedHist = localStorage.getItem('pref_monthFilter');
+        hist.value = (savedHist && [...hist.options].some(o => o.value === savedHist)) ? savedHist : curM;
+        hist.onchange = function() { localStorage.setItem('pref_monthFilter', this.value); renderTransactions(); };
+    }
+
+    // Chart.js Configuration
+    Chart.register({
+        id: 'centerText',
+        beforeDraw: (chart) => {
+            if (chart.config.options.elements?.center) {
+                const ctx = chart.ctx, { width, height } = chart;
+                ctx.save();
+                ctx.font = '700 24px Poppins'; ctx.fillStyle = chart.config.options.elements.center.color; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+                ctx.fillText(chart.config.options.elements.center.text, width/2, height/2 - 10);
+                ctx.font = '500 12px Poppins'; ctx.fillStyle = '#666';
+                ctx.fillText(chart.config.options.elements.center.label, width/2, height/2 + 15);
+                ctx.restore();
+            }
+        }
+    });
+
+    function renderChart(type, canvasId, filterId) {
+        const filter = document.getElementById(filterId).value;
+        const isY = filter.length === 4;
+        const dataMap = {};
+        transactions.filter(t => t.type === type && (isY ? getY(t.date) === filter : getYM(t.date) === filter)).forEach(t => { dataMap[t.category || 'Others'] = (dataMap[t.category || 'Others'] || 0) + t.amount; });
+        const labels = Object.keys(dataMap), data = Object.values(dataMap);
+        const total = data.reduce((a, b) => a + b, 0);
+        
+        const legendContainer = document.getElementById(type === 'income' ? 'incomeLegend' : 'expenseLegend');
+        const colors = type === 'income' ? INCOME_COLORS : EXPENSE_COLORS; 
+        
+        let legendHTML = '';
+        if (total === 0) legendHTML = '<p style="text-align:center;color:#ccc;font-size:12px;">No data</p>';
+        else {
+            labels.forEach((label, i) => {
+                const pct = Math.round(data[i]/total*100);
+                const color = colors[i % colors.length];
+                legendHTML += `<div class="legend-item" style="cursor: pointer;" onclick="showCategoryHistory('${label}', '${type}', '${filter}')"><div class="legend-label"><div class="legend-color" style="background:${color}"></div><span>${label} (${pct}%)</span></div><span style="font-weight:600">${formatCurrency(data[i])}</span></div>`;
+            });
+        }
+        legendContainer.innerHTML = legendHTML;
+
+        const ctx = document.getElementById(canvasId).getContext('2d');
+        const instance = type === 'expense' ? expenseChartInstance : incomeChartInstance;
+        if (instance) instance.destroy();
+        
+        if (total === 0) { ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height); return; }
+
+        const newChart = new Chart(ctx, {
+            type: 'doughnut',
+            data: { labels: labels, datasets: [{ data: data, backgroundColor: colors }] },
+            options: {
+                responsive: true, maintainAspectRatio: false, cutout: '70%',
+                plugins: { legend: { display: false }, tooltip: { enabled: true } },
+                elements: { center: { text: formatCurrency(total), label: `Total ${type}`, color: type==='income'?'#00B894':'#E84118' } },
+                onClick: (e, elements) => { if (elements.length > 0) showCategoryHistory(labels[elements[0].index], type, filter); }
+            }
+        });
+        if (type === 'expense') expenseChartInstance = newChart; else incomeChartInstance = newChart;
+    }
+    function renderIncomeChart() { renderChart('income', 'incomeChart', 'incomeChartFilter'); }
+    function renderExpenseChart() { renderChart('expense', 'expenseChart', 'expenseChartFilter'); }
+
+    function showCategoryHistory(category, type, filterPeriod) {
+        const isY = filterPeriod.length === 4;
+        const filtered = transactions.filter(t => t.type === type && t.category === category && (isY ? getY(t.date) === filterPeriod : getYM(t.date) === filterPeriod)).sort((a,b) => new Date(b.date) - new Date(a.date));
+        showTransactionsModal(`${category} - ${type.toUpperCase()}`, filtered);
+    }
+    
+    function showSummaryDetails(scope, type) {
+        const now = new Date();
+        const curY = now.getFullYear().toString(), curM = getYM(now.toISOString()), todayStr = now.toISOString().split('T')[0];
+        const filtered = transactions.filter(t => {
+            const ym = getYM(t.date), y = getY(t.date), tDateStr = t.date.split('T')[0];
+            let scopeMatch = false;
+            if (scope === 'yearly') scopeMatch = (y === curY);
+            else if (scope === 'monthly') scopeMatch = (ym === curM);
+            else if (scope === 'today') scopeMatch = (tDateStr === todayStr);
+            let typeMatch = true;
+            if (type !== 'all') typeMatch = (t.type === type);
+            return scopeMatch && typeMatch;
+        }).sort((a,b) => new Date(b.date) - new Date(a.date));
+        let title = scope.charAt(0).toUpperCase() + scope.slice(1);
+        if(type !== 'all') title += ` ${type.charAt(0).toUpperCase() + type.slice(1)}`; else title += " Transactions";
+        showTransactionsModal(title, filtered);
+    }
+
+    function showTransactionsModal(title, list) {
+        let htmlContent = '<ul class="swal-list">';
+        if (list.length === 0) htmlContent += '<li style="text-align:center;">No transactions found.</li>';
+        else {
+            list.forEach(t => {
+                const dateStr = new Date(t.date).toLocaleString('en-IN', { dateStyle: 'medium', timeStyle: 'short' });
+                htmlContent += `<li><span class="swal-amt" style="color: ${t.type==='income'?'var(--primary)':'var(--danger)'}">${formatCurrency(t.amount)}</span><strong>${t.category}</strong><span>${dateStr}</span>${t.details ? `<br><span style="font-style:italic;">"${t.details}"</span>` : ''}</li>`;
+            });
+        }
+        htmlContent += '</ul>';
+        Swal.fire({ title: title, html: htmlContent, showCloseButton: true, focusConfirm: false, confirmButtonText: 'Close', customClass: { popup: 'swal-wide' } });
+    }
+
+    // --- Analysis Charts ---
+    function populateAnalysisYear(){
+        const sel = document.getElementById('analysisYearFilter');
+        const curr = new Date().getFullYear();
+        const years = [...new Set(transactions.map(t=>getY(t.date)))];
+        if(!years.includes(String(curr))) years.push(String(curr));
+        years.sort((a,b)=>b-a);
+        sel.innerHTML='';
+        years.forEach(y=> sel.add(new Option(y,y)));
+        const savedPref = localStorage.getItem('pref_analysisYearFilter');
+        sel.value = (savedPref && [...sel.options].some(o => o.value === savedPref)) ? savedPref : String(curr);
+        sel.onchange = function() { localStorage.setItem('pref_analysisYearFilter', this.value); renderAllAnalysisCharts(); };
+    }
+    function getMonthlyData(year, type){
+        const data = Array(12).fill(0);
+        transactions.filter(t=>t.date.startsWith(year)).forEach(t=>{
+            const m = parseInt(t.date.substring(5,7))-1;
+            if(type==='balance') data[m] += (t.type==='income'?t.amount:-t.amount);
+            else if(t.type===type) data[m] += t.amount;
+        });
+        return data;
+    }
+    function renderAllAnalysisCharts(){
+        const base = document.getElementById('analysisYearFilter').value;
+        updateSummary(); if(!base) return;
+        const years = [base, String(base-1), String(base-2)];
+        const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+        const createDS = (lbl, type, color, dash) => ({ label: lbl, data: getMonthlyData(lbl, type), borderColor: color, borderWidth: dash?2:3, borderDash: dash?[5,5]:[], tension:0.3, fill:false, pointRadius: dash?0:3 });
+        const balDS = years.map((y,i)=>createDS(y, 'balance', i===0?'#007ACC':(i===1?'#74B9FF':'#BDC3C7'), i>0));
+        renderLine('balanceChart', months, balDS, balChart, c => balChart = c);
+        const incDS = years.map((y,i)=>createDS(y, 'income', i===0?'#00B894':(i===1?'#55EFC4':'#BDC3C7'), i>0));
+        renderLine('incomeCompChart', months, incDS, incChart, c => incChart = c);
+        const expDS = years.map((y,i)=>createDS(y, 'expense', i===0?'#E84118':(i===1?'#FAB1A0':'#BDC3C7'), i>0));
+        renderLine('expenseCompChart', months, expDS, expChart, c => expChart = c);
+    }
+    function renderLine(id, lbls, ds, instance, setInst){
+        const cvs = document.getElementById(id); if(!cvs) return;
+        cvs.width = cvs.parentElement.clientWidth; cvs.height = cvs.parentElement.clientHeight;
+        if(instance) instance.destroy();
+        const ctx = cvs.getContext('2d');
+        const chart = new Chart(ctx, { type: 'line', data: { labels: lbls, datasets: ds }, options: { responsive: true, maintainAspectRatio: false, interaction: { mode:'index', intersect:false }, scales:{ y:{beginAtZero:true} }, plugins:{ legend:{position:'bottom'} } } });
+        setInst(chart);
+    }
+
+    // --- Transaction List Logic ---
+    function renderTransactions() {
+        const filter = document.getElementById('monthFilter').value;
+        const searchInput = document.getElementById('searchInput'); 
+        const searchTerm = searchInput ? searchInput.value.toLowerCase() : '';
+        const list = document.getElementById('transactionList');
+        const filtered = transactions.filter(t => {
+            let dateMatch = false;
+            if(filter==='lifetime') dateMatch = true;
+            else if(filter==='current_year') dateMatch = (getY(t.date) === new Date().getFullYear().toString());
+            else if(filter.length===4) dateMatch = (getY(t.date) === filter);
+            else dateMatch = (getYM(t.date) === (filter || getYM(new Date().toISOString())));
+            let searchMatch = true;
+            if (searchTerm) { const searchStr = (t.category + ' ' + (t.details || '') + ' ' + t.amount).toLowerCase(); searchMatch = searchStr.includes(searchTerm); }
+            return dateMatch && searchMatch;
+        }).sort((a,b)=>new Date(b.date)-new Date(a.date));
+
+        list.innerHTML = '';
+        document.getElementById('noTransactionsMsg').style.display = filtered.length ? 'none' : 'block';
+        filtered.forEach(t => {
+            const li = document.createElement('li');
+            li.className = t.type === 'income' ? 'income-item' : 'expense-item';
+            const dateDisplay = new Date(t.date).toLocaleDateString('en-IN', {day:'numeric', month:'short'});
+            li.innerHTML = `<div class="transaction-click-area" onclick="showDetails(${t.id})"><div class="transaction-info"><strong>${t.category}</strong><span>${dateDisplay}</span>${t.details ? `<em>${t.details.substring(0,15)}${t.details.length>15?'...':''}</em>` : ''}</div><div class="transaction-amount">${t.type==='income'?'+':'-'} ${formatCurrency(t.amount)}</div></div><div class="action-buttons"><button class="edit-btn" onclick="editTransaction(${t.id})"><i class="fas fa-edit"></i></button><button class="delete-btn" onclick="deleteTransaction(${t.id})"><i class="fas fa-trash-alt"></i></button></div>`;
+            list.appendChild(li);
+        });
+        updateSummary();
+    }
+    
+    function showDetails(id) {
+        const t = transactions.find(x => x.id === id); if(!t) return;
+        const fullDate = new Date(t.date).toLocaleString('en-IN', { dateStyle: 'full', timeStyle: 'short' });
+        Swal.fire({ title: t.category, html: `<div style="text-align:left; font-size:15px;"><p><strong>Type:</strong> ${t.type.toUpperCase()}</p><p><strong>Amount:</strong> <span style="color:${t.type==='income'?'#00B894':'#E84118'};font-weight:bold;font-size:18px;">${formatCurrency(t.amount)}</span></p><p><strong>Date:</strong> ${fullDate}</p><p><strong>Details:</strong> ${t.details || 'N/A'}</p></div>`, confirmButtonColor: 'var(--info)' });
+    }
+
+    function editTransaction(id) {
+        const t = transactions.find(x => x.id === id); if(!t) return;
+        document.getElementById('amount').value = t.amount;
+        document.getElementById('type').value = t.type;
+        document.getElementById('category').value = t.category;
+        document.getElementById('date').value = t.date; 
+        document.getElementById('details').value = t.details;
+        editingTransactionId = id;
+        const saveBtn = document.getElementById('saveBtn');
+        saveBtn.innerHTML = '<i class="fas fa-save"></i> Update Record';
+        document.getElementById('cancelEditBtn').style.display = 'block';
+        openTab('addTransaction', document.getElementById('tabButtonAdd'));
+    }
+
+    function cancelEdit() {
+        editingTransactionId = null;
+        document.getElementById('transactionForm').reset();
+        setDateTimeLocalNow();
+        const saveBtn = document.getElementById('saveBtn');
+        saveBtn.innerHTML = '<i class="fas fa-save"></i> Save Record';
+        document.getElementById('cancelEditBtn').style.display = 'none';
+    }
+
+    async function addTransaction(e) {
+        e.preventDefault();
+        const amt = parseFloat(document.getElementById('amount').value);
+        const type = document.getElementById('type').value, cat = document.getElementById('category').value;
+        const date = document.getElementById('date').value, dets = document.getElementById('details').value;
+        if (amt <= 0 || !cat || !date) { Swal.fire('Error', 'Invalid Input', 'error'); return; }
+        
+        const txObj = { amount: amt, type, category: cat, date, details: dets };
+
+        if (editingTransactionId) {
+            const index = transactions.findIndex(t => t.id === editingTransactionId);
+            if(index !== -1) {
+                const updatedTx = { ...txObj, id: editingTransactionId };
+                transactions[index] = updatedTx;
+                await dbSet(STORE_TX, updatedTx);
+                await saveToFirestore(updatedTx); 
+                Swal.fire('Updated', '', 'success');
+            }
+        } else {
+            const tx = { ...txObj, id: Date.now() };
+            transactions.push(tx); 
+            await dbSet(STORE_TX, tx);
+            await saveToFirestore(tx);
+            Swal.fire('Saved', '', 'success');
+        }
+        cancelEdit(); 
+        openTab('dashboard', document.getElementById('tabButtonDashboard'));
+    }
+    
+    async function deleteTransaction(id) {
+        Swal.fire({ title: 'Delete?', icon: 'warning', showCancelButton: true }).then(async r => {
+            if (r.isConfirmed) { 
+                transactions = transactions.filter(t => t.id !== id); 
+                await dbDelete(STORE_TX, id); 
+                await deleteFromFirestore(id); 
+                renderTransactions(); renderIncomeChart(); renderExpenseChart(); updateSummary(); 
+            }
+        });
+    }
+    
+    // --- Categories & Settings ---
+    function renderCategoryList() {
+        const d = document.getElementById('categoryListDisplay');
+        d.innerHTML = categories.length ? `<ul>${categories.map(c => `<li style="display:flex;justify-content:space-between;padding:8px;border-bottom:1px solid #eee"><span>${c}</span><i class="fas fa-trash" style="color:red;cursor:pointer" onclick="removeCategory('${c}')"></i></li>`).join('')}</ul>` : 'No categories.';
+    }
+    async function addCategory() {
+        const n = document.getElementById('newCategoryName').value.trim();
+        if (n && !categories.includes(n)) { 
+            categories.push(n); await dbSet(STORE_CATS, {name:n}); renderCategoryList(); updateCatOpts(); 
+            saveCategoriesToFirestore(); 
+            document.getElementById('newCategoryName').value=''; Swal.fire('Added'); 
+        }
+    }
+    async function removeCategory(n) {
+        Swal.fire({ title: 'Delete Category?', showCancelButton: true }).then(async r => {
+            if (r.isConfirmed) { 
+                categories = categories.filter(c => c !== n); await dbDelete(STORE_CATS, n); renderCategoryList(); updateCatOpts(); 
+                saveCategoriesToFirestore(); 
+            }
+        });
+    }
+    function updateCatOpts() {
+        const s = document.getElementById('category'); s.innerHTML = '';
+        categories.forEach(c => s.add(new Option(c, c)));
+    }
+    async function changeAppPin() {
+        const p = document.getElementById('newAppPin').value;
+        if (p.length === 4) { await dbSet(STORE_PIN, {key:'pin', value:p}); Swal.fire('PIN Updated'); document.getElementById('newAppPin').value=''; }
+    }
+    async function resetApp() {
+        Swal.fire({ title: 'RESET ALL?', text:'Irreversible!', icon:'warning', showCancelButton:true }).then(async r=>{
+            if(r.isConfirmed){ await dbStoreAction(STORE_TX, 'readwrite', s=>s.clear()); await dbStoreAction(STORE_CATS, 'readwrite', s=>s.clear()); await dbStoreAction(STORE_PIN, 'readwrite', s=>s.clear()); window.location.reload(); }
+        });
+    }
+    
+    // --- Import/Export ---
+    function checkFilePickerSupport() { if (typeof window.showSaveFilePicker === 'undefined') { Swal.fire({ title: 'Browser Not Supported', text: 'Use Chrome, Edge or a modern desktop browser.', icon: 'error' }); return false; } return true; }
+    async function exportData() {
+        if (!checkFilePickerSupport()) return;
+        const data = { transactions, categories, pin: await getAppPin() };
+        const jsonStr = JSON.stringify(data, null, 2); 
+        const defaultDate = new Date().toISOString().split('T')[0];
+        try {
+            const handle = await window.showSaveFilePicker({ suggestedName: `finance_backup_${defaultDate}.json`, types: [{ description: 'JSON Backup File', accept: { 'application/json': ['.json'] } }], });
+            const writable = await handle.createWritable(); await writable.write(jsonStr); await writable.close();
+            Swal.fire('Success', 'Backup saved successfully.', 'success');
+        } catch (err) { if (err.name !== 'AbortError') Swal.fire('Error', 'Failed to save backup.', 'error'); }
+    }
+    function importData(e) {
+        const f = e.target.files[0]; if(!f) return;
+        const r = new FileReader();
+        r.onload = async (ev) => {
+            try {
+                const d = JSON.parse(ev.target.result);
+                if(d.transactions) { await dbStoreAction(STORE_TX, 'readwrite', s=>s.clear()); for(const t of d.transactions) { await dbSet(STORE_TX, t); if(currentUser) saveToFirestore(t); } }
+                if(d.categories) { await dbStoreAction(STORE_CATS, 'readwrite', s=>s.clear()); for(const c of d.categories) await dbSet(STORE_CATS, {name:c}); }
+                if(d.pin) await dbSet(STORE_PIN, {key:'pin', value:d.pin});
+                window.location.reload();
+            } catch(err) { Swal.fire('Error', 'Invalid File', 'error'); }
+        };
+        r.readAsText(f);
+    }
+    function exportDashboardPDF(){
+        const doc = new window.jspdf.jsPDF(); doc.text("Pro Finance by Srikanta Banerjee", 14, 20); 
+        doc.autoTable({ startY: 30, head: [['Metric', 'Value']], body: [ ['Today Income', document.getElementById('todayIncome').textContent], ['Today Expense', document.getElementById('todayExpense').textContent], ['Monthly Income', document.getElementById('monthlyIncome').textContent], ['Monthly Expense', document.getElementById('monthlyExpense').textContent], ['Yearly Income', document.getElementById('yearlyIncome').textContent], ['Yearly Expense', document.getElementById('yearlyExpense').textContent], ['Total Net Balance', document.getElementById('currentBalance').textContent] ]});
+        doc.save(`dashboard_${new Date().toISOString().split('T')[0]}.pdf`);
+    }
+    function exportHistoryPDF(){
+        const doc = new window.jspdf.jsPDF(); doc.text("Pro Finance by Srikanta Banerjee", 14, 20); 
+        const rows = transactions.map(t => { const dateStr = new Date(t.date).toLocaleString('en-IN'); return [dateStr, t.category, t.type, t.amount, t.details || '']; });
+        doc.autoTable({ startY: 30, head: [['Date', 'Category', 'Type', 'Amount', 'Details']], body: rows });
+        doc.save(`history_${new Date().toISOString().split('T')[0]}.pdf`);
+    }
+
+    // --- Initialization ---
+    function toggleTheme() {
+        const html = document.documentElement;
+        if (html.getAttribute('data-theme') === 'dark') { html.removeAttribute('data-theme'); localStorage.setItem('theme', 'light'); } else { html.setAttribute('data-theme', 'dark'); localStorage.setItem('theme', 'dark'); }
+    }
+    function applyTheme() { const savedTheme = localStorage.getItem('theme'); if (savedTheme === 'dark') document.documentElement.setAttribute('data-theme', 'dark'); }
+
+    function initAppUI() {
+        renderCategoryList(); updateCatOpts(); renderTransactions();
+        document.getElementById('mainAppContent').style.display = 'block';
+        openTab('dashboard', document.getElementById('tabButtonDashboard'));
+        updateEmailDisplay();
+        syncDataWithFirestore();
+    }
+
+    document.addEventListener('DOMContentLoaded', async () => {
+        applyTheme();
+        
+        // Listen for Auth State
+        auth.onAuthStateChanged(async (user) => {
+            if (user) {
+                // Logged In
+                currentUser = user;
+                document.getElementById('authOverlay').style.display = 'none';
+                
+                await loadLocalData();
+                document.getElementById('securityOverlay').style.display = 'flex';
+                document.getElementById('closePinScreen').style.display = 'none';
+                
+                // Update email display if Settings tab is active
+                updateEmailDisplay();
+            } else {
+                // Logged Out
+                currentUser = null;
+                document.getElementById('authOverlay').style.display = 'flex';
+                document.getElementById('securityOverlay').style.display = 'none';
+                document.getElementById('mainAppContent').style.display = 'none';
             }
         });
 
-        function renderChart(type, canvasId, filterId) {
-            const filter = document.getElementById(filterId).value;
-            const isY = filter.length === 4;
-            const dataMap = {};
-            transactions.filter(t => t.type === type && (isY ? getY(t.date) === filter : getYM(t.date) === filter)).forEach(t => {
-                dataMap[t.category || 'Others'] = (dataMap[t.category || 'Others'] || 0) + t.amount;
-            });
-            const labels = Object.keys(dataMap), data = Object.values(dataMap);
-            const total = data.reduce((a, b) => a + b, 0);
-            
-            const legendContainer = document.getElementById(type === 'income' ? 'incomeLegend' : 'expenseLegend');
-            const colors = type === 'income' ? INCOME_COLORS : EXPENSE_COLORS; 
-            
-            let legendHTML = '';
-            if (total === 0) {
-                legendHTML = '<p style="text-align:center;color:#ccc;font-size:12px;">No data</p>';
-            } else {
-                labels.forEach((label, i) => {
-                    const pct = Math.round(data[i]/total*100);
-                    const color = colors[i % colors.length];
-                    legendHTML += `
-                        <div class="legend-item" style="cursor: pointer;" onclick="showCategoryHistory('${label}', '${type}', '${filter}')">
-                            <div class="legend-label">
-                                <div class="legend-color" style="background:${color}"></div>
-                                <span>${label} (${pct}%)</span>
-                            </div>
-                            <span style="font-weight:600">${formatCurrency(data[i])}</span>
-                        </div>`;
-                });
-            }
-            legendContainer.innerHTML = legendHTML;
-
-            const container = document.getElementById(canvasId).parentElement;
-            if (total === 0) { 
-                const ctx = document.getElementById(canvasId).getContext('2d');
-                ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
-                return; 
-            }
-            
-            const ctx = document.getElementById(canvasId).getContext('2d');
-            const instance = type === 'expense' ? expenseChartInstance : incomeChartInstance;
-            if (instance) instance.destroy();
-            
-            const newChart = new Chart(ctx, {
-                type: 'doughnut',
-                data: { labels: labels, datasets: [{ data: data, backgroundColor: colors }] },
-                options: {
-                    responsive: true, maintainAspectRatio: false, cutout: '70%',
-                    plugins: { 
-                        legend: { display: false }, 
-                        tooltip: { enabled: true }
-                    },
-                    elements: { center: { text: formatCurrency(total), label: `Total ${type}`, color: type==='income'?'#00B894':'#E84118' } },
-                    onClick: (e, elements) => {
-                        if (elements.length > 0) {
-                            const index = elements[0].index;
-                            const category = labels[index];
-                            showCategoryHistory(category, type, filter);
-                        }
-                    }
-                }
-            });
-            if (type === 'expense') expenseChartInstance = newChart; else incomeChartInstance = newChart;
-        }
-        function renderIncomeChart() { renderChart('income', 'incomeChart', 'incomeChartFilter'); }
-        function renderExpenseChart() { renderChart('expense', 'expenseChart', 'expenseChartFilter'); }
-
-        function showCategoryHistory(category, type, filterPeriod) {
-            const isY = filterPeriod.length === 4;
-            const filtered = transactions.filter(t => 
-                t.type === type && 
-                t.category === category && 
-                (isY ? getY(t.date) === filterPeriod : getYM(t.date) === filterPeriod)
-            ).sort((a,b) => new Date(b.date) - new Date(a.date));
-            
-            showTransactionsModal(`${category} - ${type.toUpperCase()}`, filtered);
-        }
-
-        function showSummaryDetails(scope, type) {
-            const now = new Date();
-            const curY = now.getFullYear().toString();
-            const curM = getYM(now.toISOString());
-            const todayStr = now.toISOString().split('T')[0];
-            
-            const filtered = transactions.filter(t => {
-                const ym = getYM(t.date), y = getY(t.date);
-                const tDateStr = t.date.split('T')[0];
-                
-                // Filter by scope
-                let scopeMatch = false;
-                if (scope === 'yearly') scopeMatch = (y === curY);
-                else if (scope === 'monthly') scopeMatch = (ym === curM);
-                else if (scope === 'today') scopeMatch = (tDateStr === todayStr);
-
-                // Filter by type (income/expense/all)
-                let typeMatch = true;
-                if (type !== 'all') typeMatch = (t.type === type);
-
-                return scopeMatch && typeMatch;
-            }).sort((a,b) => new Date(b.date) - new Date(a.date));
-            
-            let title = scope.charAt(0).toUpperCase() + scope.slice(1);
-            if(type !== 'all') title += ` ${type.charAt(0).toUpperCase() + type.slice(1)}`;
-            else title += " Transactions";
-
-            showTransactionsModal(title, filtered);
-        }
-
-        function showTransactionsModal(title, list) {
-            let htmlContent = '<ul class="swal-list">';
-            if (list.length === 0) {
-                htmlContent += '<li style="text-align:center;">No transactions found.</li>';
-            } else {
-                list.forEach(t => {
-                    const dateStr = new Date(t.date).toLocaleString('en-IN', { dateStyle: 'medium', timeStyle: 'short' });
-                    htmlContent += `
-                        <li>
-                            <span class="swal-amt" style="color: ${t.type==='income'?'var(--primary)':'var(--danger)'}">${formatCurrency(t.amount)}</span>
-                            <strong>${t.category}</strong>
-                            <span>${dateStr}</span>
-                            ${t.details ? `<br><span style="font-style:italic;">"${t.details}"</span>` : ''}
-                        </li>`;
-                });
-            }
-            htmlContent += '</ul>';
-            
-            Swal.fire({
-                title: title,
-                html: htmlContent,
-                showCloseButton: true,
-                focusConfirm: false,
-                confirmButtonText: 'Close',
-                customClass: { popup: 'swal-wide' }
-            });
-        }
-
-        function populateAnalysisYear(){
-            const sel = document.getElementById('analysisYearFilter');
-            const curr = new Date().getFullYear();
-            const years = [...new Set(transactions.map(t=>getY(t.date)))];
-            if(!years.includes(String(curr))) years.push(String(curr));
-            years.sort((a,b)=>b-a);
-            const saved = sel.value; sel.innerHTML='';
-            years.forEach(y=> sel.add(new Option(y,y)));
-            const savedPref = localStorage.getItem('pref_analysisYearFilter');
-            const defaultYear = String(curr);
-            sel.value = (savedPref && [...sel.options].some(o => o.value === savedPref)) ? savedPref : defaultYear;
-            sel.onchange = function() {
-                localStorage.setItem('pref_analysisYearFilter', this.value);
-                renderAllAnalysisCharts();
-            };
-        }
-        function getMonthlyData(year, type){
-            const data = Array(12).fill(0);
-            transactions.filter(t=>t.date.startsWith(year)).forEach(t=>{
-                const m = parseInt(t.date.substring(5,7))-1;
-                if(type==='balance') data[m] += (t.type==='income'?t.amount:-t.amount);
-                else if(t.type===type) data[m] += t.amount;
-            });
-            return data;
-        }
-        function renderAllAnalysisCharts(){
-            const base = document.getElementById('analysisYearFilter').value;
-            updateSummary();
-            if(!base) return;
-            const years = [base, String(base-1), String(base-2)];
-            const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
-            const createDS = (lbl, type, color, dash) => ({
-                label: lbl, data: getMonthlyData(lbl, type),
-                borderColor: color, borderWidth: dash?2:3, borderDash: dash?[5,5]:[], tension:0.3, fill:false, pointRadius: dash?0:3
-            });
-            const balDS = years.map((y,i)=>createDS(y, 'balance', i===0?'#007ACC':(i===1?'#74B9FF':'#BDC3C7'), i>0));
-            renderLine('balanceChart', months, balDS, balChart, c => balChart = c);
-            const incDS = years.map((y,i)=>createDS(y, 'income', i===0?'#00B894':(i===1?'#55EFC4':'#BDC3C7'), i>0));
-            renderLine('incomeCompChart', months, incDS, incChart, c => incChart = c);
-            const expDS = years.map((y,i)=>createDS(y, 'expense', i===0?'#E84118':(i===1?'#FAB1A0':'#BDC3C7'), i>0));
-            renderLine('expenseCompChart', months, expDS, expChart, c => expChart = c);
-        }
-        function renderLine(id, lbls, ds, instance, setInst){
-            const cvs = document.getElementById(id);
-            if(!cvs) return;
-            cvs.width = cvs.parentElement.clientWidth;
-            cvs.height = cvs.parentElement.clientHeight;
-            if(instance) instance.destroy();
-            const ctx = cvs.getContext('2d');
-            const chart = new Chart(ctx, {
-                type: 'line',
-                data: { labels: lbls, datasets: ds },
-                options: { responsive: true, maintainAspectRatio: false, interaction: { mode:'index', intersect:false }, scales:{ y:{beginAtZero:true} }, plugins:{ legend:{position:'bottom'} } }
-            });
-            setInst(chart);
-        }
-
-        function renderTransactions() {
-            const filter = document.getElementById('monthFilter').value;
-            const searchInput = document.getElementById('searchInput'); 
-            const searchTerm = searchInput ? searchInput.value.toLowerCase() : '';
-
-            const list = document.getElementById('transactionList');
-            const filtered = transactions.filter(t => {
-                let dateMatch = false;
-                if(filter==='lifetime') dateMatch = true;
-                else if(filter==='current_year') dateMatch = (getY(t.date) === new Date().getFullYear().toString());
-                else if(filter.length===4) dateMatch = (getY(t.date) === filter);
-                else dateMatch = (getYM(t.date) === (filter || getYM(new Date().toISOString())));
-
-                let searchMatch = true;
-                if (searchTerm) {
-                    const searchStr = (t.category + ' ' + (t.details || '') + ' ' + t.amount).toLowerCase();
-                    searchMatch = searchStr.includes(searchTerm);
-                }
-
-                return dateMatch && searchMatch;
-            }).sort((a,b)=>new Date(b.date)-new Date(a.date));
-
-            list.innerHTML = '';
-            document.getElementById('noTransactionsMsg').style.display = filtered.length ? 'none' : 'block';
-            filtered.forEach(t => {
-                const li = document.createElement('li');
-                li.className = t.type === 'income' ? 'income-item' : 'expense-item';
-                const dateDisplay = new Date(t.date).toLocaleDateString('en-IN', {day:'numeric', month:'short'});
-                
-                li.innerHTML = `
-                    <div class="transaction-click-area" onclick="showDetails(${t.id})">
-                        <div class="transaction-info"><strong>${t.category}</strong><span>${dateDisplay}</span>${t.details ? `<em>${t.details.substring(0,15)}${t.details.length>15?'...':''}</em>` : ''}</div>
-                        <div class="transaction-amount">${t.type==='income'?'+':'-'} ${formatCurrency(t.amount)}</div>
-                    </div>
-                    <div class="action-buttons">
-                        <button class="edit-btn" onclick="editTransaction(${t.id})"><i class="fas fa-edit"></i></button>
-                        <button class="delete-btn" onclick="deleteTransaction(${t.id})"><i class="fas fa-trash-alt"></i></button>
-                    </div>`;
-                list.appendChild(li);
-            });
-            updateSummary();
-        }
-
-        function showDetails(id) {
-            const t = transactions.find(x => x.id === id);
-            if(!t) return;
-            const fullDate = new Date(t.date).toLocaleString('en-IN', { dateStyle: 'full', timeStyle: 'short' });
-            Swal.fire({
-                title: t.category,
-                html: `
-                    <div style="text-align:left; font-size:15px;">
-                        <p><strong>Type:</strong> ${t.type.toUpperCase()}</p>
-                        <p><strong>Amount:</strong> <span style="color:${t.type==='income'?'#00B894':'#E84118'};font-weight:bold;font-size:18px;">${formatCurrency(t.amount)}</span></p>
-                        <p><strong>Date:</strong> ${fullDate}</p>
-                        <p><strong>Details:</strong> ${t.details || 'N/A'}</p>
-                    </div>
-                `,
-                confirmButtonColor: 'var(--info)'
-            });
-        }
-
-        function editTransaction(id) {
-            const t = transactions.find(x => x.id === id);
-            if(!t) return;
-            document.getElementById('amount').value = t.amount;
-            document.getElementById('type').value = t.type;
-            document.getElementById('category').value = t.category;
-            document.getElementById('date').value = t.date; 
-            document.getElementById('details').value = t.details;
-            editingTransactionId = id;
-            
-            const saveBtn = document.getElementById('saveBtn');
-            saveBtn.innerHTML = '<i class="fas fa-save"></i> Update Record';
-            document.getElementById('cancelEditBtn').style.display = 'block';
-            openTab('addTransaction', document.getElementById('tabButtonAdd'));
-        }
-
-        function cancelEdit() {
-            editingTransactionId = null;
-            document.getElementById('transactionForm').reset();
-            setDateTimeLocalNow();
-            const saveBtn = document.getElementById('saveBtn');
-            saveBtn.innerHTML = '<i class="fas fa-save"></i> Save Record';
-            document.getElementById('cancelEditBtn').style.display = 'none';
-        }
-
-        async function addTransaction(e) {
-            e.preventDefault();
-            const amt = parseFloat(document.getElementById('amount').value);
-            const type = document.getElementById('type').value, cat = document.getElementById('category').value;
-            const date = document.getElementById('date').value, dets = document.getElementById('details').value;
-            if (amt <= 0 || !cat || !date) { Swal.fire('Error', 'Invalid Input', 'error'); return; }
-            
-            if (editingTransactionId) {
-                const index = transactions.findIndex(t => t.id === editingTransactionId);
-                if(index !== -1) {
-                    transactions[index] = { id: editingTransactionId, amount: amt, type, category: cat, date, details: dets };
-                    await dbSet(STORE_TX, transactions[index]);
-                    Swal.fire('Updated', '', 'success');
-                }
-            } else {
-                const tx = { id: Date.now(), amount: amt, type, category: cat, date, details: dets };
-                transactions.push(tx); await dbSet(STORE_TX, tx);
-                Swal.fire('Saved', '', 'success');
-            }
-            cancelEdit(); 
-            openTab('dashboard', document.getElementById('tabButtonDashboard'));
-        }
-        
-        async function deleteTransaction(id) {
-            Swal.fire({ title: 'Delete?', icon: 'warning', showCancelButton: true }).then(async r => {
-                if (r.isConfirmed) { transactions = transactions.filter(t => t.id !== id); await dbDelete(STORE_TX, id); renderTransactions(); renderIncomeChart(); renderExpenseChart(); updateSummary(); }
-            });
-        }
-        
-        function renderCategoryList() {
-            const d = document.getElementById('categoryListDisplay');
-            d.innerHTML = categories.length ? `<ul>${categories.map(c => `<li style="display:flex;justify-content:space-between;padding:8px;border-bottom:1px solid #eee"><span>${c}</span><i class="fas fa-trash" style="color:red;cursor:pointer" onclick="removeCategory('${c}')"></i></li>`).join('')}</ul>` : 'No categories.';
-        }
-        async function addCategory() {
-            const n = document.getElementById('newCategoryName').value.trim();
-            if (n && !categories.includes(n)) { categories.push(n); await dbSet(STORE_CATS, {name:n}); renderCategoryList(); updateCatOpts(); document.getElementById('newCategoryName').value=''; Swal.fire('Added'); }
-        }
-        async function removeCategory(n) {
-             Swal.fire({ title: 'Delete Category?', showCancelButton: true }).then(async r => {
-                if (r.isConfirmed) { categories = categories.filter(c => c !== n); await dbDelete(STORE_CATS, n); renderCategoryList(); updateCatOpts(); }
-            });
-        }
-        function updateCatOpts() {
-            const s = document.getElementById('category'); s.innerHTML = '';
-            categories.forEach(c => s.add(new Option(c, c)));
-        }
-        async function changeAppPin() {
-            const p = document.getElementById('newAppPin').value;
-            if (p.length === 4) { await dbSet(STORE_PIN, {key:'pin', value:p}); Swal.fire('PIN Updated'); document.getElementById('newAppPin').value=''; }
-        }
-        async function resetApp() {
-            Swal.fire({ title: 'RESET ALL?', text:'Irreversible!', icon:'warning', showCancelButton:true }).then(async r=>{
-                if(r.isConfirmed){ await dbStoreAction(STORE_TX, 'readwrite', s=>s.clear()); await dbStoreAction(STORE_CATS, 'readwrite', s=>s.clear()); await dbStoreAction(STORE_PIN, 'readwrite', s=>s.clear()); window.location.reload(); }
-            });
-        }
-        
-        function checkFilePickerSupport() {
-            if (typeof window.showSaveFilePicker === 'undefined') { Swal.fire({ title: 'Browser Not Supported', text: 'Use Chrome, Edge or a modern desktop browser.', icon: 'error' }); return false; }
-            return true;
-        }
-        async function exportData() {
-            if (!checkFilePickerSupport()) return;
-            const data = { transactions, categories, pin: await getAppPin() };
-            const jsonStr = JSON.stringify(data, null, 2); 
-            const defaultDate = new Date().toISOString().split('T')[0];
-            try {
-                const handle = await window.showSaveFilePicker({ suggestedName: `finance_backup_${defaultDate}.json`, types: [{ description: 'JSON Backup File', accept: { 'application/json': ['.json'] } }], });
-                const writable = await handle.createWritable(); await writable.write(jsonStr); await writable.close();
-                Swal.fire('Success', 'Backup saved successfully.', 'success');
-            } catch (err) { if (err.name !== 'AbortError') Swal.fire('Error', 'Failed to save backup.', 'error'); }
-        }
-        function importData(e) {
-            const f = e.target.files[0]; if(!f) return;
-            const r = new FileReader();
-            r.onload = async (ev) => {
-                try {
-                    const d = JSON.parse(ev.target.result);
-                    if(d.transactions) { await dbStoreAction(STORE_TX, 'readwrite', s=>s.clear()); for(const t of d.transactions) await dbSet(STORE_TX, t); }
-                    if(d.categories) { await dbStoreAction(STORE_CATS, 'readwrite', s=>s.clear()); for(const c of d.categories) await dbSet(STORE_CATS, {name:c}); }
-                    if(d.pin) await dbSet(STORE_PIN, {key:'pin', value:d.pin});
-                    window.location.reload();
-                } catch(err) { Swal.fire('Error', 'Invalid File', 'error'); }
-            };
-            r.readAsText(f);
-        }
-
-        function exportDashboardPDF(){
-             const doc = new window.jspdf.jsPDF(); 
-             doc.text("Pro Finance by Srikanta Banerjee", 14, 20); 
-             doc.autoTable({ startY: 30, head: [['Metric', 'Value']], body: [ 
-                 ['Today Income', document.getElementById('todayIncome').textContent],
-                 ['Today Expense', document.getElementById('todayExpense').textContent],
-                 ['Monthly Income', document.getElementById('monthlyIncome').textContent],
-                 ['Monthly Expense', document.getElementById('monthlyExpense').textContent],
-                 ['Yearly Income', document.getElementById('yearlyIncome').textContent],
-                 ['Yearly Expense', document.getElementById('yearlyExpense').textContent],
-                 ['Total Net Balance', document.getElementById('currentBalance').textContent] 
-             ]});
-             doc.save(`dashboard_${new Date().toISOString().split('T')[0]}.pdf`);
-        }
-        function exportHistoryPDF(){
-             const doc = new window.jspdf.jsPDF(); 
-             doc.text("Pro Finance by Srikanta Banerjee", 14, 20); 
-             const rows = transactions.map(t => {
-                 const dateStr = new Date(t.date).toLocaleString('en-IN');
-                 return [dateStr, t.category, t.type, t.amount, t.details || ''];
-             });
-             doc.autoTable({ startY: 30, head: [['Date', 'Category', 'Type', 'Amount', 'Details']], body: rows });
-             doc.save(`history_${new Date().toISOString().split('T')[0]}.pdf`);
-        }
-
-        // Theme Toggle Function
-        function toggleTheme() {
-            const html = document.documentElement;
-            if (html.getAttribute('data-theme') === 'dark') {
-                html.removeAttribute('data-theme');
-                localStorage.setItem('theme', 'light');
-            } else {
-                html.setAttribute('data-theme', 'dark');
-                localStorage.setItem('theme', 'dark');
-            }
-        }
-
-        // Apply Theme on Load
-        function applyTheme() {
-            const savedTheme = localStorage.getItem('theme');
-            if (savedTheme === 'dark') {
-                document.documentElement.setAttribute('data-theme', 'dark');
-            }
-        }
-
-        async function initApp() {
-            await loadFromDB();
-            setDateTimeLocalNow(); 
-            document.getElementById('transactionForm').addEventListener('submit', addTransaction);
-            renderCategoryList(); updateCatOpts(); renderTransactions();
-            document.getElementById('mainAppContent').style.display = 'block';
-            openTab('dashboard', document.getElementById('tabButtonDashboard'));
-        }
-
-        document.addEventListener('DOMContentLoaded', async () => {
-            applyTheme(); // Apply theme first
-            try { await openDB(); const pin = await dbGet(STORE_PIN, 'pin'); if(!pin) await dbSet(STORE_PIN, {key:'pin', value:DEFAULT_PIN}); } catch(e) { console.log('Init DB error', e); }
-            document.getElementById('securityOverlay').style.display = 'flex';
-            document.getElementById('closePinScreen').style.display = 'none';
-            if('serviceWorker' in navigator) { window.addEventListener('load', () => { navigator.serviceWorker.register('service-worker.js').catch(err => console.log('SW failed: ', err)); }); }
-        });
+        if('serviceWorker' in navigator) { window.addEventListener('load', () => { navigator.serviceWorker.register('service-worker.js').catch(err => console.log('SW failed: ', err)); }); }
+    });
     </script>
 </body>
 </html>
