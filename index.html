@@ -276,6 +276,28 @@
 .swal2-close:hover {
     color: var(--danger) !important;
 }
+/* Progress Bar Style inside SweetAlert */
+.progress-container {
+    width: 100%;
+    background-color: #f1f1f1;
+    border-radius: 10px;
+    margin: 20px 0;
+    overflow: hidden;
+    height: 20px;
+    border: 1px solid var(--border-color);
+}
+
+.progress-bar {
+    width: 0%;
+    height: 100%;
+    background-color: var(--primary); /* Green color */
+    text-align: center;
+    line-height: 20px;
+    color: white;
+    font-size: 12px;
+    font-weight: bold;
+    transition: width 0.2s ease;
+}
     </style>
 </head>
 <body>
@@ -1253,57 +1275,120 @@
         const f = e.target.files[0]; 
         if(!f) return;
         
-        // Show loading immediately
+        // কনফার্মেশন মেসেজ (যাতে ভুলে কেউ ডাটা ডিলিট না করে ফেলে)
         Swal.fire({
-            title: 'Importing & Syncing...',
-            text: 'Please wait, uploading to cloud.',
-            allowOutsideClick: false,
-            didOpen: () => { Swal.showLoading(); }
+            title: 'Overwrite Everything?',
+            text: "This will DELETE all current cloud & local data and replace it with this backup.",
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#d33',
+            cancelButtonColor: '#3085d6',
+            confirmButtonText: 'Yes, Overwrite!'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                // ইউজার রাজি হলে প্রসেস শুরু হবে
+                startImportProcess(f);
+            } else {
+                // ফাইল ইনপুট ক্লিয়ার করা, যাতে পরে আবার একই ফাইল সিলেক্ট করা যায়
+                document.getElementById('importFile').value = '';
+            }
         });
+    }
 
+    function startImportProcess(file) {
         const r = new FileReader();
+        
         r.onload = async (ev) => {
             try {
                 const d = JSON.parse(ev.target.result);
-                const syncPromises = []; // To track all upload tasks
+                
+                // ১. মোট কতগুলো আইটেম আছে তার হিসাব
+                const totalTx = d.transactions ? d.transactions.length : 0;
+                const totalCats = d.categories ? d.categories.length : 0;
+                const totalItems = totalTx + totalCats;
+                let processedCount = 0;
 
-                // 1. Transactions Import
+                // ২. সুইট অ্যালার্ট দিয়ে লোডিং বার দেখানো
+                let swalPopup = Swal.fire({
+                    title: 'Importing Data...',
+                    html: `
+                        <p style="font-size:14px; color:var(--text-muted)">Syncing with Cloud Database</p>
+                        <div class="progress-container">
+                            <div id="importProgressBar" class="progress-bar">0%</div>
+                        </div>
+                        <div id="importStatusText" style="font-weight:bold; color:var(--text-main)">Starting...</div>
+                    `,
+                    allowOutsideClick: false,
+                    showConfirmButton: false,
+                    didOpen: () => {
+                        Swal.showLoading();
+                    }
+                });
+
+                // ৩. ক্লাউড (Firebase) ক্লিন করা (Wipe Old Data)
+                if(currentUser) {
+                    try {
+                        const ref = firestore.collection('users').doc(currentUser.uid).collection('transactions');
+                        const snapshot = await ref.get();
+                        const batch = firestore.batch();
+                        snapshot.docs.forEach((doc) => {
+                            batch.delete(doc.ref);
+                        });
+                        await batch.commit();
+                        console.log("Old Cloud Data Wiped");
+                    } catch(e) { console.log("Cloud wipe warning:", e); }
+                }
+
+                const syncPromises = []; 
+
+                // ৪. Transactions ইম্পোর্ট এবং Progress Bar আপডেট
                 if(d.transactions) { 
-                    await dbStoreAction(STORE_TX, 'readwrite', s=>s.clear()); 
+                    await dbStoreAction(STORE_TX, 'readwrite', s=>s.clear()); // লোকাল ক্লিয়ার
+                    
                     for(const t of d.transactions) { 
-                        await dbSet(STORE_TX, t); 
-                        // If logged in, add upload task to list
+                        await dbSet(STORE_TX, t); // লোকাল সেভ
+                        
                         if(currentUser) {
-                            syncPromises.push(saveToFirestore(t)); 
+                            syncPromises.push(saveToFirestore(t)); // ক্লাউড আপলোড লিস্টে যোগ
                         }
+
+                        // Progress আপডেট
+                        processedCount++;
+                        updateProgressBar(processedCount, totalItems);
                     } 
                 }
 
-                // 2. Categories Import
+                // ৫. Categories ইম্পোর্ট এবং Progress Bar আপডেট
                 if(d.categories) { 
                     await dbStoreAction(STORE_CATS, 'readwrite', s=>s.clear()); 
-                    for(const c of d.categories) await dbSet(STORE_CATS, {name:c}); 
-                    // Sync Categories too
+                    for(const c of d.categories) {
+                        await dbSet(STORE_CATS, {name:c}); 
+                        
+                        // Progress আপডেট
+                        processedCount++;
+                        updateProgressBar(processedCount, totalItems);
+                    }
                     if(currentUser) {
-                        categories = d.categories; // Update memory variable
+                        categories = d.categories;
                         syncPromises.push(saveCategoriesToFirestore());
                     }
                 }
 
-                // 3. PIN Import
+                // PIN ইম্পোর্ট
                 if(d.pin) await dbSet(STORE_PIN, {key:'pin', value:d.pin});
 
-                // 4. WAIT for all uploads to finish
+                // ৬. সব আপলোড শেষ হওয়ার জন্য অপেক্ষা (Finalizing)
                 if(syncPromises.length > 0) {
+                    document.getElementById('importStatusText').innerText = "Finalizing Sync...";
                     await Promise.all(syncPromises);
                 }
 
-                // Success Message & Reload
+                // ৭. কমপ্লিট হলে মেসেজ
                 Swal.fire({
                     icon: 'success',
-                    title: 'Import Complete!',
-                    text: 'Data synced to cloud successfully.',
-                    timer: 2000,
+                    title: 'Import 100% Complete!',
+                    text: 'All data restored successfully.',
+                    timer: 1500,
                     showConfirmButton: false
                 }).then(() => {
                     window.location.reload();
@@ -1311,10 +1396,25 @@
 
             } catch(err) { 
                 console.error(err);
-                Swal.fire('Error', 'Invalid File or Sync Failed', 'error'); 
+                Swal.fire('Error', 'Invalid Backup File', 'error'); 
             }
         };
-        r.readAsText(f);
+        r.readAsText(file);
+    }
+
+    // হেল্পার ফাংশন: বার আপডেট করার জন্য
+    function updateProgressBar(current, total) {
+        if(total === 0) return;
+        const percentage = Math.round((current / total) * 100);
+        
+        const bar = document.getElementById('importProgressBar');
+        const text = document.getElementById('importStatusText');
+        
+        if(bar && text) {
+            bar.style.width = percentage + '%';
+            bar.innerText = percentage + '%';
+            text.innerText = `Processing ${current} of ${total} items...`;
+        }
     }
     function exportDashboardPDF(){
         const doc = new window.jspdf.jsPDF(); doc.text("Pro Finance by Srikanta Banerjee", 14, 20); 
