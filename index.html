@@ -457,11 +457,42 @@
         <div id="analysis" class="tab-content">
             <div class="card">
                 <div style="margin-bottom:15px; border-bottom: 1px solid var(--border-color); padding-bottom: 15px;">
-                   <h2 style="font-size: 20px; margin-top: 0; color: var(--info);"><i class="fas fa-chart-bar"></i> Multi-Year Analysis</h2>
-                   <label for="analysisYearFilter">Select Base Year:</label>
-                   <select id="analysisYearFilter" onchange="renderAllAnalysisCharts()"></select>
-                   <p style="font-size:11px; color:var(--text-muted); margin:5px 0 0;">* Comparing selected year vs previous 2 years.</p>
-               </div>
+                    <h2 style="font-size: 20px; margin-top: 0; color: var(--info);"><i class="fas fa-chart-bar"></i> Multi-Year Analysis</h2>
+                    
+                    <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-bottom: 15px;">
+                        <div class="form-group" style="margin: 0;">
+                            <label for="analysisYearFilter" style="font-size: 11px;">Base Year:</label>
+                            <select id="analysisYearFilter" onchange="renderAllAnalysisCharts()" style="padding: 8px; font-size: 12px;"></select>
+                        </div>
+                        <div class="form-group" style="margin: 0;">
+                            <label for="compareYearFilter" style="font-size: 11px;">Compare 1:</label>
+                            <select id="compareYearFilter" onchange="renderAllAnalysisCharts()" style="padding: 8px; font-size: 12px;"></select>
+                        </div>
+                        <div class="form-group" style="margin: 0;">
+                            <label for="compareYearFilter2" style="font-size: 11px;">Compare 2:</label>
+                            <select id="compareYearFilter2" onchange="renderAllAnalysisCharts()" style="padding: 8px; font-size: 12px;"></select>
+                        </div>
+                    </div>
+
+                    <div style="display: flex; gap: 8px; text-align: center; margin-bottom: 10px;">
+                        <div style="flex: 1; padding: 10px 5px; background: rgba(0, 122, 204, 0.1); border-radius: 8px; border: 1px solid var(--info);">
+                            <h4 style="margin:0; font-size:11px; color: var(--text-muted);">Avg Balance</h4>
+                            <div id="avgBalBase" style="font-weight:bold; font-size:13px; color:var(--info)">₹0.00</div>
+                            <div id="avgBalComp" style="font-size:9px; color:var(--text-muted); margin-top: 4px;"></div>
+                        </div>
+                        <div style="flex: 1; padding: 10px 5px; background: rgba(0, 184, 148, 0.1); border-radius: 8px; border: 1px solid var(--primary);">
+                            <h4 style="margin:0; font-size:11px; color: var(--text-muted);">Avg Income</h4>
+                            <div id="avgIncBase" style="font-weight:bold; font-size:13px; color:var(--primary)">₹0.00</div>
+                            <div id="avgIncComp" style="font-size:9px; color:var(--text-muted); margin-top: 4px;"></div>
+                        </div>
+                        <div style="flex: 1; padding: 10px 5px; background: rgba(232, 65, 24, 0.1); border-radius: 8px; border: 1px solid var(--danger);">
+                            <h4 style="margin:0; font-size:11px; color: var(--text-muted);">Avg Expense</h4>
+                            <div id="avgExpBase" style="font-weight:bold; font-size:13px; color:var(--danger)">₹0.00</div>
+                            <div id="avgExpComp" style="font-size:9px; color:var(--text-muted); margin-top: 4px;"></div>
+                        </div>
+                    </div>
+                    <p style="font-size:10px; color:var(--text-muted); margin:5px 0 0; text-align: center;">* Current year averages are calculated up to the current month.</p>
+                </div>
 
                <div style="margin-bottom:30px;">
                    <h3 style="text-align:center; color:var(--info); font-size:14px; margin-bottom:10px;">Net Balance Trend</h3>
@@ -1062,19 +1093,42 @@
         Swal.fire({ title: title, html: htmlContent, showCloseButton: true, focusConfirm: false, confirmButtonText: 'Close', customClass: { popup: 'swal-wide' } });
     }
 
-    // --- Analysis Charts ---
+// --- Analysis Charts ---
     function populateAnalysisYear(){
-        const sel = document.getElementById('analysisYearFilter');
+        const selBase = document.getElementById('analysisYearFilter');
+        const selComp1 = document.getElementById('compareYearFilter');
+        const selComp2 = document.getElementById('compareYearFilter2');
+        
         const curr = new Date().getFullYear();
         const years = [...new Set(transactions.map(t=>getY(t.date)))];
         if(!years.includes(String(curr))) years.push(String(curr));
         years.sort((a,b)=>b-a);
-        sel.innerHTML='';
-        years.forEach(y=> sel.add(new Option(y,y)));
-        const savedPref = localStorage.getItem('pref_analysisYearFilter');
-        sel.value = (savedPref && [...sel.options].some(o => o.value === savedPref)) ? savedPref : String(curr);
-        sel.onchange = function() { localStorage.setItem('pref_analysisYearFilter', this.value); renderAllAnalysisCharts(); };
+        
+        selBase.innerHTML = '';
+        selComp1.innerHTML = '';
+        selComp2.innerHTML = '';
+        
+        years.forEach(y => {
+            selBase.add(new Option(y, y));
+            selComp1.add(new Option(y, y));
+            selComp2.add(new Option(y, y));
+        });
+        selComp1.add(new Option("None", "none"));
+        selComp2.add(new Option("None", "none"));
+
+        const savedBase = localStorage.getItem('pref_analysisYearFilter');
+        const savedComp1 = localStorage.getItem('pref_compareYearFilter');
+        const savedComp2 = localStorage.getItem('pref_compareYearFilter2');
+        
+        selBase.value = (savedBase && [...selBase.options].some(o => o.value === savedBase)) ? savedBase : String(curr);
+        selComp1.value = (savedComp1 && [...selComp1.options].some(o => o.value === savedComp1)) ? savedComp1 : (years.length > 1 ? String(curr - 1) : "none");
+        selComp2.value = (savedComp2 && [...selComp2.options].some(o => o.value === savedComp2)) ? savedComp2 : (years.length > 2 ? String(curr - 2) : "none");
+        
+        selBase.onchange = function() { localStorage.setItem('pref_analysisYearFilter', this.value); renderAllAnalysisCharts(); };
+        selComp1.onchange = function() { localStorage.setItem('pref_compareYearFilter', this.value); renderAllAnalysisCharts(); };
+        selComp2.onchange = function() { localStorage.setItem('pref_compareYearFilter2', this.value); renderAllAnalysisCharts(); };
     }
+
     function getMonthlyData(year, type){
         const data = Array(12).fill(0);
         transactions.filter(t=>t.date.startsWith(year)).forEach(t=>{
@@ -1084,19 +1138,82 @@
         });
         return data;
     }
+
+    function calculateAverage(dataArr, year) {
+        const currentYear = new Date().getFullYear().toString();
+        const currentMonth = new Date().getMonth() + 1; // 1 to 12
+        let total = 0;
+        let divisor = 12;
+
+        if (year === currentYear) {
+            divisor = currentMonth; 
+            for (let i = 0; i < currentMonth; i++) {
+                total += dataArr[i];
+            }
+        } else {
+            total = dataArr.reduce((sum, val) => sum + val, 0);
+        }
+        return divisor === 0 ? 0 : (total / divisor);
+    }
+
     function renderAllAnalysisCharts(){
         const base = document.getElementById('analysisYearFilter').value;
-        updateSummary(); if(!base) return;
-        const years = [base, String(base-1), String(base-2)];
+        const comp1 = document.getElementById('compareYearFilter').value;
+        const comp2 = document.getElementById('compareYearFilter2').value;
+        updateSummary(); 
+        if(!base) return;
+
+        const years = [base];
+        // ডুপ্লিকেট বছর যেন গ্রাফে না আসে তার জন্য চেক
+        if (comp1 && comp1 !== "none" && !years.includes(comp1)) years.push(comp1);
+        if (comp2 && comp2 !== "none" && !years.includes(comp2)) years.push(comp2);
+
         const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+        
+        // Base, Compare 1, Compare 2 এর জন্য আলাদা কালার
+        const balColors = ['#007ACC', '#74B9FF', '#BDC3C7'];
+        const incColors = ['#00B894', '#55EFC4', '#BDC3C7'];
+        const expColors = ['#E84118', '#FAB1A0', '#BDC3C7'];
+
         const createDS = (lbl, type, color, dash) => ({ label: lbl, data: getMonthlyData(lbl, type), borderColor: color, borderWidth: dash?2:3, borderDash: dash?[5,5]:[], tension:0.3, fill:false, pointRadius: dash?0:3 });
-        const balDS = years.map((y,i)=>createDS(y, 'balance', i===0?'#007ACC':(i===1?'#74B9FF':'#BDC3C7'), i>0));
+        
+        const balDS = years.map((y,i)=>createDS(y, 'balance', balColors[i] || '#ccc', i>0));
         renderLine('balanceChart', months, balDS, balChart, c => balChart = c);
-        const incDS = years.map((y,i)=>createDS(y, 'income', i===0?'#00B894':(i===1?'#55EFC4':'#BDC3C7'), i>0));
+        
+        const incDS = years.map((y,i)=>createDS(y, 'income', incColors[i] || '#ccc', i>0));
         renderLine('incomeCompChart', months, incDS, incChart, c => incChart = c);
-        const expDS = years.map((y,i)=>createDS(y, 'expense', i===0?'#E84118':(i===1?'#FAB1A0':'#BDC3C7'), i>0));
+        
+        const expDS = years.map((y,i)=>createDS(y, 'expense', expColors[i] || '#ccc', i>0));
         renderLine('expenseCompChart', months, expDS, expChart, c => expChart = c);
+
+        // Average Calculation
+        document.getElementById('avgBalBase').textContent = formatCurrency(calculateAverage(balDS[0].data, base));
+        document.getElementById('avgIncBase').textContent = formatCurrency(calculateAverage(incDS[0].data, base));
+        document.getElementById('avgExpBase').textContent = formatCurrency(calculateAverage(expDS[0].data, base));
+
+        let compBalHtml = "", compIncHtml = "", compExpHtml = "";
+
+        if (years.length > 1) {
+            compBalHtml += `<div style="margin-bottom:2px">vs ${years[1]}: ${formatCurrency(calculateAverage(balDS[1].data, years[1]))}</div>`;
+            compIncHtml += `<div style="margin-bottom:2px">vs ${years[1]}: ${formatCurrency(calculateAverage(incDS[1].data, years[1]))}</div>`;
+            compExpHtml += `<div style="margin-bottom:2px">vs ${years[1]}: ${formatCurrency(calculateAverage(expDS[1].data, years[1]))}</div>`;
+        }
+        
+        if (years.length > 2) {
+            compBalHtml += `<div>vs ${years[2]}: ${formatCurrency(calculateAverage(balDS[2].data, years[2]))}</div>`;
+            compIncHtml += `<div>vs ${years[2]}: ${formatCurrency(calculateAverage(incDS[2].data, years[2]))}</div>`;
+            compExpHtml += `<div>vs ${years[2]}: ${formatCurrency(calculateAverage(expDS[2].data, years[2]))}</div>`;
+        }
+
+        if(years.length === 1) {
+            compBalHtml = "vs None"; compIncHtml = "vs None"; compExpHtml = "vs None";
+        }
+
+        document.getElementById('avgBalComp').innerHTML = compBalHtml;
+        document.getElementById('avgIncComp').innerHTML = compIncHtml;
+        document.getElementById('avgExpComp').innerHTML = compExpHtml;
     }
+
     function renderLine(id, lbls, ds, instance, setInst){
         const cvs = document.getElementById(id); if(!cvs) return;
         cvs.width = cvs.parentElement.clientWidth; cvs.height = cvs.parentElement.clientHeight;
