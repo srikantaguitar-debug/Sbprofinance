@@ -568,7 +568,7 @@
                         </div>
                     </div>
                     <div style="margin-top: 5px;">
-                        <input type="text" id="searchInput" placeholder="Search (Category, Details, Amount)..." onkeyup="renderTransactions()" style="border: 1px solid var(--info);">
+                        <input type="text" id="searchInput" placeholder="Search (Date, Category, Details, Amount)..." onkeyup="renderTransactions()" style="border: 1px solid var(--info);">
                     </div>
                 </div>
                 <button class="btn-style btn-primary btn-block" onclick="secureAction(exportHistoryPDF)"><i class="fas fa-file-pdf"></i> Export History PDF</button>
@@ -1250,7 +1250,12 @@
             else if(filter.length===4) dateMatch = (getY(t.date) === filter);
             else dateMatch = (getYM(t.date) === (filter || getYM(new Date().toISOString())));
             let searchMatch = true;
-            if (searchTerm) { const searchStr = (t.category + ' ' + (t.details || '') + ' ' + t.amount).toLowerCase(); searchMatch = searchStr.includes(searchTerm); }
+if (searchTerm) { 
+    const dateDisplayStr = new Date(t.date).toLocaleDateString('en-IN', {day:'numeric', month:'short', year:'numeric'}).toLowerCase();
+    const rawDate = t.date.split('T')[0]; // For YYYY-MM-DD format
+    const searchStr = (t.category + ' ' + (t.details || '') + ' ' + t.amount + ' ' + dateDisplayStr + ' ' + rawDate).toLowerCase(); 
+    searchMatch = searchStr.includes(searchTerm); 
+}
             return dateMatch && searchMatch;
         }).sort((a,b)=>new Date(b.date)-new Date(a.date));
 
