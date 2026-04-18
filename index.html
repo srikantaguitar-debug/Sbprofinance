@@ -56,6 +56,41 @@
             --input-bg: #2C2C2C;
             --border-color: #333333;
         }
+        /* --- Custom Themes --- */
+        [data-theme="ocean"] {
+            --primary: #00B4D8; --danger: #D62828; --info: #0077B6; --warning: #F4A261;
+            --bg-body: #E0FBFC; --bg-card: #FFFFFF; --text-main: #1D3557; --text-muted: #457B9D;
+            --lock-bg: #E0FBFC; --lock-text: #0077B6; --input-bg: #F1FAEE; --border-color: #A8DADC;
+        }
+        [data-theme="nature"] {
+            --primary: #2E7D32; --danger: #D32F2F; --info: #388E3C; --warning: #FBC02D;
+            --bg-body: #E8F5E9; --bg-card: #FFFFFF; --text-main: #1B5E20; --text-muted: #4CAF50;
+            --lock-bg: #E8F5E9; --lock-text: #388E3C; --input-bg: #F1F8E9; --border-color: #A5D6A7;
+        }
+        [data-theme="magenta"] {
+            --primary: #D81B60; --danger: #D32F2F; --info: #AD1457; --warning: #FBC02D;
+            --bg-body: #FCE4EC; --bg-card: #FFFFFF; --text-main: #4A148C; --text-muted: #880E4F;
+            --lock-bg: #FCE4EC; --lock-text: #AD1457; --input-bg: #F8BBD0; --border-color: #F48FB1;
+        }
+        [data-theme="orangered"] {
+            --primary: #FF5722; --danger: #C62828; --info: #D84315; --warning: #FFB300;
+            --bg-body: #FBE9E7; --bg-card: #FFFFFF; --text-main: #3E2723; --text-muted: #5D4037;
+            --lock-bg: #FBE9E7; --lock-text: #D84315; --input-bg: #FFCCBC; --border-color: #FFAB91;
+        }
+        [data-theme="purple"] {
+            --primary: #8E24AA; --danger: #D32F2F; --info: #6A1B9A; --warning: #FBC02D;
+            --bg-body: #F3E5F5; --bg-card: #FFFFFF; --text-main: #311B92; --text-muted: #512DA8;
+            --lock-bg: #F3E5F5; --lock-text: #6A1B9A; --input-bg: #E1BEE7; --border-color: #CE93D8;
+        }
+
+        /* --- Theme Toggle Switch --- */
+        .switch { position: relative; display: inline-block; width: 42px; height: 24px; margin: 0; }
+        .switch input { opacity: 0; width: 0; height: 0; }
+        .slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #ccc; transition: .4s; border-radius: 24px;}
+        .slider:before { position: absolute; content: ""; height: 16px; width: 16px; left: 4px; bottom: 4px; background-color: white; transition: .4s; border-radius: 50%; }
+        input:checked + .slider { background-color: var(--primary); }
+        input:checked + .slider:before { transform: translateX(18px); }
+        
 
         html, body, #securityOverlay { height: 100%; }
 
@@ -568,10 +603,16 @@
                         </div>
                     </div>
                     <div style="margin-top: 5px;">
-                        <input type="text" id="searchInput" placeholder="Search (Date, Category, Details, Amount)..." onkeyup="renderTransactions()" style="border: 1px solid var(--info);">
-                    </div>
-                </div>
-                <button class="btn-style btn-primary btn-block" onclick="secureAction(exportHistoryPDF)"><i class="fas fa-file-pdf"></i> Export History PDF</button>
+    <input type="text" id="searchInput" placeholder="Search (Date, Category, Details, Amount)..." onkeyup="renderTransactions()" style="border: 1px solid var(--info);">
+</div>
+</div>
+
+<div id="historySummary" style="display: flex; justify-content: space-between; background: var(--input-bg); padding: 12px; border-radius: 8px; margin-bottom: 15px; border: 1px solid var(--border-color); font-size: 13px; font-weight: 600; box-shadow: 0 2px 4px rgba(0,0,0,0.05);">
+    <div style="color: var(--primary);"><i class="fas fa-arrow-down"></i> In: <br><span id="histTotalInc">₹0.00</span></div>
+    <div style="color: var(--danger);"><i class="fas fa-arrow-up"></i> Out: <br><span id="histTotalExp">₹0.00</span></div>
+    <div style="color: var(--info); text-align: right;"><i class="fas fa-wallet"></i> Net: <br><span id="histNet">₹0.00</span></div>
+</div>
+<button class="btn-style btn-primary btn-block" onclick="secureAction(exportHistoryPDF)"><i class="fas fa-file-pdf"></i> Export History PDF</button>
                 <ul id="transactionList" class="transaction-list"></ul>
                 <p id="noTransactionsMsg" style="text-align: center; color: var(--text-muted); font-style: italic; display: none; padding: 15px;">No transactions found.</p>
             </div>
@@ -583,7 +624,31 @@
         
         <div class="settings-grid">
             <div class="settings-item" style="grid-column: span 2;">
-                <button class="btn-style btn-primary btn-settings" onclick="toggleTheme()"><i class="fas fa-adjust"></i> Toggle Dark/Light Mode</button>
+                <div class="settings-item" style="grid-column: span 2; border: 1px solid var(--border-color); padding: 15px; border-radius: 8px; background: var(--input-bg);">
+                <h3 style="color: var(--info); font-size: 14px; margin: 0 0 12px 0;"><i class="fas fa-palette"></i> Theme Customization</h3>
+                
+                <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px;">
+                    <span style="font-size: 13px; font-weight: 500;">Auto Theme (Daily Change)</span>
+                    <label class="switch">
+                        <input type="checkbox" id="autoThemeToggle" onchange="handleAutoThemeToggle()">
+                        <span class="slider"></span>
+                    </label>
+                </div>
+                
+                <div id="manualThemeSelector" style="display: none;">
+                    <label style="font-size: 12px; color: var(--text-muted);">Select Theme Manually:</label>
+                    <select id="themeSelectDropdown" onchange="handleManualThemeSelect()" style="margin-top: 5px;">
+                        <option value="dark">Dark Theme (রবিবার)</option>
+                        <option value="light">Light Theme (সোমবার)</option>
+                        <option value="ocean">Ocean Blue (মঙ্গলবার)</option>
+                        <option value="nature">Nature Green (বুধবার)</option>
+                        <option value="magenta">Magenta (বৃহস্পতিবার)</option>
+                        <option value="orangered">Orange Red (শুক্রবার)</option>
+                        <option value="purple">Purple (শনিবার)</option>
+                    </select>
+                </div>
+                <p id="autoThemeStatus" style="font-size: 11px; color: var(--text-muted); margin: 10px 0 0 0; font-style: italic;"></p>
+            </div><i class="fas fa-adjust"></i> Toggle Dark/Light Mode</button>
             </div>
 
             <div class="settings-item" style="grid-column: span 2;">
@@ -1238,38 +1303,64 @@
     }
 
     // --- Transaction List Logic ---
-    function renderTransactions() {
-        const filter = document.getElementById('monthFilter').value;
-        const searchInput = document.getElementById('searchInput'); 
-        const searchTerm = searchInput ? searchInput.value.toLowerCase() : '';
-        const list = document.getElementById('transactionList');
-        const filtered = transactions.filter(t => {
-            let dateMatch = false;
-            if(filter==='lifetime') dateMatch = true;
-            else if(filter==='current_year') dateMatch = (getY(t.date) === new Date().getFullYear().toString());
-            else if(filter.length===4) dateMatch = (getY(t.date) === filter);
-            else dateMatch = (getYM(t.date) === (filter || getYM(new Date().toISOString())));
-            let searchMatch = true;
-if (searchTerm) { 
-    const dateDisplayStr = new Date(t.date).toLocaleDateString('en-IN', {day:'numeric', month:'short', year:'numeric'}).toLowerCase();
-    const rawDate = t.date.split('T')[0]; // For YYYY-MM-DD format
-    const searchStr = (t.category + ' ' + (t.details || '') + ' ' + t.amount + ' ' + dateDisplayStr + ' ' + rawDate).toLowerCase(); 
-    searchMatch = searchStr.includes(searchTerm); 
-}
-            return dateMatch && searchMatch;
-        }).sort((a,b)=>new Date(b.date)-new Date(a.date));
+function renderTransactions() {
+    const filter = document.getElementById('monthFilter').value;
+    const searchInput = document.getElementById('searchInput'); 
+    const searchTerm = searchInput ? searchInput.value.toLowerCase() : '';
+    const list = document.getElementById('transactionList');
+    
+    // ফিল্টার করার লজিক
+    const filtered = transactions.filter(t => {
+        let dateMatch = false;
+        if(filter==='lifetime') dateMatch = true;
+        else if(filter==='current_year') dateMatch = (getY(t.date) === new Date().getFullYear().toString());
+        else if(filter.length===4) dateMatch = (getY(t.date) === filter);
+        else dateMatch = (getYM(t.date) === (filter || getYM(new Date().toISOString())));
+        
+        let searchMatch = true;
+        if (searchTerm) { 
+            const dateDisplayStr = new Date(t.date).toLocaleDateString('en-IN', {day:'numeric', month:'short', year:'numeric'}).toLowerCase();
+            const rawDate = t.date.split('T')[0]; 
+            const searchStr = (t.category + ' ' + (t.details || '') + ' ' + t.amount + ' ' + dateDisplayStr + ' ' + rawDate).toLowerCase(); 
+            searchMatch = searchStr.includes(searchTerm); 
+        }
+        return dateMatch && searchMatch;
+    }).sort((a,b)=>new Date(b.date)-new Date(a.date));
 
-        list.innerHTML = '';
-        document.getElementById('noTransactionsMsg').style.display = filtered.length ? 'none' : 'block';
-        filtered.forEach(t => {
-            const li = document.createElement('li');
-            li.className = t.type === 'income' ? 'income-item' : 'expense-item';
-            const dateDisplay = new Date(t.date).toLocaleDateString('en-IN', {day:'numeric', month:'short'});
-            li.innerHTML = `<div class="transaction-click-area" onclick="showDetails(${t.id})"><div class="transaction-info"><strong>${t.category}</strong><span>${dateDisplay}</span>${t.details ? `<em>${t.details.substring(0,15)}${t.details.length>15?'...':''}</em>` : ''}</div><div class="transaction-amount">${t.type==='income'?'+':'-'} ${formatCurrency(t.amount)}</div></div><div class="action-buttons"><button class="edit-btn" onclick="editTransaction(${t.id})"><i class="fas fa-edit"></i></button><button class="delete-btn" onclick="deleteTransaction(${t.id})"><i class="fas fa-trash-alt"></i></button></div>`;
-            list.appendChild(li);
-        });
-        updateSummary();
+    // --- নতুন যোগ করা হিসাবের লজিক শুরু ---
+    let totalInc = 0;
+    let totalExp = 0;
+    filtered.forEach(t => {
+        if(t.type === 'income') totalInc += t.amount;
+        else totalExp += t.amount;
+    });
+    
+    // UI-তে ব্যালেন্স আপডেট করা
+    const histTotalIncEl = document.getElementById('histTotalInc');
+    const histTotalExpEl = document.getElementById('histTotalExp');
+    const histNetEl = document.getElementById('histNet');
+    
+    if (histTotalIncEl) histTotalIncEl.textContent = formatCurrency(totalInc);
+    if (histTotalExpEl) histTotalExpEl.textContent = formatCurrency(totalExp);
+    if (histNetEl) {
+        histNetEl.textContent = formatCurrency(totalInc - totalExp);
+        histNetEl.style.color = (totalInc - totalExp) >= 0 ? 'var(--primary)' : 'var(--danger)';
     }
+    // --- নতুন যোগ করা হিসাবের লজিক শেষ ---
+
+    // লিস্ট রেন্ডার করা
+    list.innerHTML = '';
+    document.getElementById('noTransactionsMsg').style.display = filtered.length ? 'none' : 'block';
+    
+    filtered.forEach(t => {
+        const li = document.createElement('li');
+        li.className = t.type === 'income' ? 'income-item' : 'expense-item';
+        const dateDisplay = new Date(t.date).toLocaleDateString('en-IN', {day:'numeric', month:'short'});
+        li.innerHTML = `<div class="transaction-click-area" onclick="showDetails(${t.id})"><div class="transaction-info"><strong>${t.category}</strong><span>${dateDisplay}</span>${t.details ? `<em>${t.details.substring(0,15)}${t.details.length>15?'...':''}</em>` : ''}</div><div class="transaction-amount">${t.type==='income'?'+':'-'} ${formatCurrency(t.amount)}</div></div><div class="action-buttons"><button class="edit-btn" onclick="editTransaction(${t.id})"><i class="fas fa-edit"></i></button><button class="delete-btn" onclick="deleteTransaction(${t.id})"><i class="fas fa-trash-alt"></i></button></div>`;
+        list.appendChild(li);
+    });
+    updateSummary();
+}
     
     function showDetails(id) {
         const t = transactions.find(x => x.id === id); if(!t) return;
@@ -1625,12 +1716,56 @@ if (searchTerm) {
         doc.save(`history_${new Date().toISOString().split('T')[0]}.pdf`);
     }
 
-    // --- Initialization ---
-    function toggleTheme() {
-        const html = document.documentElement;
-        if (html.getAttribute('data-theme') === 'dark') { html.removeAttribute('data-theme'); localStorage.setItem('theme', 'light'); } else { html.setAttribute('data-theme', 'dark'); localStorage.setItem('theme', 'dark'); }
+// --- Theme Management ---
+    const THEMES = ['dark', 'light', 'ocean', 'nature', 'magenta', 'orangered', 'purple'];
+    const DAY_NAMES = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+
+    function applyTheme() {
+        const isAuto = localStorage.getItem('autoTheme') !== 'false'; // ডিফল্টভাবে Auto অন থাকবে
+        const savedManualTheme = localStorage.getItem('manualTheme') || 'light';
+        let activeTheme = 'light';
+        
+        if (isAuto) {
+            const todayIndex = new Date().getDay(); // 0 = Sunday, 1 = Monday, etc.
+            activeTheme = THEMES[todayIndex];
+            const statusEl = document.getElementById('autoThemeStatus');
+            if (statusEl) statusEl.textContent = `Auto mode: Today is ${DAY_NAMES[todayIndex]} (${activeTheme} theme).`;
+        } else {
+            activeTheme = savedManualTheme;
+            const statusEl = document.getElementById('autoThemeStatus');
+            if (statusEl) statusEl.textContent = "Auto mode is disabled.";
+        }
+        
+        // থিম অ্যাপ্লাই করা
+        if(activeTheme === 'light') {
+            document.documentElement.removeAttribute('data-theme');
+        } else {
+            document.documentElement.setAttribute('data-theme', activeTheme);
+        }
+        
+        // UI কন্ট্রোল আপডেট করা
+        const autoToggle = document.getElementById('autoThemeToggle');
+        const manualSelector = document.getElementById('manualThemeSelector');
+        const themeDropdown = document.getElementById('themeSelectDropdown');
+        
+        if (autoToggle && manualSelector && themeDropdown) {
+            autoToggle.checked = isAuto;
+            manualSelector.style.display = isAuto ? 'none' : 'block';
+            if (!isAuto) themeDropdown.value = activeTheme;
+        }
     }
-    function applyTheme() { const savedTheme = localStorage.getItem('theme'); if (savedTheme === 'dark') document.documentElement.setAttribute('data-theme', 'dark'); }
+
+    function handleAutoThemeToggle() {
+        const isAuto = document.getElementById('autoThemeToggle').checked;
+        localStorage.setItem('autoTheme', isAuto);
+        applyTheme();
+    }
+
+    function handleManualThemeSelect() {
+        const selectedTheme = document.getElementById('themeSelectDropdown').value;
+        localStorage.setItem('manualTheme', selectedTheme);
+        applyTheme();
+    }
 
     function initAppUI() {
         renderCategoryList(); updateCatOpts(); renderTransactions();
