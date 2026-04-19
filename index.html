@@ -25,62 +25,74 @@
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
       
     <style>
-        /* --- General Variables and Reset (FinTech 3.0 Theme) --- */
+/* --- General Variables (Light Purple Theme) --- */
+        /* --- General Variables (Clean White / Light Theme) --- */
         :root {
-            --primary: #00B894;
+            --primary: #007ACC; /* প্রাইমারি কালার নীল করা হলো (বেগুনি সরিয়ে) */
             --danger: #E84118;
             --info: #007ACC;
             --warning: #FDCB6E;
-            --bg-body: #F7F9FC;
-            --bg-card: #FFFFFF;
-            --text-main: #1C2833;
-            --text-muted: #62727D;
+            --bg-body: #F4F7F6; /* অ্যাপের মেইন ব্যাকগ্রাউন্ড খুব হালকা অ্যাশ/সাদা */
+            --bg-card: #FFFFFF; /* কার্ডের ব্যাকগ্রাউন্ড একদম সাদা (Pure White) */
+            --text-main: #2D3436;
+            --text-muted: #636E72;
             --radius: 12px;
-            --shadow: 0 5px 15px -5px rgba(44, 58, 71, 0.1);
-            --shadow-btn: 0 4px 10px -2px rgba(0, 122, 204, 0.4);
-            --lock-bg: #E6F0FF;
+            --shadow: 0 5px 15px -5px rgba(0, 0, 0, 0.1); /* বেগুনি শ্যাডো সরিয়ে নরমাল শ্যাডো */
+            --lock-bg: #FFFFFF;
             --lock-text: #007ACC;
-            --input-bg: #FAFAFA;
-            --border-color: #E0E0E0;
+            --input-bg: #F9F9F9; /* ড্রপডাউন এবং ইনপুটের ব্যাকগ্রাউন্ড সাদা */
+            --border-color: #E2E8F0; /* নরমাল বর্ডার কালার */
         }
 
         /* --- Dark Theme Variables --- */
         [data-theme="dark"] {
+            --primary: #3498DB; 
             --bg-body: #121212;
-            --bg-card: #1E1E1E;
+            --bg-card: #1E1E1E; /* ডার্ক থিমের কার্ডের কালার */
             --text-main: #E0E0E0;
             --text-muted: #A0A0A0;
             --shadow: 0 5px 15px -5px rgba(0, 0, 0, 0.5);
-            --lock-bg: #000000;
+            --lock-bg: #1E1E1E;
             --lock-text: #00B894;
             --input-bg: #2C2C2C;
             --border-color: #333333;
         }
+
         /* --- Custom Themes --- */
         [data-theme="ocean"] {
             --primary: #00B4D8; --danger: #D62828; --info: #0077B6; --warning: #F4A261;
-            --bg-body: #E0FBFC; --bg-card: #FFFFFF; --text-main: #1D3557; --text-muted: #457B9D;
-            --lock-bg: #E0FBFC; --lock-text: #0077B6; --input-bg: #F1FAEE; --border-color: #A8DADC;
+            --bg-body: #D6F6F9; 
+            --bg-card: #F0FCFD; /* হালকা নীল কার্ড */
+            --text-main: #1D3557; --text-muted: #457B9D;
+            --lock-bg: #F0FCFD; --lock-text: #0077B6; --input-bg: #E1F8FA; --border-color: #A8DADC;
         }
         [data-theme="nature"] {
             --primary: #2E7D32; --danger: #D32F2F; --info: #388E3C; --warning: #FBC02D;
-            --bg-body: #E8F5E9; --bg-card: #FFFFFF; --text-main: #1B5E20; --text-muted: #4CAF50;
-            --lock-bg: #E8F5E9; --lock-text: #388E3C; --input-bg: #F1F8E9; --border-color: #A5D6A7;
+            --bg-body: #DDF2DF; 
+            --bg-card: #F4FBF4; /* হালকা সবুজ কার্ড */
+            --text-main: #1B5E20; --text-muted: #4CAF50;
+            --lock-bg: #F4FBF4; --lock-text: #388E3C; --input-bg: #E8F6E8; --border-color: #A5D6A7;
         }
         [data-theme="magenta"] {
             --primary: #D81B60; --danger: #D32F2F; --info: #AD1457; --warning: #FBC02D;
-            --bg-body: #FCE4EC; --bg-card: #FFFFFF; --text-main: #4A148C; --text-muted: #880E4F;
-            --lock-bg: #FCE4EC; --lock-text: #AD1457; --input-bg: #F8BBD0; --border-color: #F48FB1;
+            --bg-body: #FADCE5; 
+            --bg-card: #FEF4F7; /* হালকা ম্যাজেন্টা কার্ড */
+            --text-main: #4A148C; --text-muted: #880E4F;
+            --lock-bg: #FEF4F7; --lock-text: #AD1457; --input-bg: #FCE8ED; --border-color: #F48FB1;
         }
         [data-theme="orangered"] {
             --primary: #FF5722; --danger: #C62828; --info: #D84315; --warning: #FFB300;
-            --bg-body: #FBE9E7; --bg-card: #FFFFFF; --text-main: #3E2723; --text-muted: #5D4037;
-            --lock-bg: #FBE9E7; --lock-text: #D84315; --input-bg: #FFCCBC; --border-color: #FFAB91;
+            --bg-body: #FCE0D9; 
+            --bg-card: #FFF6F4; /* হালকা অরেঞ্জ কার্ড */
+            --text-main: #3E2723; --text-muted: #5D4037;
+            --lock-bg: #FFF6F4; --lock-text: #D84315; --input-bg: #FDEAE6; --border-color: #FFAB91;
         }
         [data-theme="purple"] {
             --primary: #8E24AA; --danger: #D32F2F; --info: #6A1B9A; --warning: #FBC02D;
-            --bg-body: #F3E5F5; --bg-card: #FFFFFF; --text-main: #311B92; --text-muted: #512DA8;
-            --lock-bg: #F3E5F5; --lock-text: #6A1B9A; --input-bg: #E1BEE7; --border-color: #CE93D8;
+            --bg-body: #EADDF2; 
+            --bg-card: #FAF6FC; /* হালকা ডিপ বেগুনি কার্ড */
+            --text-main: #311B92; --text-muted: #512DA8;
+            --lock-bg: #FAF6FC; --lock-text: #6A1B9A; --input-bg: #F2EBF7; --border-color: #CE93D8;
         }
 
         /* --- Theme Toggle Switch --- */
@@ -118,17 +130,29 @@
             transition: all 0.3s;
         }
         
-        /* Header */
+/* Header / Top Balance Box */
         header { 
-            text-align: center; padding: 15px 18px; margin-bottom: 20px; 
-            background: var(--bg-card); border-radius: var(--radius);
-            box-shadow: 0 6px 15px rgba(0, 122, 204, 0.1); 
-            border: 2px solid var(--info); color: var(--info);
+            text-align: center; padding: 20px 18px; margin-bottom: 20px; 
+            background: var(--lock-bg); 
+            border-radius: var(--radius);
+            box-shadow: 0 6px 15px rgba(0, 0, 0, 0.08); 
+            border: 2px solid var(--primary); 
+            transition: all 0.3s ease;
         }
-        header p { color: var(--info); font-weight: 600; margin: 0; }
-        .balance { 
-            font-size: 32px; font-weight: 800; margin: 5px 0 0; 
-            transition: color 0.3s; color: var(--info);
+        
+        /* উপরের Title টেক্সট বোল্ড করার জন্য */
+        header p { 
+            color: var(--text-muted); 
+            font-weight: 800 !important; /* লেখাটা বোল্ড করা হলো */
+            font-size: 15px;
+            margin: 0; 
+        }
+        
+        /* ব্যালেন্সের সংখ্যা সবুজ ও বোল্ড করার জন্য */
+        #currentBalance {
+            color: #00B894 !important; /* সব থিমেই ফিক্সড সবুজ কালার থাকবে */
+            font-weight: 900 !important; /* সংখ্যাটা আরও বেশি বোল্ড করা হলো */
+            font-size: 34px;
         }
         .balance.positive { color: var(--primary); }
         .balance.negative { color: var(--danger); }
@@ -236,11 +260,13 @@
         } 
         /* Scrollable Legend Styles */
         .custom-legend {
-            max-height: 150px; /* Limit height */
-            overflow-y: auto;  /* Enable scrolling */
+            max-height: 160px;
+            overflow-y: auto;
             margin-top: 15px;
-            border-top: 1px solid var(--border-color);
-            padding-top: 10px;
+            padding: 12px;
+            background-color: var(--input-bg); /* এটি থিম অনুযায়ী অটোমেটিক কালার নিয়ে নেবে */
+            border-radius: 10px; /* সুন্দর গোল বর্ডার */
+            border: 1px solid var(--border-color);
         }
         .legend-item {
             display: flex; justify-content: space-between; align-items: center;
@@ -337,6 +363,119 @@
 .swal2-container {
     z-index: 20000 !important; /* পিন স্ক্রিন (9999) এর চেয়ে বেশি হতে হবে */
 }
+/* --- 1. Fixed Colors for Income, Expense & Balance --- */
+        /* যেকোনো থিমেই এই কালারগুলো অপরিবর্তিত থাকবে */
+        .income-text, .income-item .transaction-amount, 
+        #todayIncome, #monthlyIncome, #yearlyIncome, #histTotalInc, #avgIncBase { 
+            color: #00B894 !important; /* Green */
+        }
+        
+        .expense-text, .expense-item .transaction-amount, 
+        #todayExpense, #monthlyExpense, #yearlyExpense, #histTotalExp, #avgExpBase { 
+            color: #E84118 !important; /* Red */
+        }
+        
+        .balance, .balance.positive, .balance.negative, .balance.zero,
+        #todayBalance, #monthlyBalance, #yearlyBalance, #histNet, #avgBalBase {
+            color: #007ACC !important; /* Blue */
+        }
+
+        /* --- 2. Beautiful Theme Modal UI (Matching Screenshot) --- */
+        #themeModalOverlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0, 0, 0, 0.7); z-index: 99999;
+            display: none; align-items: center; justify-content: center;
+            backdrop-filter: blur(5px);
+        }
+        .custom-theme-modal {
+            background: #2D0854; border-radius: 20px; width: 90%; max-width: 360px;
+            padding: 25px 20px; position: relative; box-shadow: 0 15px 35px rgba(0,0,0,0.5);
+            border: 1px solid #4A148C; font-family: 'Poppins', sans-serif;
+        }
+        .modal-close-x {
+            position: absolute; top: 15px; right: 20px; color: #B39DDB; 
+            font-size: 24px; cursor: pointer; border: none; background: transparent; transition: 0.2s;
+        }
+        .modal-close-x:hover { color: white; transform: scale(1.1); }
+        
+        .custom-theme-modal h2 {
+            color: white; font-size: 26px; font-weight: 700; text-align: center; margin: 0 0 25px 0;
+        }
+        
+        .theme-auto-box {
+            background: #4527A0; border-radius: 12px; padding: 15px; 
+            display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;
+        }
+        .theme-auto-text { color: white; font-weight: 600; font-size: 16px; display: flex; align-items: center; gap: 10px; }
+        
+        /* iOS Style Toggle */
+        .theme-toggle {
+            position: relative; width: 52px; height: 30px; -webkit-appearance: none; appearance: none;
+            background: #311B92; outline: none; border-radius: 20px; cursor: pointer; transition: 0.3s;
+        }
+        .theme-toggle:checked { background: #00E676; }
+        .theme-toggle::before {
+            content: ''; position: absolute; width: 26px; height: 26px; border-radius: 50%; 
+            top: 2px; left: 2px; background: white; transition: 0.3s; box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+        }
+        .theme-toggle:checked::before { transform: translateX(22px); }
+
+        .theme-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+        
+        .theme-btn {
+            border: none; border-radius: 12px; padding: 14px 10px; font-weight: 600; font-size: 14px; 
+            cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px;
+            transition: all 0.2s; font-family: 'Poppins', sans-serif; opacity: 0.9;
+        }
+        .theme-btn:active { transform: scale(0.95); }
+        .theme-btn.active { box-shadow: 0 0 0 3px rgba(255,255,255,0.8); opacity: 1; transform: translateY(-2px); }
+        
+        /* Button Colors */
+        .t-light { background: #A99BB8; color: #2A1147; }
+        .t-dark { background: #2A1B47; color: #A99BB8; }
+        .t-ocean { background: #8278B3; color: #1E3A8A; }
+        .t-nature { background: #969CA6; color: #14532D; }
+        .t-magenta { background: #B38DAE; color: #831843; }
+        .t-orange { background: #B88B92; color: #7F1D1D; }
+        .t-purple { background: #341A6B; color: #A99BB8; grid-column: span 2; border: 1px solid #5E35B1;}
+/* =========================================
+           Fixed Colors & Borders (Balance, Income, Expense)
+           ========================================= */
+           
+        /* ১. ব্যালেন্স (Balance) বক্সগুলোর বর্ডার -> Blue */
+        header, .summary-header-card {
+            border: 2px solid #007ACC !important;
+        }
+
+        /* ২. ইনকাম (Income) এর বর্ডার, লেখা এবং সমস্ত সংখ্যা -> Green */
+        .income-summary { border: 2px solid #00B894 !important; }
+        .income-summary h3, .income-summary i, 
+        .income-text, .income-item .transaction-amount, 
+        #todayIncome, #monthlyIncome, #yearlyIncome, #histTotalInc, 
+        #avgIncBase, #topIncAmt, #topIncMonth { 
+            color: #00B894 !important; 
+        }
+
+        /* ৩. এক্সপেন্স (Expense) এর বর্ডার, লেখা এবং সমস্ত সংখ্যা -> Red */
+        .expense-summary { border: 2px solid #E84118 !important; }
+        .expense-summary h3, .expense-summary i, 
+        .expense-text, .expense-item .transaction-amount, 
+        #todayExpense, #monthlyExpense, #yearlyExpense, #histTotalExp, 
+        #avgExpBase, #topExpAmt, #topExpMonth { 
+            color: #E84118 !important; 
+        }
+        
+        /* ৪. Settings-এর আইটেমগুলোর বর্ডার নরমাল করতে */
+        .settings-item {
+            border-color: #D1D8E0 !important;
+        }
+        /* Save Record Button Always Green */
+        .btn-success, #saveBtn {
+            background-color: #00B894 !important;
+            border-color: #00B894 !important;
+            color: white !important;
+            box-shadow: 0 4px 8px rgba(0, 184, 148, 0.4) !important;
+        }
     </style>
 </head>
 <body>
@@ -355,7 +494,7 @@
                 <button type="submit" class="btn-style btn-primary btn-block">Login</button>
             </form>
             <p style="margin-top: 15px; font-size: 13px;">
-                Don't have an account? <a href="#" onclick="toggleAuthMode('signup')" style="color: var(--primary);">Create New</a>
+                Don't have an account? <a href="#" onclick="toggleAuthMode('signup')" style="color: #00B894; font-weight: 700;">Create Account</a>
             </p>
         </div>
 
@@ -467,7 +606,7 @@
             <div class="chart-grid">
                  <div class="card chart-card">
                     <div class="chart-header">
-                        <h2 style="color: var(--primary);"><i class="fas fa-circle-notch"></i> Income Breakdown</h2>
+                        <h2 style="color: #00B894;"><i class="fas fa-circle-notch"></i> Income Breakdown</h2>
                         <select id="incomeChartFilter" onchange="renderIncomeChart()"></select>
                     </div>
                     <div class="chart-container">
@@ -510,49 +649,66 @@
                     </div>
 
                     <div style="display: flex; gap: 8px; text-align: center; margin-bottom: 10px;">
-                        <div style="flex: 1; padding: 10px 5px; background: rgba(0, 122, 204, 0.1); border-radius: 8px; border: 1px solid var(--info);">
-                            <h4 style="margin:0; font-size:11px; color: var(--text-muted);">Avg Balance</h4>
-                            <div id="avgBalBase" style="font-weight:bold; font-size:13px; color:var(--info)">₹0.00</div>
-                            <div id="avgBalComp" style="font-size:9px; color:var(--text-muted); margin-top: 4px;"></div>
-                        </div>
-                        <div style="flex: 1; padding: 10px 5px; background: rgba(0, 184, 148, 0.1); border-radius: 8px; border: 1px solid var(--primary);">
-                            <h4 style="margin:0; font-size:11px; color: var(--text-muted);">Avg Income</h4>
-                            <div id="avgIncBase" style="font-weight:bold; font-size:13px; color:var(--primary)">₹0.00</div>
-                            <div id="avgIncComp" style="font-size:9px; color:var(--text-muted); margin-top: 4px;"></div>
-                        </div>
-                        <div style="flex: 1; padding: 10px 5px; background: rgba(232, 65, 24, 0.1); border-radius: 8px; border: 1px solid var(--danger);">
-                            <h4 style="margin:0; font-size:11px; color: var(--text-muted);">Avg Expense</h4>
-                            <div id="avgExpBase" style="font-weight:bold; font-size:13px; color:var(--danger)">₹0.00</div>
-                            <div id="avgExpComp" style="font-size:9px; color:var(--text-muted); margin-top: 4px;"></div>
-                        </div>
-                    </div>
+    
+    <div style="flex: 1; padding: 10px 5px; background: rgba(0, 122, 204, 0.1); border-radius: 8px; border: 1px solid #007ACC;">
+        <h4 style="margin:0; font-size:11px; color: var(--text-muted);">Avg Balance</h4>
+        <div id="avgBalBase" style="font-weight:bold; font-size:13px; color:#007ACC;">₹0.00</div>
+        <div id="avgBalComp" style="font-size:9px; color:var(--text-muted); margin-top: 4px;"></div>
+    </div>
+
+    <div style="flex: 1; padding: 10px 5px; background: rgba(0, 184, 148, 0.1); border-radius: 8px; border: 1px solid #00B894;">
+        <h4 style="margin:0; font-size:11px; color: var(--text-muted);">Avg Income</h4>
+        <div id="avgIncBase" style="font-weight:bold; font-size:13px; color:#00B894;">₹0.00</div>
+        <div id="avgIncComp" style="font-size:9px; color:var(--text-muted); margin-top: 4px;"></div>
+    </div>
+
+    <div style="flex: 1; padding: 10px 5px; background: rgba(232, 65, 24, 0.1); border-radius: 8px; border: 1px solid #E84118;">
+        <h4 style="margin:0; font-size:11px; color: var(--text-muted);">Avg Expense</h4>
+        <div id="avgExpBase" style="font-weight:bold; font-size:13px; color:#E84118;">₹0.00</div>
+        <div id="avgExpComp" style="font-size:9px; color:var(--text-muted); margin-top: 4px;"></div>
+    </div>
+    
+
+</div>
                     <p style="font-size:10px; color:var(--text-muted); margin:5px 0 0; text-align: center;">* Current year averages are calculated up to the current month.</p>
                 </div>
+                <div style="margin-top: 15px; border-top: 1px dashed var(--border-color); padding-top: 15px;">
+                        <h4 style="text-align: center; margin: 0 0 10px 0; font-size: 14px; color: var(--info);"><i class="fas fa-trophy"></i> Top Months (<span id="bestMonthYearLabel">Year</span>)</h4>
+                        <div style="display: flex; gap: 8px; text-align: center;">
+                            <div style="flex: 1; padding: 10px 5px; background: var(--input-bg); border-radius: 8px; border: 1px solid #007ACC;">
+                                <h5 style="margin:0; font-size:10px; color: var(--text-muted);">Max Balance</h5>
+                                <div id="topBalMonth" style="font-weight:bold; font-size:13px; color:#007ACC; margin-top:3px;">-</div>
+                                <div id="topBalAmt" style="font-size:11px; color:var(--text-main);">₹0.00</div>
+                            </div>
+                            <div style="flex: 1; padding: 10px 5px; background: var(--input-bg); border-radius: 8px; border: 1px solid #00B894;">
+                                <h5 style="margin:0; font-size:10px; color: var(--text-muted);">Max Income</h5>
+                                <div id="topIncMonth" style="font-weight:bold; font-size:13px; color:#00B894; margin-top:3px;">-</div>
+                                <div id="topIncAmt" style="font-size:11px; color:var(--text-main);">₹0.00</div>
+                            </div>
+                            <div style="flex: 1; padding: 10px 5px; background: var(--input-bg); border-radius: 8px; border: 1px solid #E84118;">
+                                <h5 style="margin:0; font-size:10px; color: var(--text-muted);">Max Expense</h5>
+                                <div id="topExpMonth" style="font-weight:bold; font-size:13px; color:#E84118; margin-top:3px;">-</div>
+                                <div id="topExpAmt" style="font-size:11px; color:var(--text-main);">₹0.00</div>
+                            </div>
+                        </div>
+                    </div>
 
-               <div style="margin-bottom:30px;">
-                   <h3 style="text-align:center; color:var(--info); font-size:14px; margin-bottom:10px;">Net Balance Trend</h3>
-                   <div class="chart-container">
-                       <canvas id="balanceChart"></canvas>
-                   </div>
-               </div>
-
-               <div style="margin-bottom:30px;">
-                   <h3 style="text-align:center; color:var(--primary); font-size:14px; margin-bottom:10px;">Income Comparison</h3>
-                   <div class="chart-container">
-                       <canvas id="incomeCompChart"></canvas>
-                   </div>
-               </div>
-
-               <div>
-                   <h3 style="text-align:center; color:var(--danger); font-size:14px; margin-bottom:10px;">Expense Comparison</h3>
-                   <div class="chart-container">
-                       <canvas id="expenseCompChart"></canvas>
-                   </div>
-               </div>
-            </div>
-       </div>
-
-        <div id="addTransaction" class="tab-content">
+               <div style="margin-top: 30px; margin-bottom: 30px; padding: 15px; background: var(--bg-card); border-radius: 8px; border: 1px solid var(--border-color);">
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+                            <h3 id="combinedChartTitle" style="color:#007ACC; font-size:15px; margin: 0;"><i class="fas fa-chart-line"></i> Trend Analysis</h3>
+                            
+                            <select id="analysisChartTypeFilter" onchange="renderAllAnalysisCharts()" style="padding: 6px 10px; font-size: 13px; width: auto; border: 1px solid var(--info); border-radius: 6px; font-weight: 600; cursor: pointer;">
+                                <option value="balance">Net Balance</option>
+                                <option value="income">Income</option>
+                                <option value="expense">Expense</option>
+                            </select>
+                        </div>
+                        
+                        <div class="chart-container">
+                            <canvas id="combinedAnalysisChart"></canvas>
+                        </div>
+                    </div>
+                </div> </div> <div id="addTransaction" class="tab-content">
              <div class="card">
                 <h2 style="font-size: 20px; margin-top: 0; color: var(--info);"><i class="fas fa-plus-circle"></i> Add / Edit Transaction</h2>
                 <form id="transactionForm" onsubmit="addTransaction(event)">
@@ -608,7 +764,7 @@
 </div>
 
 <div id="historySummary" style="display: flex; justify-content: space-between; background: var(--input-bg); padding: 12px; border-radius: 8px; margin-bottom: 15px; border: 1px solid var(--border-color); font-size: 13px; font-weight: 600; box-shadow: 0 2px 4px rgba(0,0,0,0.05);">
-    <div style="color: var(--primary);"><i class="fas fa-arrow-down"></i> In: <br><span id="histTotalInc">₹0.00</span></div>
+    <div style="color: #00B894;"><i class="fas fa-arrow-down"></i> In: <br><span id="histTotalInc">₹0.00</span></div>
     <div style="color: var(--danger);"><i class="fas fa-arrow-up"></i> Out: <br><span id="histTotalExp">₹0.00</span></div>
     <div style="color: var(--info); text-align: right;"><i class="fas fa-wallet"></i> Net: <br><span id="histNet">₹0.00</span></div>
 </div>
@@ -624,32 +780,10 @@
         
         <div class="settings-grid">
             <div class="settings-item" style="grid-column: span 2;">
-                <div class="settings-item" style="grid-column: span 2; border: 1px solid var(--border-color); padding: 15px; border-radius: 8px; background: var(--input-bg);">
-                <h3 style="color: var(--info); font-size: 14px; margin: 0 0 12px 0;"><i class="fas fa-palette"></i> Theme Customization</h3>
-                
-                <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px;">
-                    <span style="font-size: 13px; font-weight: 500;">Auto Theme (Daily Change)</span>
-                    <label class="switch">
-                        <input type="checkbox" id="autoThemeToggle" onchange="handleAutoThemeToggle()">
-                        <span class="slider"></span>
-                    </label>
-                </div>
-                
-                <div id="manualThemeSelector" style="display: none;">
-                    <label style="font-size: 12px; color: var(--text-muted);">Select Theme Manually:</label>
-                    <select id="themeSelectDropdown" onchange="handleManualThemeSelect()" style="margin-top: 5px;">
-                        <option value="dark">Dark Theme (রবিবার)</option>
-                        <option value="light">Light Theme (সোমবার)</option>
-                        <option value="ocean">Ocean Blue (মঙ্গলবার)</option>
-                        <option value="nature">Nature Green (বুধবার)</option>
-                        <option value="magenta">Magenta (বৃহস্পতিবার)</option>
-                        <option value="orangered">Orange Red (শুক্রবার)</option>
-                        <option value="purple">Purple (শনিবার)</option>
-                    </select>
-                </div>
-                <p id="autoThemeStatus" style="font-size: 11px; color: var(--text-muted); margin: 10px 0 0 0; font-style: italic;"></p>
-            </div><i class="fas fa-adjust"></i> Toggle Dark/Light Mode</button>
-            </div>
+    <button class="btn-style btn-settings" onclick="openThemeModal()" style="justify-content: center; background-color: var(--primary) !important; border: 1px solid var(--primary) !important; color: #FFFFFF !important; padding: 15px; font-size: 16px; box-shadow: 0 4px 8px rgba(0,0,0,0.15); transition: background-color 0.3s ease;">
+        <i class="fas fa-palette"></i> <span id="themeBtnTextDisplay">Change App Theme</span>
+    </button>
+</div>
 
             <div class="settings-item" style="grid-column: span 2;">
                 <label>Currency Symbol</label>
@@ -687,13 +821,34 @@
     </div>
 
     <div class="card">
-        <h2 style="font-size: 20px; margin-top: 0; color: var(--primary);"><i class="fas fa-tags"></i> Custom Categories</h2>
+        <h2 style="font-size: 20px; margin-top: 0; color: #00B894;"><i class="fas fa-tags"></i> Custom Categories</h2>
         <p style="font-size: 13px; color: var(--text-muted);">Define categories for clear tracking.</p>
         <div id="categoryListDisplay" style="margin-bottom: 10px; font-size: 14px;"></div>
         <input type="text" id="newCategoryName" placeholder="New Category Name">
         <button class="btn-style btn-success btn-block" style="margin-top: 10px;" onclick="addCategory()"><i class="fas fa-plus"></i> Add New Category</button>
     </div>
 </div>
+<div id="themeModalOverlay">
+        <div class="custom-theme-modal">
+            <button class="modal-close-x" onclick="closeThemeModal()"><i class="fas fa-times"></i></button>
+            <h2>Choose Theme</h2>
+            
+            <div class="theme-auto-box">
+                <div class="theme-auto-text"><i class="fas fa-magic"></i> Auto Daily Theme</div>
+                <input type="checkbox" id="modalAutoThemeToggle" class="theme-toggle" onchange="toggleAutoTheme()">
+            </div>
+
+            <div class="theme-grid">
+                <button class="theme-btn t-light" data-theme-name="light" onclick="selectManualTheme('light')"><i class="fas fa-sun"></i> Light</button>
+                <button class="theme-btn t-dark" data-theme-name="dark" onclick="selectManualTheme('dark')"><i class="fas fa-moon"></i> Dark</button>
+                <button class="theme-btn t-ocean" data-theme-name="ocean" onclick="selectManualTheme('ocean')"><i class="fas fa-water"></i> Ocean Blue</button>
+                <button class="theme-btn t-nature" data-theme-name="nature" onclick="selectManualTheme('nature')"><i class="fas fa-leaf"></i> Nature Green</button>
+                <button class="theme-btn t-magenta" data-theme-name="magenta" onclick="selectManualTheme('magenta')"><i class="fas fa-palette"></i> Magenta</button>
+                <button class="theme-btn t-orange" data-theme-name="orangered" onclick="selectManualTheme('orangered')"><i class="fas fa-fire"></i> Orange Red</button>
+                <button class="theme-btn t-purple" data-theme-name="purple" onclick="selectManualTheme('purple')"><i class="fas fa-star"></i> Purple Night</button>
+            </div>
+        </div>
+    </div>
 
     <script>
     // --- 1. FIREBASE CONFIGURATION ---
@@ -1095,7 +1250,7 @@
         }
     });
 
-    function renderChart(type, canvasId, filterId) {
+function renderChart(type, canvasId, filterId) {
         const filter = document.getElementById(filterId).value;
         const isY = filter.length === 4;
         const dataMap = {};
@@ -1104,7 +1259,18 @@
         const total = data.reduce((a, b) => a + b, 0);
         
         const legendContainer = document.getElementById(type === 'income' ? 'incomeLegend' : 'expenseLegend');
-        const colors = type === 'income' ? INCOME_COLORS : EXPENSE_COLORS; 
+        
+        // --- কালার প্যালেট ---
+        let colors = [];
+        let centerTextColor = '';
+
+        if (type === 'income') {
+            colors = ['#00B894', '#0984E3', '#00CEC9', '#74B9FF', '#55EFC4', '#81ECEC'];
+            centerTextColor = '#00B894'; 
+        } else {
+            colors = ['#E84118', '#FF7675', '#FDCB6E', '#E17055', '#FAB1A0', '#FFEAA7'];
+            centerTextColor = '#E84118'; 
+        }
         
         let legendHTML = '';
         if (total === 0) legendHTML = '<p style="text-align:center;color:#ccc;font-size:12px;">No data</p>';
@@ -1125,11 +1291,19 @@
 
         const newChart = new Chart(ctx, {
             type: 'doughnut',
-            data: { labels: labels, datasets: [{ data: data, backgroundColor: colors }] },
+            data: { 
+                labels: labels, 
+                datasets: [{ 
+                    data: data, 
+                    backgroundColor: colors,
+                    borderWidth: 4, 
+                    borderColor: 'transparent' /* এই লাইনটি সাদা বর্ডারকে থিমের ব্যাকগ্রাউন্ডের সাথে মিশিয়ে দেবে */
+                }] 
+            },
             options: {
-                responsive: true, maintainAspectRatio: false, cutout: '70%',
+                responsive: true, maintainAspectRatio: false, cutout: '75%',
                 plugins: { legend: { display: false }, tooltip: { enabled: true } },
-                elements: { center: { text: formatCurrency(total), label: `Total ${type}`, color: type==='income'?'#00B894':'#E84118' } },
+                elements: { center: { text: formatCurrency(total), label: `Total ${type}`, color: centerTextColor } },
                 onClick: (e, elements) => { if (elements.length > 0) showCategoryHistory(labels[elements[0].index], type, filter); }
             }
         });
@@ -1168,7 +1342,8 @@
         else {
             list.forEach(t => {
                 const dateStr = new Date(t.date).toLocaleString('en-IN', { dateStyle: 'medium', timeStyle: 'short' });
-                htmlContent += `<li><span class="swal-amt" style="color: ${t.type==='income'?'var(--primary)':'var(--danger)'}">${formatCurrency(t.amount)}</span><strong>${t.category}</strong><span>${dateStr}</span>${t.details ? `<br><span style="font-style:italic;">"${t.details}"</span>` : ''}</li>`;
+                // --- এখানে var(--primary) এর বদলে সরাসরি ফিক্সড কালার #00B894 (Green) এবং #E84118 (Red) দেওয়া হলো ---
+                htmlContent += `<li><span class="swal-amt" style="color: ${t.type === 'income' ? '#00B894' : '#E84118'}">${formatCurrency(t.amount)}</span><strong>${t.category}</strong><span>${dateStr}</span>${t.details ? `<br><span style="font-style:italic;">"${t.details}"</span>` : ''}</li>`;
             });
         }
         htmlContent += '</ul>';
@@ -1238,10 +1413,18 @@
         return divisor === 0 ? 0 : (total / divisor);
     }
 
+// নতুন সিঙ্গেল চার্টের জন্য ভেরিয়েবল
+    let combinedChartInstance = null;
+
     function renderAllAnalysisCharts(){
         const base = document.getElementById('analysisYearFilter').value;
         const comp1 = document.getElementById('compareYearFilter').value;
         const comp2 = document.getElementById('compareYearFilter2').value;
+        
+        // ড্রপডাউন থেকে কী সিলেক্ট করা হয়েছে তা চেক করা (Balance/Income/Expense)
+        const chartTypeElement = document.getElementById('analysisChartTypeFilter');
+        const chartType = chartTypeElement ? chartTypeElement.value : 'balance';
+
         updateSummary(); 
         if(!base) return;
 
@@ -1251,46 +1434,115 @@
 
         const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
         
-        const balColors = ['#007ACC', '#74B9FF', '#BDC3C7'];
-        const incColors = ['#00B894', '#55EFC4', '#BDC3C7'];
-        const expColors = ['#E84118', '#FAB1A0', '#BDC3C7'];
+        // চার্টের টাইটেল এবং কালার সেট করা
+        let chartColors = [];
+        const titleEl = document.getElementById('combinedChartTitle');
+        
+        if(chartType === 'balance') {
+            chartColors = ['#007ACC', '#74B9FF', '#BDC3C7'];
+            if(titleEl) { titleEl.style.color = '#007ACC'; titleEl.innerHTML = '<i class="fas fa-balance-scale"></i> Net Balance Trend'; }
+        } else if(chartType === 'income') {
+            chartColors = ['#00B894', '#55EFC4', '#BDC3C7'];
+            if(titleEl) { titleEl.style.color = '#00B894'; titleEl.innerHTML = '<i class="fas fa-arrow-down"></i> Income Trend'; }
+        } else if(chartType === 'expense') {
+            chartColors = ['#E84118', '#FAB1A0', '#BDC3C7'];
+            if(titleEl) { titleEl.style.color = '#E84118'; titleEl.innerHTML = '<i class="fas fa-arrow-up"></i> Expense Trend'; }
+        }
 
         const createDS = (lbl, type, color, dash) => ({ label: lbl, data: getMonthlyData(lbl, type), borderColor: color, borderWidth: dash?2:3, borderDash: dash?[5,5]:[], tension:0.3, fill:false, pointRadius: dash?0:3 });
         
-        const balDS = years.map((y,i)=>createDS(y, 'balance', balColors[i] || '#ccc', i>0));
-        renderLine('balanceChart', months, balDS, balChart, c => balChart = c);
-        
-        const incDS = years.map((y,i)=>createDS(y, 'income', incColors[i] || '#ccc', i>0));
-        renderLine('incomeCompChart', months, incDS, incChart, c => incChart = c);
-        
-        const expDS = years.map((y,i)=>createDS(y, 'expense', expColors[i] || '#ccc', i>0));
-        renderLine('expenseCompChart', months, expDS, expChart, c => expChart = c);
+        // --- ড্রপডাউন অনুযায়ী ১টি চার্ট তৈরি করা ---
+        const chartDS = years.map((y,i) => createDS(y, chartType, chartColors[i] || '#ccc', i>0));
+        renderLine('combinedAnalysisChart', months, chartDS, combinedChartInstance, c => combinedChartInstance = c);
 
+        // --- এভারেজ ও টপ মান্থ ক্যালকুলেশনের জন্য সব ডেটা বের করা ---
+        const balDS = years.map((y,i)=>createDS(y, 'balance', '#007ACC', i>0));
+        const incDS = years.map((y,i)=>createDS(y, 'income', '#00B894', i>0));
+        const expDS = years.map((y,i)=>createDS(y, 'expense', '#E84118', i>0));
+
+        // Average ডেটা UI তে পাঠানো
         document.getElementById('avgBalBase').textContent = formatCurrency(calculateAverage(balDS[0].data, base));
         document.getElementById('avgIncBase').textContent = formatCurrency(calculateAverage(incDS[0].data, base));
         document.getElementById('avgExpBase').textContent = formatCurrency(calculateAverage(expDS[0].data, base));
 
         let compBalHtml = "", compIncHtml = "", compExpHtml = "";
-
         if (years.length > 1) {
             compBalHtml += `<div style="margin-bottom:2px">vs ${years[1]}: ${formatCurrency(calculateAverage(balDS[1].data, years[1]))}</div>`;
             compIncHtml += `<div style="margin-bottom:2px">vs ${years[1]}: ${formatCurrency(calculateAverage(incDS[1].data, years[1]))}</div>`;
             compExpHtml += `<div style="margin-bottom:2px">vs ${years[1]}: ${formatCurrency(calculateAverage(expDS[1].data, years[1]))}</div>`;
         }
-        
         if (years.length > 2) {
             compBalHtml += `<div>vs ${years[2]}: ${formatCurrency(calculateAverage(balDS[2].data, years[2]))}</div>`;
             compIncHtml += `<div>vs ${years[2]}: ${formatCurrency(calculateAverage(incDS[2].data, years[2]))}</div>`;
             compExpHtml += `<div>vs ${years[2]}: ${formatCurrency(calculateAverage(expDS[2].data, years[2]))}</div>`;
         }
-
         if(years.length === 1) {
             compBalHtml = "vs None"; compIncHtml = "vs None"; compExpHtml = "vs None";
         }
-
         document.getElementById('avgBalComp').innerHTML = compBalHtml;
         document.getElementById('avgIncComp').innerHTML = compIncHtml;
         document.getElementById('avgExpComp').innerHTML = compExpHtml;
+
+        // --- Highest Month ক্যালকুলেশন ---
+        const baseBalData = balDS[0].data;
+        const baseIncData = incDS[0].data;
+        const baseExpData = expDS[0].data;
+
+        const maxInc = Math.max(...baseIncData);
+        const maxExp = Math.max(...baseExpData);
+        const maxBal = Math.max(...baseBalData);
+
+        const maxIncIdx = maxInc > 0 ? baseIncData.indexOf(maxInc) : -1;
+        const maxExpIdx = maxExp > 0 ? baseExpData.indexOf(maxExp) : -1;
+        const maxBalIdx = (maxInc > 0 || maxExp > 0) ? baseBalData.indexOf(maxBal) : -1;
+
+        const bestLabelEl = document.getElementById('bestMonthYearLabel');
+        if(bestLabelEl) bestLabelEl.textContent = base;
+
+        const topBalMonthEl = document.getElementById('topBalMonth');
+        if(topBalMonthEl) topBalMonthEl.textContent = maxBalIdx !== -1 ? months[maxBalIdx] : 'N/A';
+        const topBalAmtEl = document.getElementById('topBalAmt');
+        if(topBalAmtEl) topBalAmtEl.textContent = maxBalIdx !== -1 ? formatCurrency(maxBal) : '₹0.00';
+
+        const topIncMonthEl = document.getElementById('topIncMonth');
+        if(topIncMonthEl) topIncMonthEl.textContent = maxIncIdx !== -1 ? months[maxIncIdx] : 'N/A';
+        const topIncAmtEl = document.getElementById('topIncAmt');
+        if(topIncAmtEl) topIncAmtEl.textContent = maxIncIdx !== -1 ? formatCurrency(maxInc) : '₹0.00';
+
+        const topExpMonthEl = document.getElementById('topExpMonth');
+        if(topExpMonthEl) topExpMonthEl.textContent = maxExpIdx !== -1 ? months[maxExpIdx] : 'N/A';
+        const topExpAmtEl = document.getElementById('topExpAmt');
+        if(topExpAmtEl) topExpAmtEl.textContent = maxExpIdx !== -1 ? formatCurrency(maxExp) : '₹0.00';
+        // --- Click Events for Top Months Cards ---
+        const attachClick = (elementId, maxIdx, type) => {
+            const el = document.getElementById(elementId);
+            if (!el) return;
+            const card = el.parentElement; // পুরো বক্সটিকে সিলেক্ট করা হলো
+            
+            if(maxIdx !== -1) {
+                card.style.cursor = 'pointer'; // মাউস নিলে পয়েন্টার আইকন আসবে
+                card.style.transition = 'transform 0.2s';
+                
+                // ক্লিক করলে একটু ছোট হয়ে অ্যানিমেশন হবে
+                card.onmousedown = () => card.style.transform = 'scale(0.95)';
+                card.onmouseup = () => card.style.transform = 'scale(1)';
+                card.onmouseleave = () => card.style.transform = 'scale(1)';
+                
+                // ক্লিক করলে পপআপ ওপেন হবে
+                card.onclick = () => {
+                    const ym = base + '-' + String(maxIdx + 1).padStart(2, '0');
+                    showMonthModal(ym, type);
+                };
+            } else {
+                card.style.cursor = 'default';
+                card.onclick = null;
+            }
+        };
+
+        // ব্যালেন্স, ইনকাম এবং এক্সপেন্স বক্সের জন্য ফাংশনটি কল করা
+        attachClick('topBalMonth', maxBalIdx, 'all');
+        attachClick('topIncMonth', maxIncIdx, 'income');
+        attachClick('topExpMonth', maxExpIdx, 'expense');
     }
 
     function renderLine(id, lbls, ds, instance, setInst){
@@ -1716,55 +1968,88 @@ function renderTransactions() {
         doc.save(`history_${new Date().toISOString().split('T')[0]}.pdf`);
     }
 
-// --- Theme Management ---
+// --- Custom Theme Modal Logic ---
     const THEMES = ['dark', 'light', 'ocean', 'nature', 'magenta', 'orangered', 'purple'];
-    const DAY_NAMES = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
 
-    function applyTheme() {
-        const isAuto = localStorage.getItem('autoTheme') !== 'false'; // ডিফল্টভাবে Auto অন থাকবে
+function applyTheme() {
+        const isAuto = localStorage.getItem('autoTheme') !== 'false';
         const savedManualTheme = localStorage.getItem('manualTheme') || 'light';
         let activeTheme = 'light';
         
         if (isAuto) {
-            const todayIndex = new Date().getDay(); // 0 = Sunday, 1 = Monday, etc.
+            const todayIndex = new Date().getDay(); 
             activeTheme = THEMES[todayIndex];
-            const statusEl = document.getElementById('autoThemeStatus');
-            if (statusEl) statusEl.textContent = `Auto mode: Today is ${DAY_NAMES[todayIndex]} (${activeTheme} theme).`;
         } else {
             activeTheme = savedManualTheme;
-            const statusEl = document.getElementById('autoThemeStatus');
-            if (statusEl) statusEl.textContent = "Auto mode is disabled.";
         }
         
-        // থিম অ্যাপ্লাই করা
         if(activeTheme === 'light') {
             document.documentElement.removeAttribute('data-theme');
         } else {
             document.documentElement.setAttribute('data-theme', activeTheme);
         }
         
-        // UI কন্ট্রোল আপডেট করা
-        const autoToggle = document.getElementById('autoThemeToggle');
-        const manualSelector = document.getElementById('manualThemeSelector');
-        const themeDropdown = document.getElementById('themeSelectDropdown');
+        updateModalUIState(isAuto, activeTheme);
+
+        // --- নতুন যোগ করা অংশ (বাটনের নাম এবং থিমের নাম ডায়নামিক করার জন্য) ---
+        const themeNamesDisplay = {
+            'light': 'Light Theme',
+            'dark': 'Dark Theme',
+            'ocean': 'Ocean Blue',
+            'nature': 'Nature Green',
+            'magenta': 'Magenta',
+            'orangered': 'Orange Red',
+            'purple': 'Purple Night'
+        };
+        const btnText = document.getElementById('themeBtnTextDisplay');
+        if(btnText) {
+            // যদি অটো মোড অন থাকে তবে Auto লেখাও দেখাবে
+            const modeText = isAuto ? " (Auto)" : "";
+            btnText.textContent = "Theme: " + (themeNamesDisplay[activeTheme] || 'Light') + modeText;
+        }
+        // -----------------------------------------------------------------
         
-        if (autoToggle && manualSelector && themeDropdown) {
-            autoToggle.checked = isAuto;
-            manualSelector.style.display = isAuto ? 'none' : 'block';
-            if (!isAuto) themeDropdown.value = activeTheme;
+        // চার্ট রিফ্রেশ করার জন্য
+        if(typeof refreshUI === 'function') {
+            setTimeout(refreshUI, 100); 
         }
     }
 
-    function handleAutoThemeToggle() {
-        const isAuto = document.getElementById('autoThemeToggle').checked;
+    function openThemeModal() {
+        applyTheme(); // Open করার সময় কারেন্ট স্টেট সিঙ্ক করে নেবে
+        document.getElementById('themeModalOverlay').style.display = 'flex';
+    }
+
+    function closeThemeModal() {
+        document.getElementById('themeModalOverlay').style.display = 'none';
+    }
+
+    function toggleAutoTheme() {
+        const isAuto = document.getElementById('modalAutoThemeToggle').checked;
         localStorage.setItem('autoTheme', isAuto);
         applyTheme();
     }
 
-    function handleManualThemeSelect() {
-        const selectedTheme = document.getElementById('themeSelectDropdown').value;
-        localStorage.setItem('manualTheme', selectedTheme);
+    function selectManualTheme(themeName) {
+        // ম্যানুয়াল থিম সিলেক্ট করলে অটো থিম অফ হয়ে যাবে
+        localStorage.setItem('autoTheme', 'false');
+        localStorage.setItem('manualTheme', themeName);
         applyTheme();
+    }
+
+    function updateModalUIState(isAuto, activeTheme) {
+        // টগল সুইচ আপডেট
+        const toggleBtn = document.getElementById('modalAutoThemeToggle');
+        if(toggleBtn) toggleBtn.checked = isAuto;
+        
+        // সব বাটনের active ক্লাস রিমুভ করা
+        document.querySelectorAll('.theme-btn').forEach(btn => {
+            btn.classList.remove('active');
+        });
+        
+        // কারেন্ট থিম অনুযায়ী বাটনে active ক্লাস (সাদা বর্ডার) অ্যাড করা
+        const activeBtn = document.querySelector(`.theme-btn[data-theme-name="${activeTheme}"]`);
+        if(activeBtn) activeBtn.classList.add('active');
     }
 
     function initAppUI() {
@@ -1802,6 +2087,25 @@ function renderTransactions() {
 
         if('serviceWorker' in navigator) { window.addEventListener('load', () => { navigator.serviceWorker.register('service-worker.js').catch(err => console.log('SW failed: ', err)); }); }
     });
+    // --- Top Month History Popup Function ---
+    function showMonthModal(ym, type) {
+        // ডেটা ফিল্টার করা (নির্দিষ্ট মাস এবং ইনকাম/এক্সপেন্স অনুযায়ী)
+        const filtered = transactions.filter(t => {
+            const tYM = getYM(t.date);
+            let scopeMatch = (tYM === ym);
+            let typeMatch = (type === 'all') ? true : (t.type === type);
+            return scopeMatch && typeMatch;
+        }).sort((a,b) => new Date(b.date) - new Date(a.date));
+        
+        // পপআপের টাইটেল ঠিক করা
+        const monthName = new Date(ym + "-01").toLocaleDateString('en-IN', {month: 'long', year: 'numeric'});
+        let title = `${monthName} - All Transactions`;
+        if(type === 'income') title = `${monthName} - Income Details`;
+        if(type === 'expense') title = `${monthName} - Expense Details`;
+        
+        // আপনার আগে থেকে তৈরি করা SweetAlert Modal কল করা
+        showTransactionsModal(title, filtered);
+    }
     </script>
 </body>
 </html>
