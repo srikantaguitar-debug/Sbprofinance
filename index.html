@@ -856,45 +856,62 @@
         });
     }
 
-    // --- 5. SYNC LOGIC ---
+// --- 5. SYNC LOGIC ---
     async function syncDataWithFirestore() {
         if(!currentUser) return;
         const userDocRef = firestore.collection('users').doc(currentUser.uid);
+        
         try {
             const userDoc = await userDocRef.get();
             if(userDoc.exists) {
                 const data = userDoc.data();
-                if(data.categories) {
+                if(data.categories && data.categories.length > 0) {
                     categories = data.categories; 
                     await dbStoreAction(STORE_CATS, 'readwrite', s => s.clear());
                     for(const c of categories) await dbSet(STORE_CATS, {name: c});
                 }
+                if(data.accounts && data.accounts.length > 0) {
+                    accounts = data.accounts; 
+                    await dbStoreAction(STORE_ACCTS, 'readwrite', s => s.clear());
+                    for(const a of accounts) await dbSet(STORE_ACCTS, {name: a});
+                }
             } else if(navigator.onLine) {
-                await userDocRef.set({ email: currentUser.email, categories: categories }, { merge: true });
+                await userDocRef.set({ email: currentUser.email, categories: categories, accounts: accounts }, { merge: true });
             }
-        } catch(e) { console.log("Offline mode: Using local categories"); }
+        } catch(e) { console.log("Offline mode: Using local data"); }
 
-        userDocRef.collection('transactions').onSnapshot(async (snapshot) => {
-            if(snapshot.metadata.hasPendingWrites) return; 
-            let changes = false;
-            snapshot.docChanges().forEach(async (change) => {
-                const txData = change.doc.data();
-                const txId = parseInt(change.doc.id); 
-                if (change.type === "added" || change.type === "modified") {
-                    const newTx = { ...txData, id: txId };
-                    await dbSet(STORE_TX, newTx);
-                    const idx = transactions.findIndex(t => t.id === txId);
-                    if(idx > -1) transactions[idx] = newTx;
-                    else transactions.push(newTx);
-                    changes = true;
+        // 1. কারেন্ট বছর এবং আগের বছরের ডেটা লোড করা
+        const currentYear = new Date().getFullYear().toString();
+        const prevYear = (new Date().getFullYear() - 1).toString();
+        const yearsToLoad = [currentYear, prevYear];
+
+        // 2. প্রতিটি বছরের সাব-কালেকশনে লিসেনার অ্যাড করা
+        yearsToLoad.forEach(year => {
+            userDocRef.collection('years').doc(year).collection('transactions').onSnapshot(async (snapshot) => {
+                if(snapshot.metadata.hasPendingWrites) return; 
+                let changes = false;
+                
+                for (const change of snapshot.docChanges()) {
+                    const txData = change.doc.data();
+                    const txId = parseInt(change.doc.id); 
+                    
+                    if (change.type === "added" || change.type === "modified") {
+                        const newTx = { ...txData, id: txId };
+                        await dbSet(STORE_TX, newTx);
+                        
+                        const idx = transactions.findIndex(t => t.id === txId);
+                        if(idx > -1) transactions[idx] = newTx;
+                        else transactions.push(newTx);
+                        changes = true;
+                    }
+                    if (change.type === "removed") {
+                        await dbDelete(STORE_TX, txId);
+                        transactions = transactions.filter(t => t.id !== txId);
+                        changes = true;
+                    }
                 }
-                if (change.type === "removed") {
-                    await dbDelete(STORE_TX, txId);
-                    transactions = transactions.filter(t => t.id !== txId);
-                    changes = true;
-                }
+                if(changes && document.getElementById('mainAppContent').style.display === 'block') refreshUI();
             });
-            if(changes && document.getElementById('mainAppContent').style.display === 'block') refreshUI();
         });
     }
 
@@ -907,15 +924,28 @@
         document.getElementById('amountLabel').textContent = `Amount (${globalCurrencySymbol}):`;
     }
 
+    // নতুন সেভ লজিক (Year অনুযায়ী Sub-collection)
     async function saveToFirestore(tx) {
         if(!currentUser) return;
-        try { await firestore.collection('users').doc(currentUser.uid).collection('transactions').doc(String(tx.id)).set(tx); } 
+        const year = getY(tx.date); // ট্রানজ্যাকশনের সাল বের করা (যেমন: "2026")
+        try { 
+            // স্ট্রাকচার: users -> UID -> years -> 2026 -> transactions -> TX_ID
+            await firestore.collection('users').doc(currentUser.uid)
+                           .collection('years').doc(year)
+                           .collection('transactions').doc(String(tx.id)).set(tx); 
+        } 
         catch (e) { console.log("Saved locally."); }
     }
 
-    async function deleteFromFirestore(id) {
+    // নতুন ডিলিট লজিক
+    async function deleteFromFirestore(id, dateStr) {
         if(!currentUser) return;
-        try { await firestore.collection('users').doc(currentUser.uid).collection('transactions').doc(String(id)).delete(); } 
+        const year = getY(dateStr);
+        try { 
+            await firestore.collection('users').doc(currentUser.uid)
+                           .collection('years').doc(year)
+                           .collection('transactions').doc(String(id)).delete(); 
+        } 
         catch (e) { console.log("Deleted locally."); }
     }
 
@@ -1591,7 +1621,7 @@
             if (r.isConfirmed) { 
                 transactions = transactions.filter(t => t.id !== id); 
                 await dbDelete(STORE_TX, id); 
-                await deleteFromFirestore(id); 
+                const tx = transactions.find(t => t.id === id); await deleteFromFirestore(id, tx.date); 
                 refreshUI(); 
             }
         });
@@ -1624,6 +1654,7 @@
     function checkFilePickerSupport() { if (typeof window.showSaveFilePicker === 'undefined') { Swal.fire({ title: 'Browser Not Supported', text: 'Use Chrome, Edge or a modern desktop browser.', icon: 'error' }); return false; } return true; }
     async function exportData() {
         if (!checkFilePickerSupport()) return;
+        // নিচে accounts অ্যাড করা হয়েছে
         const data = { transactions, categories, accounts, pin: await getAppPin(), currencySymbol: globalCurrencySymbol };
         const jsonStr = JSON.stringify(data, null, 2); 
         const defaultDate = new Date().toISOString().split('T')[0];
@@ -1652,56 +1683,54 @@
                 const d = JSON.parse(ev.target.result);
                 const totalTx = d.transactions ? d.transactions.length : 0;
                 const totalCats = d.categories ? d.categories.length : 0;
-                const totalAccts = d.accounts ? d.accounts.length : 0;
+                const totalAccts = d.accounts ? d.accounts.length : 0; 
                 const totalItems = totalTx + totalCats + totalAccts;
                 let processedCount = 0;
 
                 Swal.fire({
                     title: 'Importing Data...',
-                    html: `<p style="font-size:14px; color:var(--text-muted)">Syncing with Cloud Database</p>
+                    html: `<p style="font-size:14px; color:var(--text-muted)">Restoring and Syncing...</p>
                            <div class="progress-container"><div id="importProgressBar" class="progress-bar">0%</div></div>
                            <div id="importStatusText" style="font-weight:bold; color:var(--text-main)">Starting...</div>`,
                     allowOutsideClick: false, showConfirmButton: false,
                     didOpen: () => { Swal.showLoading(); }
                 });
 
-                if(currentUser) {
-                    try {
-                        const ref = firestore.collection('users').doc(currentUser.uid).collection('transactions');
-                        const snapshot = await ref.get();
-                        const batch = firestore.batch();
-                        snapshot.docs.forEach((doc) => { batch.delete(doc.ref); });
-                        await batch.commit();
-                    } catch(e) { console.log("Cloud wipe warning:", e); }
-                }
-
                 const syncPromises = []; 
 
-                if(d.transactions) { 
-                    await dbStoreAction(STORE_TX, 'readwrite', s=>s.clear()); 
-                    for(const t of d.transactions) { 
-                        await dbSet(STORE_TX, t); 
-                        if(currentUser) { syncPromises.push(saveToFirestore(t)); }
-                        processedCount++; updateProgressBar(processedCount, totalItems);
-                    } 
-                }
-
-                if(d.categories) { 
-                    await dbStoreAction(STORE_CATS, 'readwrite', s=>s.clear()); 
-                    for(const c of d.categories) {
-                        await dbSet(STORE_CATS, {name:c}); 
-                        processedCount++; updateProgressBar(processedCount, totalItems);
-                    }
-                    if(currentUser) { categories = d.categories; syncPromises.push(saveCategoriesToFirestore()); }
-                }
-
-                if(d.accounts) { 
+                // 1. Import Accounts
+                if(d.accounts && d.accounts.length > 0) { 
                     await dbStoreAction(STORE_ACCTS, 'readwrite', s=>s.clear()); 
                     for(const a of d.accounts) {
                         await dbSet(STORE_ACCTS, {name:a}); 
                         processedCount++; updateProgressBar(processedCount, totalItems);
                     }
                     accounts = d.accounts;
+                } else {
+                    await dbStoreAction(STORE_ACCTS, 'readwrite', s=>s.clear());
+                    for(const a of DEFAULT_ACCOUNTS) { await dbSet(STORE_ACCTS, {name:a}); }
+                    accounts = DEFAULT_ACCOUNTS;
+                }
+
+                // 2. Import Categories
+                if(d.categories && d.categories.length > 0) { 
+                    await dbStoreAction(STORE_CATS, 'readwrite', s=>s.clear()); 
+                    for(const c of d.categories) {
+                        await dbSet(STORE_CATS, {name:c}); 
+                        processedCount++; updateProgressBar(processedCount, totalItems);
+                    }
+                    categories = d.categories;
+                }
+
+                // 3. Import Transactions (পুরনো ডেটায় অ্যাকাউন্ট না থাকলে Cash বসাবে)
+                if(d.transactions) { 
+                    await dbStoreAction(STORE_TX, 'readwrite', s=>s.clear()); 
+                    for(const t of d.transactions) { 
+                        if(!t.account) t.account = accounts[0]; // Missing account fix
+                        await dbSet(STORE_TX, t); 
+                        if(currentUser) { syncPromises.push(saveToFirestore(t)); }
+                        processedCount++; updateProgressBar(processedCount, totalItems);
+                    } 
                 }
 
                 if(d.pin) await dbSet(STORE_PIN, {key:'pin', value:d.pin});
