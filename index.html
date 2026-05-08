@@ -937,16 +937,13 @@
         catch (e) { console.log("Saved locally."); }
     }
 
-    // নতুন ডিলিট লজিক
-    async function deleteFromFirestore(id, dateStr) {
+    // Categories এবং Accounts ফায়ারবেসে সেভ করার ফাংশন
+    async function saveUserDataToFirestore() {
         if(!currentUser) return;
-        const year = getY(dateStr);
         try { 
-            await firestore.collection('users').doc(currentUser.uid)
-                           .collection('years').doc(year)
-                           .collection('transactions').doc(String(id)).delete(); 
+            await firestore.collection('users').doc(currentUser.uid).set({ categories: categories, accounts: accounts }, { merge: true }); 
         } 
-        catch (e) { console.log("Deleted locally."); }
+        catch(e) { console.log("Saved locally."); }
     }
 
     async function saveCategoriesToFirestore() {
@@ -987,8 +984,8 @@
 
     // --- 7. UTILITIES ---
     const formatCurrency = (amt) => globalCurrencySymbol + ' ' + Number(amt || 0).toLocaleString('en-IN', {minimumFractionDigits: 2, maximumFractionDigits: 2});
-    const getYM = (d) => d.substring(0, 7);
-    const getY = (d) => d.substring(0, 4);
+    const getYM = (d) => (d ? d.substring(0, 7) : new Date().toISOString().substring(0, 7));
+    const getY = (d) => (d ? d.substring(0, 4) : new Date().getFullYear().toString());
     
     function setDateTimeLocalNow() {
         const now = new Date();
@@ -1664,6 +1661,15 @@
             Swal.fire('Success', 'Backup saved successfully.', 'success');
         } catch (err) { if (err.name !== 'AbortError') Swal.fire('Error', 'Failed to save backup.', 'error'); }
     }
+    // Categories এবং Accounts ফায়ারবেসে সেভ করার ফাংশন (যাতে error না আসে)
+    async function saveUserDataToFirestore() {
+        if(!currentUser) return;
+        try { 
+            await firestore.collection('users').doc(currentUser.uid).set({ categories: categories, accounts: accounts }, { merge: true }); 
+        } 
+        catch(e) { console.log("Saved locally."); }
+    }
+
     function importData(e) {
         const f = e.target.files[0]; 
         if(!f) return;
@@ -1689,32 +1695,71 @@
 
                 Swal.fire({
                     title: 'Importing Data...',
-                    html: `<p style="font-size:14px; color:var(--text-muted)">Restoring and Syncing...</p>
+                    html: `<p style="font-size:14px; color:var(--danger); font-weight:bold;">Force Wiping Cloud Data...</p>
                            <div class="progress-container"><div id="importProgressBar" class="progress-bar">0%</div></div>
-                           <div id="importStatusText" style="font-weight:bold; color:var(--text-main)">Starting...</div>`,
+                           <div id="importStatusText" style="font-weight:bold; color:var(--text-main)">Finding & deleting old data...</div>`,
                     allowOutsideClick: false, showConfirmButton: false,
                     didOpen: () => { Swal.showLoading(); }
                 });
 
+                // --- 1. WIPE LOCAL DATA ---
+                transactions = []; categories = []; accounts = [];
+                await dbStoreAction(STORE_TX, 'readwrite', s=>s.clear()); 
+                await dbStoreAction(STORE_CATS, 'readwrite', s=>s.clear()); 
+                await dbStoreAction(STORE_ACCTS, 'readwrite', s=>s.clear()); 
+
+                // --- 2. FORCE FIREBASE WIPE (Force Delete for invisible folders) ---
+                if(currentUser) {
+                    try {
+                        const userRef = firestore.collection('users').doc(currentUser.uid);
+                        
+                        // A. Categories এবং Accounts ডিলিট করা
+                        await userRef.update({ categories: firebase.firestore.FieldValue.delete(), accounts: firebase.firestore.FieldValue.delete() }).catch(()=>{});
+                        
+                        // B. পুরনো মেইন transactions ফোল্ডার ডিলিট করা
+                        const oldTxSnapshot = await userRef.collection('transactions').get();
+                        if(!oldTxSnapshot.empty) {
+                            const batch1 = firestore.batch();
+                            oldTxSnapshot.docs.forEach((doc) => { batch1.delete(doc.ref); });
+                            await batch1.commit();
+                        }
+
+                        // C. নতুন years সাব-কালেকশন ফোর্স ডিলিট করা (2015 থেকে 2035 সাল পর্যন্ত সব চেক করবে)
+                        for (let y = 2015; y <= 2035; y++) {
+                            const yearStr = y.toString();
+                            const txSnapshot = await userRef.collection('years').doc(yearStr).collection('transactions').get();
+                            
+                            if (!txSnapshot.empty) {
+                                // ওই সালের সব ট্রানজ্যাকশন ডিলিট করবে
+                                const batch2 = firestore.batch();
+                                txSnapshot.docs.forEach((doc) => { batch2.delete(doc.ref); });
+                                await batch2.commit();
+                            }
+                            // ইয়ার ফোল্ডারটিও ডিলিট করবে
+                            await userRef.collection('years').doc(yearStr).delete().catch(()=>{});
+                        }
+                        
+                        console.log("Force Cloud Wipe Completely Successful!");
+                    } catch(e) { console.error("Cloud wipe error:", e); }
+                }
+
+                document.getElementById('importStatusText').innerText = "Uploading new backup...";
                 const syncPromises = []; 
 
-                // 1. Import Accounts
+                // --- 3. RESTORE ACCOUNTS ---
                 if(d.accounts && d.accounts.length > 0) { 
-                    await dbStoreAction(STORE_ACCTS, 'readwrite', s=>s.clear()); 
                     for(const a of d.accounts) {
                         await dbSet(STORE_ACCTS, {name:a}); 
                         processedCount++; updateProgressBar(processedCount, totalItems);
                     }
                     accounts = d.accounts;
                 } else {
-                    await dbStoreAction(STORE_ACCTS, 'readwrite', s=>s.clear());
                     for(const a of DEFAULT_ACCOUNTS) { await dbSet(STORE_ACCTS, {name:a}); }
                     accounts = DEFAULT_ACCOUNTS;
                 }
 
-                // 2. Import Categories
+                // --- 4. RESTORE CATEGORIES ---
                 if(d.categories && d.categories.length > 0) { 
-                    await dbStoreAction(STORE_CATS, 'readwrite', s=>s.clear()); 
                     for(const c of d.categories) {
                         await dbSet(STORE_CATS, {name:c}); 
                         processedCount++; updateProgressBar(processedCount, totalItems);
@@ -1722,30 +1767,40 @@
                     categories = d.categories;
                 }
 
-                // 3. Import Transactions (পুরনো ডেটায় অ্যাকাউন্ট না থাকলে Cash বসাবে)
+                // --- 5. RESTORE TRANSACTIONS ---
                 if(d.transactions) { 
-                    await dbStoreAction(STORE_TX, 'readwrite', s=>s.clear()); 
                     for(const t of d.transactions) { 
-                        if(!t.account) t.account = accounts[0]; // Missing account fix
+                        if(!t.account) t.account = accounts[0] || 'Cash'; 
+                        if(!t.date) t.date = new Date().toISOString(); 
+                        
                         await dbSet(STORE_TX, t); 
-                        if(currentUser) { syncPromises.push(saveToFirestore(t)); }
+                        if(currentUser) { syncPromises.push(saveToFirestore(t)); } 
                         processedCount++; updateProgressBar(processedCount, totalItems);
                     } 
                 }
 
+                if(currentUser) {
+                    syncPromises.push(saveUserDataToFirestore());
+                }
+
+                // --- 6. PIN & CURRENCY ---
                 if(d.pin) await dbSet(STORE_PIN, {key:'pin', value:d.pin});
                 if(d.currencySymbol) {
                     globalCurrencySymbol = d.currencySymbol;
                     await dbSet(STORE_PIN, {key:'currencySymbol', value:d.currencySymbol});
                 }
 
+                // --- 7. FINALIZE ---
                 if(syncPromises.length > 0) {
-                    document.getElementById('importStatusText').innerText = "Finalizing Sync...";
+                    document.getElementById('importStatusText').innerText = "Finalizing Cloud Sync...";
                     await Promise.all(syncPromises);
                 }
 
-                Swal.fire({ icon: 'success', title: 'Import Complete!', text: 'All data restored successfully.', timer: 1500, showConfirmButton: false }).then(() => { window.location.reload(); });
-            } catch(err) { Swal.fire('Error', 'Invalid Backup File', 'error'); }
+                Swal.fire({ icon: 'success', title: 'Import Complete!', text: 'Old data deleted & new data restored perfectly.', timer: 2000, showConfirmButton: false }).then(() => { window.location.reload(); });
+            } catch(err) { 
+                console.error("Import Error:", err);
+                Swal.fire('Import Failed', err.message || 'The backup file is invalid or corrupted.', 'error'); 
+            }
         };
         r.readAsText(file);
     }
