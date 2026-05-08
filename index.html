@@ -25,30 +25,29 @@
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
       
     <style>
-/* --- General Variables (Light Purple Theme) --- */
         /* --- General Variables (Clean White / Light Theme) --- */
         :root {
-            --primary: #007ACC; /* প্রাইমারি কালার নীল করা হলো (বেগুনি সরিয়ে) */
+            --primary: #007ACC;
             --danger: #E84118;
             --info: #007ACC;
             --warning: #FDCB6E;
-            --bg-body: #F4F7F6; /* অ্যাপের মেইন ব্যাকগ্রাউন্ড খুব হালকা অ্যাশ/সাদা */
-            --bg-card: #FFFFFF; /* কার্ডের ব্যাকগ্রাউন্ড একদম সাদা (Pure White) */
+            --bg-body: #F4F7F6;
+            --bg-card: #FFFFFF;
             --text-main: #2D3436;
             --text-muted: #636E72;
             --radius: 12px;
-            --shadow: 0 5px 15px -5px rgba(0, 0, 0, 0.1); /* বেগুনি শ্যাডো সরিয়ে নরমাল শ্যাডো */
+            --shadow: 0 5px 15px -5px rgba(0, 0, 0, 0.1);
             --lock-bg: #FFFFFF;
             --lock-text: #007ACC;
-            --input-bg: #F9F9F9; /* ড্রপডাউন এবং ইনপুটের ব্যাকগ্রাউন্ড সাদা */
-            --border-color: #E2E8F0; /* নরমাল বর্ডার কালার */
+            --input-bg: #F9F9F9;
+            --border-color: #E2E8F0;
         }
 
         /* --- Dark Theme Variables --- */
         [data-theme="dark"] {
             --primary: #3498DB; 
             --bg-body: #121212;
-            --bg-card: #1E1E1E; /* ডার্ক থিমের কার্ডের কালার */
+            --bg-card: #1E1E1E;
             --text-main: #E0E0E0;
             --text-muted: #A0A0A0;
             --shadow: 0 5px 15px -5px rgba(0, 0, 0, 0.5);
@@ -62,35 +61,35 @@
         [data-theme="ocean"] {
             --primary: #00B4D8; --danger: #D62828; --info: #0077B6; --warning: #F4A261;
             --bg-body: #D6F6F9; 
-            --bg-card: #F0FCFD; /* হালকা নীল কার্ড */
+            --bg-card: #F0FCFD;
             --text-main: #1D3557; --text-muted: #457B9D;
             --lock-bg: #F0FCFD; --lock-text: #0077B6; --input-bg: #E1F8FA; --border-color: #A8DADC;
         }
         [data-theme="nature"] {
             --primary: #2E7D32; --danger: #D32F2F; --info: #388E3C; --warning: #FBC02D;
             --bg-body: #DDF2DF; 
-            --bg-card: #F4FBF4; /* হালকা সবুজ কার্ড */
+            --bg-card: #F4FBF4;
             --text-main: #1B5E20; --text-muted: #4CAF50;
             --lock-bg: #F4FBF4; --lock-text: #388E3C; --input-bg: #E8F6E8; --border-color: #A5D6A7;
         }
         [data-theme="magenta"] {
             --primary: #D81B60; --danger: #D32F2F; --info: #AD1457; --warning: #FBC02D;
             --bg-body: #FADCE5; 
-            --bg-card: #FEF4F7; /* হালকা ম্যাজেন্টা কার্ড */
+            --bg-card: #FEF4F7;
             --text-main: #4A148C; --text-muted: #880E4F;
             --lock-bg: #FEF4F7; --lock-text: #AD1457; --input-bg: #FCE8ED; --border-color: #F48FB1;
         }
         [data-theme="orangered"] {
             --primary: #FF5722; --danger: #C62828; --info: #D84315; --warning: #FFB300;
             --bg-body: #FCE0D9; 
-            --bg-card: #FFF6F4; /* হালকা অরেঞ্জ কার্ড */
+            --bg-card: #FFF6F4;
             --text-main: #3E2723; --text-muted: #5D4037;
             --lock-bg: #FFF6F4; --lock-text: #D84315; --input-bg: #FDEAE6; --border-color: #FFAB91;
         }
         [data-theme="purple"] {
             --primary: #8E24AA; --danger: #D32F2F; --info: #6A1B9A; --warning: #FBC02D;
             --bg-body: #EADDF2; 
-            --bg-card: #FAF6FC; /* হালকা ডিপ বেগুনি কার্ড */
+            --bg-card: #FAF6FC;
             --text-main: #311B92; --text-muted: #512DA8;
             --lock-bg: #FAF6FC; --lock-text: #6A1B9A; --input-bg: #F2EBF7; --border-color: #CE93D8;
         }
@@ -130,7 +129,7 @@
             transition: all 0.3s;
         }
         
-/* Header / Top Balance Box */
+        /* Header / Top Balance Box */
         header { 
             text-align: center; padding: 20px 18px; margin-bottom: 20px; 
             background: var(--lock-bg); 
@@ -139,21 +138,8 @@
             border: 2px solid var(--primary); 
             transition: all 0.3s ease;
         }
-        
-        /* উপরের Title টেক্সট বোল্ড করার জন্য */
-        header p { 
-            color: var(--text-muted); 
-            font-weight: 800 !important; /* লেখাটা বোল্ড করা হলো */
-            font-size: 15px;
-            margin: 0; 
-        }
-        
-        /* ব্যালেন্সের সংখ্যা সবুজ ও বোল্ড করার জন্য */
-        #currentBalance {
-            color: #00B894 !important; /* সব থিমেই ফিক্সড সবুজ কালার থাকবে */
-            font-weight: 900 !important; /* সংখ্যাটা আরও বেশি বোল্ড করা হলো */
-            font-size: 34px;
-        }
+        header p { color: var(--text-muted); font-weight: 800 !important; font-size: 15px; margin: 0; }
+        #currentBalance { color: #00B894 !important; font-weight: 900 !important; font-size: 34px; }
         .balance.positive { color: var(--primary); }
         .balance.negative { color: var(--danger); }
         .balance.zero { color: var(--info); }
@@ -241,6 +227,7 @@
         .transaction-amount { font-size: 16px; font-weight: 700; }
         .income-item .transaction-amount { color: var(--primary); }
         .expense-item .transaction-amount { color: var(--danger); }
+        .transfer-item .transaction-amount { color: var(--warning); }
         
         .action-buttons { display: flex; gap: 10px; align-items: center; padding-left: 10px; }
         .edit-btn, .delete-btn { background: none; border: none; cursor: pointer; transition: color 0.2s; font-size: 14px; }
@@ -264,8 +251,8 @@
             overflow-y: auto;
             margin-top: 15px;
             padding: 12px;
-            background-color: var(--input-bg); /* এটি থিম অনুযায়ী অটোমেটিক কালার নিয়ে নেবে */
-            border-radius: 10px; /* সুন্দর গোল বর্ডার */
+            background-color: var(--input-bg);
+            border-radius: 10px; 
             border: 1px solid var(--border-color);
         }
         .legend-item {
@@ -314,123 +301,47 @@
             font-size: 30px; cursor: pointer; opacity: 0.8; transition: opacity 0.2s;
         }
         #closePinScreen:hover { opacity: 1; }
-        /* --- SweetAlert2 Theme Integration (Dark/Light) --- */
-.swal2-popup {
-    background-color: var(--bg-card) !important;
-    color: var(--text-main) !important;
-    border: 1px solid var(--border-color);
-    border-radius: 15px !important;
-}
-.swal2-title, .swal2-html-container, .swal2-content {
-    color: var(--text-main) !important;
-}
-/* Input fields inside popups */
-.swal2-input, .swal2-textarea {
-    background-color: var(--input-bg) !important;
-    color: var(--text-main) !important;
-    border-color: var(--border-color) !important;
-}
-/* Close button */
-.swal2-close {
-    color: var(--text-muted) !important;
-}
-.swal2-close:hover {
-    color: var(--danger) !important;
-}
-/* Progress Bar Style inside SweetAlert */
-.progress-container {
-    width: 100%;
-    background-color: #f1f1f1;
-    border-radius: 10px;
-    margin: 20px 0;
-    overflow: hidden;
-    height: 20px;
-    border: 1px solid var(--border-color);
-}
-
-.progress-bar {
-    width: 0%;
-    height: 100%;
-    background-color: var(--primary); /* Green color */
-    text-align: center;
-    line-height: 20px;
-    color: white;
-    font-size: 12px;
-    font-weight: bold;
-    transition: width 0.2s ease;
-}
-/* SweetAlert Popup Z-Index Fix */
-.swal2-container {
-    z-index: 20000 !important; /* পিন স্ক্রিন (9999) এর চেয়ে বেশি হতে হবে */
-}
-/* --- 1. Fixed Colors for Income, Expense & Balance --- */
-        /* যেকোনো থিমেই এই কালারগুলো অপরিবর্তিত থাকবে */
-        .income-text, .income-item .transaction-amount, 
-        #todayIncome, #monthlyIncome, #yearlyIncome, #histTotalInc, #avgIncBase { 
-            color: #00B894 !important; /* Green */
-        }
         
-        .expense-text, .expense-item .transaction-amount, 
-        #todayExpense, #monthlyExpense, #yearlyExpense, #histTotalExp, #avgExpBase { 
-            color: #E84118 !important; /* Red */
-        }
+        /* SweetAlert2 Theme Integration */
+        .swal2-popup { background-color: var(--bg-card) !important; color: var(--text-main) !important; border: 1px solid var(--border-color); border-radius: 15px !important; }
+        .swal2-title, .swal2-html-container, .swal2-content { color: var(--text-main) !important; }
+        .swal2-input, .swal2-textarea { background-color: var(--input-bg) !important; color: var(--text-main) !important; border-color: var(--border-color) !important; }
+        .swal2-close { color: var(--text-muted) !important; }
+        .swal2-close:hover { color: var(--danger) !important; }
+        .swal2-container { z-index: 20000 !important; }
         
-        .balance, .balance.positive, .balance.negative, .balance.zero,
-        #todayBalance, #monthlyBalance, #yearlyBalance, #histNet, #avgBalBase {
-            color: #007ACC !important; /* Blue */
-        }
+        .progress-container { width: 100%; background-color: #f1f1f1; border-radius: 10px; margin: 20px 0; overflow: hidden; height: 20px; border: 1px solid var(--border-color); }
+        .progress-bar { width: 0%; height: 100%; background-color: var(--primary); text-align: center; line-height: 20px; color: white; font-size: 12px; font-weight: bold; transition: width 0.2s ease; }
+        
+        /* Fixed Colors */
+        .income-text, .income-item .transaction-amount, #todayIncome, #monthlyIncome, #yearlyIncome, #histTotalInc, #avgIncBase { color: #00B894 !important; }
+        .expense-text, .expense-item .transaction-amount, #todayExpense, #monthlyExpense, #yearlyExpense, #histTotalExp, #avgExpBase { color: #E84118 !important; }
+        .balance, .balance.positive, .balance.negative, .balance.zero, #todayBalance, #monthlyBalance, #yearlyBalance, #histNet, #avgBalBase { color: #007ACC !important; }
+        
+        header, .summary-header-card { border: 2px solid #007ACC !important; }
+        .income-summary { border: 2px solid #00B894 !important; }
+        .income-summary h3, .income-summary i, .income-text, .income-item .transaction-amount, #todayIncome, #monthlyIncome, #yearlyIncome, #histTotalInc, #avgIncBase, #topIncAmt, #topIncMonth { color: #00B894 !important; }
+        .expense-summary { border: 2px solid #E84118 !important; }
+        .expense-summary h3, .expense-summary i, .expense-text, .expense-item .transaction-amount, #todayExpense, #monthlyExpense, #yearlyExpense, #histTotalExp, #avgExpBase, #topExpAmt, #topExpMonth { color: #E84118 !important; }
+        .settings-item { border-color: #D1D8E0 !important; }
+        .btn-success, #saveBtn { background-color: #00B894 !important; border-color: #00B894 !important; color: white !important; box-shadow: 0 4px 8px rgba(0, 184, 148, 0.4) !important; }
 
-        /* --- 2. Beautiful Theme Modal UI (Matching Screenshot) --- */
-        #themeModalOverlay {
-            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0, 0, 0, 0.7); z-index: 99999;
-            display: none; align-items: center; justify-content: center;
-            backdrop-filter: blur(5px);
-        }
-        .custom-theme-modal {
-            background: #2D0854; border-radius: 20px; width: 90%; max-width: 360px;
-            padding: 25px 20px; position: relative; box-shadow: 0 15px 35px rgba(0,0,0,0.5);
-            border: 1px solid #4A148C; font-family: 'Poppins', sans-serif;
-        }
-        .modal-close-x {
-            position: absolute; top: 15px; right: 20px; color: #B39DDB; 
-            font-size: 24px; cursor: pointer; border: none; background: transparent; transition: 0.2s;
-        }
+        /* Theme Modal */
+        #themeModalOverlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.7); z-index: 99999; display: none; align-items: center; justify-content: center; backdrop-filter: blur(5px); }
+        .custom-theme-modal { background: #2D0854; border-radius: 20px; width: 90%; max-width: 360px; padding: 25px 20px; position: relative; box-shadow: 0 15px 35px rgba(0,0,0,0.5); border: 1px solid #4A148C; font-family: 'Poppins', sans-serif; }
+        .modal-close-x { position: absolute; top: 15px; right: 20px; color: #B39DDB; font-size: 24px; cursor: pointer; border: none; background: transparent; transition: 0.2s; }
         .modal-close-x:hover { color: white; transform: scale(1.1); }
-        
-        .custom-theme-modal h2 {
-            color: white; font-size: 26px; font-weight: 700; text-align: center; margin: 0 0 25px 0;
-        }
-        
-        .theme-auto-box {
-            background: #4527A0; border-radius: 12px; padding: 15px; 
-            display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;
-        }
+        .custom-theme-modal h2 { color: white; font-size: 26px; font-weight: 700; text-align: center; margin: 0 0 25px 0; }
+        .theme-auto-box { background: #4527A0; border-radius: 12px; padding: 15px; display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
         .theme-auto-text { color: white; font-weight: 600; font-size: 16px; display: flex; align-items: center; gap: 10px; }
-        
-        /* iOS Style Toggle */
-        .theme-toggle {
-            position: relative; width: 52px; height: 30px; -webkit-appearance: none; appearance: none;
-            background: #311B92; outline: none; border-radius: 20px; cursor: pointer; transition: 0.3s;
-        }
+        .theme-toggle { position: relative; width: 52px; height: 30px; -webkit-appearance: none; appearance: none; background: #311B92; outline: none; border-radius: 20px; cursor: pointer; transition: 0.3s; }
         .theme-toggle:checked { background: #00E676; }
-        .theme-toggle::before {
-            content: ''; position: absolute; width: 26px; height: 26px; border-radius: 50%; 
-            top: 2px; left: 2px; background: white; transition: 0.3s; box-shadow: 0 2px 5px rgba(0,0,0,0.2);
-        }
+        .theme-toggle::before { content: ''; position: absolute; width: 26px; height: 26px; border-radius: 50%; top: 2px; left: 2px; background: white; transition: 0.3s; box-shadow: 0 2px 5px rgba(0,0,0,0.2); }
         .theme-toggle:checked::before { transform: translateX(22px); }
-
         .theme-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
-        
-        .theme-btn {
-            border: none; border-radius: 12px; padding: 14px 10px; font-weight: 600; font-size: 14px; 
-            cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px;
-            transition: all 0.2s; font-family: 'Poppins', sans-serif; opacity: 0.9;
-        }
+        .theme-btn { border: none; border-radius: 12px; padding: 14px 10px; font-weight: 600; font-size: 14px; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; transition: all 0.2s; font-family: 'Poppins', sans-serif; opacity: 0.9; }
         .theme-btn:active { transform: scale(0.95); }
         .theme-btn.active { box-shadow: 0 0 0 3px rgba(255,255,255,0.8); opacity: 1; transform: translateY(-2px); }
-        
-        /* Button Colors */
         .t-light { background: #A99BB8; color: #2A1147; }
         .t-dark { background: #2A1B47; color: #A99BB8; }
         .t-ocean { background: #8278B3; color: #1E3A8A; }
@@ -438,44 +349,6 @@
         .t-magenta { background: #B38DAE; color: #831843; }
         .t-orange { background: #B88B92; color: #7F1D1D; }
         .t-purple { background: #341A6B; color: #A99BB8; grid-column: span 2; border: 1px solid #5E35B1;}
-/* =========================================
-           Fixed Colors & Borders (Balance, Income, Expense)
-           ========================================= */
-           
-        /* ১. ব্যালেন্স (Balance) বক্সগুলোর বর্ডার -> Blue */
-        header, .summary-header-card {
-            border: 2px solid #007ACC !important;
-        }
-
-        /* ২. ইনকাম (Income) এর বর্ডার, লেখা এবং সমস্ত সংখ্যা -> Green */
-        .income-summary { border: 2px solid #00B894 !important; }
-        .income-summary h3, .income-summary i, 
-        .income-text, .income-item .transaction-amount, 
-        #todayIncome, #monthlyIncome, #yearlyIncome, #histTotalInc, 
-        #avgIncBase, #topIncAmt, #topIncMonth { 
-            color: #00B894 !important; 
-        }
-
-        /* ৩. এক্সপেন্স (Expense) এর বর্ডার, লেখা এবং সমস্ত সংখ্যা -> Red */
-        .expense-summary { border: 2px solid #E84118 !important; }
-        .expense-summary h3, .expense-summary i, 
-        .expense-text, .expense-item .transaction-amount, 
-        #todayExpense, #monthlyExpense, #yearlyExpense, #histTotalExp, 
-        #avgExpBase, #topExpAmt, #topExpMonth { 
-            color: #E84118 !important; 
-        }
-        
-        /* ৪. Settings-এর আইটেমগুলোর বর্ডার নরমাল করতে */
-        .settings-item {
-            border-color: #D1D8E0 !important;
-        }
-        /* Save Record Button Always Green */
-        .btn-success, #saveBtn {
-            background-color: #00B894 !important;
-            border-color: #00B894 !important;
-            color: white !important;
-            box-shadow: 0 4px 8px rgba(0, 184, 148, 0.4) !important;
-        }
     </style>
 </head>
 <body>
@@ -556,6 +429,7 @@
         </div>
 
         <div id="dashboard" class="tab-content">
+            
             <div class="card summary-header-card today" onclick="showSummaryDetails('today', 'all')">
                 <h3><i class="fas fa-calendar-day"></i> Today's Balance</h3>
                 <p id="todayBalance">₹0.00</p>
@@ -630,6 +504,10 @@
 
         <div id="analysis" class="tab-content">
             <div class="card">
+                <button class="btn-style btn-primary btn-block" style="margin-top: 0; margin-bottom: 20px; padding: 15px; font-size: 16px; background-color: var(--primary);" onclick="openAccountBalancesPopup()">
+                    <i class="fas fa-wallet"></i> View Account Balances
+                </button>
+
                 <div style="margin-bottom:15px; border-bottom: 1px solid var(--border-color); padding-bottom: 15px;">
                     <h2 style="font-size: 20px; margin-top: 0; color: var(--info);"><i class="fas fa-chart-bar"></i> Multi-Year Analysis</h2>
                     
@@ -717,28 +595,42 @@
                             <label for="amount" id="amountLabel">Amount (₹):</label>
                             <input type="number" id="amount" placeholder="e.g., 500" required min="1">
                         </div>
-
                         <div class="form-group half">
                             <label for="type">Type:</label>
-                            <select id="type" required>
+                            <select id="type" required onchange="toggleTransferMode()">
                                 <option value="income">Income</option>
                                 <option value="expense">Expense</option>
+                                <option value="transfer">Transfer</option>
                             </select>
                         </div>
                     </div>
+                    
                     <div class="form-grid">
-                        <div class="form-group half">
+                        <div class="form-group half" id="categoryGroup">
                             <label for="category">Category:</label>
-                            <select id="category" required></select>
+                            <select id="category"></select>
                         </div>
                         <div class="form-group half">
-                            <label for="date">Date & Time:</label>
-                            <input type="datetime-local" id="date" required>
+                            <label for="account" id="accountLabel">Account:</label>
+                            <select id="account" required></select>
                         </div>
                     </div>
+                    
+                    <div class="form-grid" id="transferToGroup" style="display: none;">
+                        <div class="form-group half" style="width: 100%;">
+                            <label for="toAccount" style="color: var(--primary);">To Account (Receive):</label>
+                            <select id="toAccount"></select>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="date">Date & Time:</label>
+                        <input type="datetime-local" id="date" required>
+                    </div>
+
                     <div class="form-group">
                         <label for="details">Details:</label>
-                        <textarea id="details" rows="2" placeholder="e.g., Class fee / Purchase"></textarea>
+                        <textarea id="details" rows="2" placeholder="e.g., Class fee / Purchase / Transfer note"></textarea>
                     </div>
                     
                     <div style="display: flex; gap: 10px;">
@@ -823,9 +715,17 @@
     <div class="card">
         <h2 style="font-size: 20px; margin-top: 0; color: #00B894;"><i class="fas fa-tags"></i> Custom Categories</h2>
         <p style="font-size: 13px; color: var(--text-muted);">Define categories for clear tracking.</p>
-        <div id="categoryListDisplay" style="margin-bottom: 10px; font-size: 14px;"></div>
+        <div id="categoryListDisplay" style="max-height: 180px; overflow-y: auto; margin-bottom: 10px; font-size: 14px; padding-right: 5px;"></div>
         <input type="text" id="newCategoryName" placeholder="New Category Name">
         <button class="btn-style btn-success btn-block" style="margin-top: 10px;" onclick="addCategory()"><i class="fas fa-plus"></i> Add New Category</button>
+    </div>
+
+    <div class="card" style="margin-top: 15px;">
+        <h2 style="font-size: 20px; margin-top: 0; color: #007ACC;"><i class="fas fa-wallet"></i> Payment Accounts</h2>
+        <p style="font-size: 13px; color: var(--text-muted);">Manage Cash, SBI Bank, Paytm etc.</p>
+        <div id="accountListDisplay" style="max-height: 180px; overflow-y: auto; margin-bottom: 10px; font-size: 14px; padding-right: 5px;"></div>
+        <input type="text" id="newAccountName" placeholder="e.g. SBI Bank, Cash, Paytm">
+        <button class="btn-style btn-primary btn-block" style="margin-top: 10px;" onclick="addAccount()"><i class="fas fa-plus"></i> Add New Account</button>
     </div>
 </div>
 <div id="themeModalOverlay">
@@ -866,24 +766,22 @@
     const auth = firebase.auth();
     const firestore = firebase.firestore();
 
-    // Enable Offline Persistence (Data will load even without internet)
+    // Enable Offline Persistence
     firestore.enablePersistence().catch(err => {
-        if (err.code == 'failed-precondition') {
-            console.log('Multiple tabs open, persistence disabled.');
-        } else if (err.code == 'unimplemented') {
-            console.log('Browser does not support offline persistence.');
-        }
+        if (err.code == 'failed-precondition') console.log('Multiple tabs open, persistence disabled.');
+        else if (err.code == 'unimplemented') console.log('Browser does not support offline persistence.');
     });
 
     // --- 2. LOCAL DATABASE CONSTANTS ---
-    const DB_NAME = 'ProFinanceDB', DB_VERSION = 1, STORE_TX = 'transactions', STORE_CATS = 'categories', STORE_PIN = 'appSettings';
+    const DB_NAME = 'ProFinanceDB', DB_VERSION = 4, STORE_TX = 'transactions', STORE_CATS = 'categories', STORE_PIN = 'appSettings', STORE_ACCTS = 'accounts';
     const DEFAULT_CATEGORIES = ['Class', 'Shows', 'Others'], DEFAULT_PIN = '1234';
+    const DEFAULT_ACCOUNTS = ['Cash', 'SBI Bank', 'Paytm'];
     const INCOME_COLORS = ['#00B894', '#007ACC', '#5DADE2', '#3498DB', '#1ABC9C', '#2ECC71', '#48C9B0', '#76D7C4'];
     const EXPENSE_COLORS = ['#E84118', '#FF7F50', '#F39C12', '#C0392B', '#E74C3C', '#E67E22', '#D35400', '#F9E79F'];
     
     // Global Variables
-    let db, transactions = [], categories = DEFAULT_CATEGORIES;
-    let globalCurrencySymbol = '₹'; // Default currency symbol
+    let db, transactions = [], categories = DEFAULT_CATEGORIES, accounts = DEFAULT_ACCOUNTS;
+    let globalCurrencySymbol = '₹'; 
     let expenseChartInstance = null, incomeChartInstance = null;
     let balChart = null, incChart = null, expChart = null;
     let dbInitialized = false;
@@ -898,6 +796,7 @@
                 db = event.target.result;
                 if (!db.objectStoreNames.contains(STORE_TX)) db.createObjectStore(STORE_TX, { keyPath: 'id' });
                 if (!db.objectStoreNames.contains(STORE_CATS)) db.createObjectStore(STORE_CATS, { keyPath: 'name' });
+                if (!db.objectStoreNames.contains(STORE_ACCTS)) db.createObjectStore(STORE_ACCTS, { keyPath: 'name' });
                 if (!db.objectStoreNames.contains(STORE_PIN)) db.createObjectStore(STORE_PIN, { keyPath: 'key' });
             };
             request.onsuccess = (event) => { db = event.target.result; dbInitialized = true; resolve(db); };
@@ -927,13 +826,8 @@
         const signupDiv = document.getElementById('signupFormDiv');
         const msg = document.getElementById('authMessage');
         msg.textContent = '';
-        if(mode === 'signup') {
-            loginDiv.style.display = 'none';
-            signupDiv.style.display = 'block';
-        } else {
-            loginDiv.style.display = 'block';
-            signupDiv.style.display = 'none';
-        }
+        if(mode === 'signup') { loginDiv.style.display = 'none'; signupDiv.style.display = 'block'; } 
+        else { loginDiv.style.display = 'block'; signupDiv.style.display = 'none'; }
     }
 
     async function handleLogin(e) {
@@ -942,13 +836,8 @@
         const pass = document.getElementById('loginPass').value;
         const msg = document.getElementById('authMessage');
         msg.textContent = 'Authenticating...';
-        
-        try {
-            await auth.setPersistence(firebase.auth.Auth.Persistence.LOCAL);
-            await auth.signInWithEmailAndPassword(email, pass);
-        } catch (error) {
-            msg.textContent = "Error: " + error.message;
-        }
+        try { await auth.setPersistence(firebase.auth.Auth.Persistence.LOCAL); await auth.signInWithEmailAndPassword(email, pass); } 
+        catch (error) { msg.textContent = "Error: " + error.message; }
     }
 
     async function handleSignup(e) {
@@ -957,35 +846,19 @@
         const pass = document.getElementById('signupPass').value;
         const msg = document.getElementById('authMessage');
         msg.textContent = 'Creating Account...';
-
-        try {
-            await auth.createUserWithEmailAndPassword(email, pass);
-        } catch (error) {
-            msg.textContent = "Error: " + error.message;
-        }
+        try { await auth.createUserWithEmailAndPassword(email, pass); } 
+        catch (error) { msg.textContent = "Error: " + error.message; }
     }
 
     async function handleLogout() {
-        Swal.fire({ 
-            title: 'Logout?', 
-            text: 'You will need internet to login again.', 
-            icon: 'warning', 
-            showCancelButton: true,
-            confirmButtonColor: '#d63031',
-            confirmButtonText: 'Yes, Logout'
-        }).then(async r => {
-            if (r.isConfirmed) {
-                await auth.signOut();
-                window.location.reload();
-            }
+        Swal.fire({ title: 'Logout?', text: 'You will need internet to login again.', icon: 'warning', showCancelButton: true, confirmButtonColor: '#d63031', confirmButtonText: 'Yes, Logout' }).then(async r => {
+            if (r.isConfirmed) { await auth.signOut(); window.location.reload(); }
         });
     }
 
     // --- 5. SYNC LOGIC ---
     async function syncDataWithFirestore() {
         if(!currentUser) return;
-
-        // Sync Categories
         const userDocRef = firestore.collection('users').doc(currentUser.uid);
         try {
             const userDoc = await userDocRef.get();
@@ -1001,19 +874,15 @@
             }
         } catch(e) { console.log("Offline mode: Using local categories"); }
 
-        // Sync Transactions 
         userDocRef.collection('transactions').onSnapshot(async (snapshot) => {
             if(snapshot.metadata.hasPendingWrites) return; 
-            
             let changes = false;
             snapshot.docChanges().forEach(async (change) => {
                 const txData = change.doc.data();
                 const txId = parseInt(change.doc.id); 
-                
                 if (change.type === "added" || change.type === "modified") {
                     const newTx = { ...txData, id: txId };
                     await dbSet(STORE_TX, newTx);
-                    
                     const idx = transactions.findIndex(t => t.id === txId);
                     if(idx > -1) transactions[idx] = newTx;
                     else transactions.push(newTx);
@@ -1025,44 +894,35 @@
                     changes = true;
                 }
             });
-
-            if(changes && document.getElementById('mainAppContent').style.display === 'block') {
-                refreshUI();
-            }
+            if(changes && document.getElementById('mainAppContent').style.display === 'block') refreshUI();
         });
     }
 
     function refreshUI() {
         updateSummary();
+        renderAccountBalances();
         if(document.getElementById('history').classList.contains('active')) renderTransactions();
-        if(document.getElementById('dashboard').classList.contains('active')) {
-            renderIncomeChart(); renderExpenseChart();
-        }
+        if(document.getElementById('dashboard').classList.contains('active')) { renderIncomeChart(); renderExpenseChart(); }
         if(document.getElementById('analysis').classList.contains('active')) renderAllAnalysisCharts();
-        
-        // Update label text 
         document.getElementById('amountLabel').textContent = `Amount (${globalCurrencySymbol}):`;
     }
 
     async function saveToFirestore(tx) {
         if(!currentUser) return;
-        try {
-            await firestore.collection('users').doc(currentUser.uid).collection('transactions').doc(String(tx.id)).set(tx);
-        } catch (e) { console.log("Saved locally. Will sync when online."); }
+        try { await firestore.collection('users').doc(currentUser.uid).collection('transactions').doc(String(tx.id)).set(tx); } 
+        catch (e) { console.log("Saved locally."); }
     }
 
     async function deleteFromFirestore(id) {
         if(!currentUser) return;
-        try {
-            await firestore.collection('users').doc(currentUser.uid).collection('transactions').doc(String(id)).delete();
-        } catch (e) { console.log("Deleted locally. Will sync when online."); }
+        try { await firestore.collection('users').doc(currentUser.uid).collection('transactions').doc(String(id)).delete(); } 
+        catch (e) { console.log("Deleted locally."); }
     }
 
     async function saveCategoriesToFirestore() {
         if(!currentUser) return;
-        try {
-            await firestore.collection('users').doc(currentUser.uid).set({ categories: categories }, { merge: true });
-        } catch(e) { console.log("Category saved locally."); }
+        try { await firestore.collection('users').doc(currentUser.uid).set({ categories: categories }, { merge: true }); } 
+        catch(e) {}
     }
 
     // --- 6. PIN & UI LOGIC ---
@@ -1071,7 +931,8 @@
     function pressPin(k) { if (k === 'C') pinInput = ""; else if (pinInput.length < 4) pinInput += k; updatePinDots(); }
     
     async function getAppPin() { 
-        try { await openDB(); const pinRecord = await dbGet(STORE_PIN, 'pin'); return pinRecord ? pinRecord.value : DEFAULT_PIN; } catch (error) { return DEFAULT_PIN; } 
+        try { await openDB(); const pinRecord = await dbGet(STORE_PIN, 'pin'); return pinRecord ? pinRecord.value : DEFAULT_PIN; } 
+        catch (error) { return DEFAULT_PIN; } 
     }
     
     async function submitPin() {
@@ -1082,11 +943,12 @@
                 document.getElementById('securityOverlay').style.display = 'none';
                 document.getElementById('closePinScreen').style.display = 'none';
                 if (pendingAction) { pendingAction(); pendingAction = null; }
-                else if (document.getElementById('mainAppContent').style.display === 'none') {
-                    initAppUI();
-                }
+                else if (document.getElementById('mainAppContent').style.display === 'none') { initAppUI(); }
             } else { Swal.fire('Error', 'Incorrect PIN', 'error'); }
-        } catch (e) { Swal.fire('Error', 'Database access failed.', 'error'); }
+        } catch (e) { 
+            console.error("Real Error:", e);
+            Swal.fire('App Error', e.message || String(e), 'error'); 
+        }
         pinInput = ""; updatePinDots();
     }
     
@@ -1094,9 +956,7 @@
     async function secureAction(cb) { pendingAction = cb; pinInput = ""; updatePinDots(); await openDB(); document.getElementById('closePinScreen').style.display = 'block'; document.getElementById('securityOverlay').style.display = 'flex'; }
 
     // --- 7. UTILITIES ---
-    // Updated Format Currency (Using global currency symbol)
     const formatCurrency = (amt) => globalCurrencySymbol + ' ' + Number(amt || 0).toLocaleString('en-IN', {minimumFractionDigits: 2, maximumFractionDigits: 2});
-    
     const getYM = (d) => d.substring(0, 7);
     const getY = (d) => d.substring(0, 4);
     
@@ -1110,18 +970,20 @@
     async function loadLocalData() {
         await openDB();
         transactions = await dbGetAll(STORE_TX) || [];
+        
         const savedCats = await dbGetAll(STORE_CATS);
         categories = (savedCats && savedCats.length) ? savedCats.map(c => c.name) : DEFAULT_CATEGORIES;
         if (!savedCats || !savedCats.length) { const catPromises = DEFAULT_CATEGORIES.map(c => dbSet(STORE_CATS, { name: c })); await Promise.all(catPromises); }
         
+        const savedAccts = await dbGetAll(STORE_ACCTS);
+        accounts = (savedAccts && savedAccts.length) ? savedAccts.map(a => a.name) : DEFAULT_ACCOUNTS;
+        if (!savedAccts || !savedAccts.length) { const acctPromises = DEFAULT_ACCOUNTS.map(a => dbSet(STORE_ACCTS, { name: a })); await Promise.all(acctPromises); }
+        
         const pin = await dbGet(STORE_PIN, 'pin');
         if (!pin) await dbSet(STORE_PIN, { key: 'pin', value: DEFAULT_PIN });
 
-        // Load Currency Symbol
         const currRecord = await dbGet(STORE_PIN, 'currencySymbol');
-        if (currRecord && currRecord.value) {
-            globalCurrencySymbol = currRecord.value;
-        }
+        if (currRecord && currRecord.value) { globalCurrencySymbol = currRecord.value; }
         document.getElementById('appCurrencySymbol').value = globalCurrencySymbol;
         document.getElementById('amountLabel').textContent = `Amount (${globalCurrencySymbol}):`;
     }
@@ -1132,14 +994,11 @@
         document.getElementById(name).classList.add('active');
         btn.classList.add('active');
         
-        if (name === 'dashboard') { populateChartFilters(); renderIncomeChart(); renderExpenseChart(); }
+        if (name === 'dashboard') { populateChartFilters(); renderIncomeChart(); renderExpenseChart(); renderAccountBalances(); }
         else if (name === 'history') { populateChartFilters(); renderTransactions(); }
-        else if (name === 'settings') { renderCategoryList(); updateEmailDisplay(); }
+        else if (name === 'settings') { renderCategoryList(); renderAccountList(); updateEmailDisplay(); }
         else if (name === 'analysis') { populateAnalysisYear(); requestAnimationFrame(() => { requestAnimationFrame(() => { renderAllAnalysisCharts(); }); }); }
-        else if (name === 'addTransaction') {
-            if(!editingTransactionId) setDateTimeLocalNow();
-        }
-
+        else if (name === 'addTransaction') { if(!editingTransactionId) setDateTimeLocalNow(); }
         updateSummary();
     }
 
@@ -1161,6 +1020,9 @@
         const filterVal = document.getElementById('monthFilter')?.value || curM;
 
         transactions.forEach(t => {
+            // Transfers do not affect global income/expense summaries
+            if(t.type === 'transfer') return;
+
             const ym = getYM(t.date), y = getY(t.date), tDateStr = t.date.split('T')[0];
             if (t.type === 'income') { 
                 lInc += t.amount; 
@@ -1202,7 +1064,7 @@
             const selectedYear = document.getElementById('analysisYearFilter').value;
             if(selectedYear) {
                 let ayInc = 0, ayExp = 0;
-                transactions.forEach(t => { if(getY(t.date) === selectedYear) { if(t.type === 'income') ayInc += t.amount; else ayExp += t.amount; } });
+                transactions.forEach(t => { if(t.type !== 'transfer' && getY(t.date) === selectedYear) { if(t.type === 'income') ayInc += t.amount; else ayExp += t.amount; } });
                 bal = ayInc - ayExp; title = `Net Balance (${selectedYear})`;
             }
         }
@@ -1234,7 +1096,6 @@
         hist.onchange = function() { localStorage.setItem('pref_monthFilter', this.value); renderTransactions(); };
     }
 
-    // Chart.js Configuration
     Chart.register({
         id: 'centerText',
         beforeDraw: (chart) => {
@@ -1250,7 +1111,7 @@
         }
     });
 
-function renderChart(type, canvasId, filterId) {
+    function renderChart(type, canvasId, filterId) {
         const filter = document.getElementById(filterId).value;
         const isY = filter.length === 4;
         const dataMap = {};
@@ -1259,18 +1120,8 @@ function renderChart(type, canvasId, filterId) {
         const total = data.reduce((a, b) => a + b, 0);
         
         const legendContainer = document.getElementById(type === 'income' ? 'incomeLegend' : 'expenseLegend');
-        
-        // --- কালার প্যালেট ---
-        let colors = [];
-        let centerTextColor = '';
-
-        if (type === 'income') {
-            colors = ['#00B894', '#0984E3', '#00CEC9', '#74B9FF', '#55EFC4', '#81ECEC'];
-            centerTextColor = '#00B894'; 
-        } else {
-            colors = ['#E84118', '#FF7675', '#FDCB6E', '#E17055', '#FAB1A0', '#FFEAA7'];
-            centerTextColor = '#E84118'; 
-        }
+        let colors = type === 'income' ? ['#00B894', '#0984E3', '#00CEC9', '#74B9FF', '#55EFC4', '#81ECEC'] : ['#E84118', '#FF7675', '#FDCB6E', '#E17055', '#FAB1A0', '#FFEAA7'];
+        let centerTextColor = type === 'income' ? '#00B894' : '#E84118';
         
         let legendHTML = '';
         if (total === 0) legendHTML = '<p style="text-align:center;color:#ccc;font-size:12px;">No data</p>';
@@ -1291,15 +1142,7 @@ function renderChart(type, canvasId, filterId) {
 
         const newChart = new Chart(ctx, {
             type: 'doughnut',
-            data: { 
-                labels: labels, 
-                datasets: [{ 
-                    data: data, 
-                    backgroundColor: colors,
-                    borderWidth: 4, 
-                    borderColor: 'transparent' /* এই লাইনটি সাদা বর্ডারকে থিমের ব্যাকগ্রাউন্ডের সাথে মিশিয়ে দেবে */
-                }] 
-            },
+            data: { labels: labels, datasets: [{ data: data, backgroundColor: colors, borderWidth: 4, borderColor: 'transparent' }] },
             options: {
                 responsive: true, maintainAspectRatio: false, cutout: '75%',
                 plugins: { legend: { display: false }, tooltip: { enabled: true } },
@@ -1327,8 +1170,7 @@ function renderChart(type, canvasId, filterId) {
             if (scope === 'yearly') scopeMatch = (y === curY);
             else if (scope === 'monthly') scopeMatch = (ym === curM);
             else if (scope === 'today') scopeMatch = (tDateStr === todayStr);
-            let typeMatch = true;
-            if (type !== 'all') typeMatch = (t.type === type);
+            let typeMatch = (type === 'all') ? (t.type !== 'transfer') : (t.type === type);
             return scopeMatch && typeMatch;
         }).sort((a,b) => new Date(b.date) - new Date(a.date));
         let title = scope.charAt(0).toUpperCase() + scope.slice(1);
@@ -1342,15 +1184,16 @@ function renderChart(type, canvasId, filterId) {
         else {
             list.forEach(t => {
                 const dateStr = new Date(t.date).toLocaleString('en-IN', { dateStyle: 'medium', timeStyle: 'short' });
-                // --- এখানে var(--primary) এর বদলে সরাসরি ফিক্সড কালার #00B894 (Green) এবং #E84118 (Red) দেওয়া হলো ---
-                htmlContent += `<li><span class="swal-amt" style="color: ${t.type === 'income' ? '#00B894' : '#E84118'}">${formatCurrency(t.amount)}</span><strong>${t.category}</strong><span>${dateStr}</span>${t.details ? `<br><span style="font-style:italic;">"${t.details}"</span>` : ''}</li>`;
+                const clr = t.type === 'income' ? '#00B894' : (t.type === 'expense' ? '#E84118' : '#FDCB6E');
+                const catStr = t.type === 'transfer' ? `Transfer: ${t.account} ➔ ${t.toAccount}` : `${t.category} (${t.account || 'Cash'})`;
+                htmlContent += `<li><span class="swal-amt" style="color: ${clr}">${formatCurrency(t.amount)}</span><strong>${catStr}</strong><span>${dateStr}</span>${t.details ? `<br><span style="font-style:italic;">"${t.details}"</span>` : ''}</li>`;
             });
         }
         htmlContent += '</ul>';
         Swal.fire({ title: title, html: htmlContent, showCloseButton: true, focusConfirm: false, confirmButtonText: 'Close', customClass: { popup: 'swal-wide' } });
     }
 
-// --- Analysis Charts ---
+    // --- Analysis Charts ---
     function populateAnalysisYear(){
         const selBase = document.getElementById('analysisYearFilter');
         const selComp1 = document.getElementById('compareYearFilter');
@@ -1361,17 +1204,10 @@ function renderChart(type, canvasId, filterId) {
         if(!years.includes(String(curr))) years.push(String(curr));
         years.sort((a,b)=>b-a);
         
-        selBase.innerHTML = '';
-        selComp1.innerHTML = '';
-        selComp2.innerHTML = '';
+        selBase.innerHTML = ''; selComp1.innerHTML = ''; selComp2.innerHTML = '';
         
-        years.forEach(y => {
-            selBase.add(new Option(y, y));
-            selComp1.add(new Option(y, y));
-            selComp2.add(new Option(y, y));
-        });
-        selComp1.add(new Option("None", "none"));
-        selComp2.add(new Option("None", "none"));
+        years.forEach(y => { selBase.add(new Option(y, y)); selComp1.add(new Option(y, y)); selComp2.add(new Option(y, y)); });
+        selComp1.add(new Option("None", "none")); selComp2.add(new Option("None", "none"));
 
         const savedBase = localStorage.getItem('pref_analysisYearFilter');
         const savedComp1 = localStorage.getItem('pref_compareYearFilter');
@@ -1388,7 +1224,7 @@ function renderChart(type, canvasId, filterId) {
 
     function getMonthlyData(year, type){
         const data = Array(12).fill(0);
-        transactions.filter(t=>t.date.startsWith(year)).forEach(t=>{
+        transactions.filter(t=>t.type !== 'transfer' && t.date.startsWith(year)).forEach(t=>{
             const m = parseInt(t.date.substring(5,7))-1;
             if(type==='balance') data[m] += (t.type==='income'?t.amount:-t.amount);
             else if(t.type===type) data[m] += t.amount;
@@ -1398,30 +1234,19 @@ function renderChart(type, canvasId, filterId) {
 
     function calculateAverage(dataArr, year) {
         const currentYear = new Date().getFullYear().toString();
-        const currentMonth = new Date().getMonth() + 1; // 1 to 12
-        let total = 0;
-        let divisor = 12;
-
-        if (year === currentYear) {
-            divisor = currentMonth; 
-            for (let i = 0; i < currentMonth; i++) {
-                total += dataArr[i];
-            }
-        } else {
-            total = dataArr.reduce((sum, val) => sum + val, 0);
-        }
+        const currentMonth = new Date().getMonth() + 1;
+        let total = 0; let divisor = 12;
+        if (year === currentYear) { divisor = currentMonth; for (let i = 0; i < currentMonth; i++) { total += dataArr[i]; } } 
+        else { total = dataArr.reduce((sum, val) => sum + val, 0); }
         return divisor === 0 ? 0 : (total / divisor);
     }
 
-// নতুন সিঙ্গেল চার্টের জন্য ভেরিয়েবল
     let combinedChartInstance = null;
 
     function renderAllAnalysisCharts(){
         const base = document.getElementById('analysisYearFilter').value;
         const comp1 = document.getElementById('compareYearFilter').value;
         const comp2 = document.getElementById('compareYearFilter2').value;
-        
-        // ড্রপডাউন থেকে কী সিলেক্ট করা হয়েছে তা চেক করা (Balance/Income/Expense)
         const chartTypeElement = document.getElementById('analysisChartTypeFilter');
         const chartType = chartTypeElement ? chartTypeElement.value : 'balance';
 
@@ -1433,34 +1258,21 @@ function renderChart(type, canvasId, filterId) {
         if (comp2 && comp2 !== "none" && !years.includes(comp2)) years.push(comp2);
 
         const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
-        
-        // চার্টের টাইটেল এবং কালার সেট করা
         let chartColors = [];
         const titleEl = document.getElementById('combinedChartTitle');
         
-        if(chartType === 'balance') {
-            chartColors = ['#007ACC', '#74B9FF', '#BDC3C7'];
-            if(titleEl) { titleEl.style.color = '#007ACC'; titleEl.innerHTML = '<i class="fas fa-balance-scale"></i> Net Balance Trend'; }
-        } else if(chartType === 'income') {
-            chartColors = ['#00B894', '#55EFC4', '#BDC3C7'];
-            if(titleEl) { titleEl.style.color = '#00B894'; titleEl.innerHTML = '<i class="fas fa-arrow-down"></i> Income Trend'; }
-        } else if(chartType === 'expense') {
-            chartColors = ['#E84118', '#FAB1A0', '#BDC3C7'];
-            if(titleEl) { titleEl.style.color = '#E84118'; titleEl.innerHTML = '<i class="fas fa-arrow-up"></i> Expense Trend'; }
-        }
+        if(chartType === 'balance') { chartColors = ['#007ACC', '#74B9FF', '#BDC3C7']; if(titleEl) { titleEl.style.color = '#007ACC'; titleEl.innerHTML = '<i class="fas fa-balance-scale"></i> Net Balance Trend'; } } 
+        else if(chartType === 'income') { chartColors = ['#00B894', '#55EFC4', '#BDC3C7']; if(titleEl) { titleEl.style.color = '#00B894'; titleEl.innerHTML = '<i class="fas fa-arrow-down"></i> Income Trend'; } } 
+        else if(chartType === 'expense') { chartColors = ['#E84118', '#FAB1A0', '#BDC3C7']; if(titleEl) { titleEl.style.color = '#E84118'; titleEl.innerHTML = '<i class="fas fa-arrow-up"></i> Expense Trend'; } }
 
         const createDS = (lbl, type, color, dash) => ({ label: lbl, data: getMonthlyData(lbl, type), borderColor: color, borderWidth: dash?2:3, borderDash: dash?[5,5]:[], tension:0.3, fill:false, pointRadius: dash?0:3 });
-        
-        // --- ড্রপডাউন অনুযায়ী ১টি চার্ট তৈরি করা ---
         const chartDS = years.map((y,i) => createDS(y, chartType, chartColors[i] || '#ccc', i>0));
         renderLine('combinedAnalysisChart', months, chartDS, combinedChartInstance, c => combinedChartInstance = c);
 
-        // --- এভারেজ ও টপ মান্থ ক্যালকুলেশনের জন্য সব ডেটা বের করা ---
         const balDS = years.map((y,i)=>createDS(y, 'balance', '#007ACC', i>0));
         const incDS = years.map((y,i)=>createDS(y, 'income', '#00B894', i>0));
         const expDS = years.map((y,i)=>createDS(y, 'expense', '#E84118', i>0));
 
-        // Average ডেটা UI তে পাঠানো
         document.getElementById('avgBalBase').textContent = formatCurrency(calculateAverage(balDS[0].data, base));
         document.getElementById('avgIncBase').textContent = formatCurrency(calculateAverage(incDS[0].data, base));
         document.getElementById('avgExpBase').textContent = formatCurrency(calculateAverage(expDS[0].data, base));
@@ -1476,70 +1288,39 @@ function renderChart(type, canvasId, filterId) {
             compIncHtml += `<div>vs ${years[2]}: ${formatCurrency(calculateAverage(incDS[2].data, years[2]))}</div>`;
             compExpHtml += `<div>vs ${years[2]}: ${formatCurrency(calculateAverage(expDS[2].data, years[2]))}</div>`;
         }
-        if(years.length === 1) {
-            compBalHtml = "vs None"; compIncHtml = "vs None"; compExpHtml = "vs None";
-        }
+        if(years.length === 1) { compBalHtml = "vs None"; compIncHtml = "vs None"; compExpHtml = "vs None"; }
         document.getElementById('avgBalComp').innerHTML = compBalHtml;
         document.getElementById('avgIncComp').innerHTML = compIncHtml;
         document.getElementById('avgExpComp').innerHTML = compExpHtml;
 
-        // --- Highest Month ক্যালকুলেশন ---
-        const baseBalData = balDS[0].data;
-        const baseIncData = incDS[0].data;
-        const baseExpData = expDS[0].data;
+        const maxInc = Math.max(...incDS[0].data); const maxExp = Math.max(...expDS[0].data); const maxBal = Math.max(...balDS[0].data);
+        const maxIncIdx = maxInc > 0 ? incDS[0].data.indexOf(maxInc) : -1;
+        const maxExpIdx = maxExp > 0 ? expDS[0].data.indexOf(maxExp) : -1;
+        const maxBalIdx = (maxInc > 0 || maxExp > 0) ? balDS[0].data.indexOf(maxBal) : -1;
 
-        const maxInc = Math.max(...baseIncData);
-        const maxExp = Math.max(...baseExpData);
-        const maxBal = Math.max(...baseBalData);
+        const bestLabelEl = document.getElementById('bestMonthYearLabel'); if(bestLabelEl) bestLabelEl.textContent = base;
 
-        const maxIncIdx = maxInc > 0 ? baseIncData.indexOf(maxInc) : -1;
-        const maxExpIdx = maxExp > 0 ? baseExpData.indexOf(maxExp) : -1;
-        const maxBalIdx = (maxInc > 0 || maxExp > 0) ? baseBalData.indexOf(maxBal) : -1;
+        const topBalMonthEl = document.getElementById('topBalMonth'); if(topBalMonthEl) topBalMonthEl.textContent = maxBalIdx !== -1 ? months[maxBalIdx] : 'N/A';
+        const topBalAmtEl = document.getElementById('topBalAmt'); if(topBalAmtEl) topBalAmtEl.textContent = maxBalIdx !== -1 ? formatCurrency(maxBal) : '₹0.00';
 
-        const bestLabelEl = document.getElementById('bestMonthYearLabel');
-        if(bestLabelEl) bestLabelEl.textContent = base;
+        const topIncMonthEl = document.getElementById('topIncMonth'); if(topIncMonthEl) topIncMonthEl.textContent = maxIncIdx !== -1 ? months[maxIncIdx] : 'N/A';
+        const topIncAmtEl = document.getElementById('topIncAmt'); if(topIncAmtEl) topIncAmtEl.textContent = maxIncIdx !== -1 ? formatCurrency(maxInc) : '₹0.00';
 
-        const topBalMonthEl = document.getElementById('topBalMonth');
-        if(topBalMonthEl) topBalMonthEl.textContent = maxBalIdx !== -1 ? months[maxBalIdx] : 'N/A';
-        const topBalAmtEl = document.getElementById('topBalAmt');
-        if(topBalAmtEl) topBalAmtEl.textContent = maxBalIdx !== -1 ? formatCurrency(maxBal) : '₹0.00';
-
-        const topIncMonthEl = document.getElementById('topIncMonth');
-        if(topIncMonthEl) topIncMonthEl.textContent = maxIncIdx !== -1 ? months[maxIncIdx] : 'N/A';
-        const topIncAmtEl = document.getElementById('topIncAmt');
-        if(topIncAmtEl) topIncAmtEl.textContent = maxIncIdx !== -1 ? formatCurrency(maxInc) : '₹0.00';
-
-        const topExpMonthEl = document.getElementById('topExpMonth');
-        if(topExpMonthEl) topExpMonthEl.textContent = maxExpIdx !== -1 ? months[maxExpIdx] : 'N/A';
-        const topExpAmtEl = document.getElementById('topExpAmt');
-        if(topExpAmtEl) topExpAmtEl.textContent = maxExpIdx !== -1 ? formatCurrency(maxExp) : '₹0.00';
-        // --- Click Events for Top Months Cards ---
+        const topExpMonthEl = document.getElementById('topExpMonth'); if(topExpMonthEl) topExpMonthEl.textContent = maxExpIdx !== -1 ? months[maxExpIdx] : 'N/A';
+        const topExpAmtEl = document.getElementById('topExpAmt'); if(topExpAmtEl) topExpAmtEl.textContent = maxExpIdx !== -1 ? formatCurrency(maxExp) : '₹0.00';
+        
         const attachClick = (elementId, maxIdx, type) => {
-            const el = document.getElementById(elementId);
-            if (!el) return;
-            const card = el.parentElement; // পুরো বক্সটিকে সিলেক্ট করা হলো
-            
+            const el = document.getElementById(elementId); if (!el) return;
+            const card = el.parentElement; 
             if(maxIdx !== -1) {
-                card.style.cursor = 'pointer'; // মাউস নিলে পয়েন্টার আইকন আসবে
-                card.style.transition = 'transform 0.2s';
-                
-                // ক্লিক করলে একটু ছোট হয়ে অ্যানিমেশন হবে
+                card.style.cursor = 'pointer'; card.style.transition = 'transform 0.2s';
                 card.onmousedown = () => card.style.transform = 'scale(0.95)';
                 card.onmouseup = () => card.style.transform = 'scale(1)';
                 card.onmouseleave = () => card.style.transform = 'scale(1)';
-                
-                // ক্লিক করলে পপআপ ওপেন হবে
-                card.onclick = () => {
-                    const ym = base + '-' + String(maxIdx + 1).padStart(2, '0');
-                    showMonthModal(ym, type);
-                };
-            } else {
-                card.style.cursor = 'default';
-                card.onclick = null;
-            }
+                card.onclick = () => { const ym = base + '-' + String(maxIdx + 1).padStart(2, '0'); showMonthModal(ym, type); };
+            } else { card.style.cursor = 'default'; card.onclick = null; }
         };
 
-        // ব্যালেন্স, ইনকাম এবং এক্সপেন্স বক্সের জন্য ফাংশনটি কল করা
         attachClick('topBalMonth', maxBalIdx, 'all');
         attachClick('topIncMonth', maxIncIdx, 'income');
         attachClick('topExpMonth', maxExpIdx, 'expense');
@@ -1555,76 +1336,89 @@ function renderChart(type, canvasId, filterId) {
     }
 
     // --- Transaction List Logic ---
-function renderTransactions() {
-    const filter = document.getElementById('monthFilter').value;
-    const searchInput = document.getElementById('searchInput'); 
-    const searchTerm = searchInput ? searchInput.value.toLowerCase() : '';
-    const list = document.getElementById('transactionList');
-    
-    // ফিল্টার করার লজিক
-    const filtered = transactions.filter(t => {
-        let dateMatch = false;
-        if(filter==='lifetime') dateMatch = true;
-        else if(filter==='current_year') dateMatch = (getY(t.date) === new Date().getFullYear().toString());
-        else if(filter.length===4) dateMatch = (getY(t.date) === filter);
-        else dateMatch = (getYM(t.date) === (filter || getYM(new Date().toISOString())));
+    function renderTransactions() {
+        const filter = document.getElementById('monthFilter').value;
+        const searchInput = document.getElementById('searchInput'); 
+        const searchTerm = searchInput ? searchInput.value.toLowerCase() : '';
+        const list = document.getElementById('transactionList');
         
-        let searchMatch = true;
-        if (searchTerm) { 
-            const dateDisplayStr = new Date(t.date).toLocaleDateString('en-IN', {day:'numeric', month:'short', year:'numeric'}).toLowerCase();
-            const rawDate = t.date.split('T')[0]; 
-            const searchStr = (t.category + ' ' + (t.details || '') + ' ' + t.amount + ' ' + dateDisplayStr + ' ' + rawDate).toLowerCase(); 
-            searchMatch = searchStr.includes(searchTerm); 
+        const filtered = transactions.filter(t => {
+            let dateMatch = false;
+            if(filter==='lifetime') dateMatch = true;
+            else if(filter==='current_year') dateMatch = (getY(t.date) === new Date().getFullYear().toString());
+            else if(filter.length===4) dateMatch = (getY(t.date) === filter);
+            else dateMatch = (getYM(t.date) === (filter || getYM(new Date().toISOString())));
+            
+            let searchMatch = true;
+            if (searchTerm) { 
+                const dateDisplayStr = new Date(t.date).toLocaleDateString('en-IN', {day:'numeric', month:'short', year:'numeric'}).toLowerCase();
+                const rawDate = t.date.split('T')[0]; 
+                const searchStr = ((t.category||'') + ' ' + (t.details||'') + ' ' + t.amount + ' ' + dateDisplayStr + ' ' + rawDate + ' ' + (t.account||'')).toLowerCase(); 
+                searchMatch = searchStr.includes(searchTerm); 
+            }
+            return dateMatch && searchMatch;
+        }).sort((a,b)=>new Date(b.date)-new Date(a.date));
+
+        let totalInc = 0; let totalExp = 0;
+        filtered.forEach(t => {
+            if(t.type === 'income') totalInc += t.amount;
+            else if(t.type === 'expense') totalExp += t.amount;
+        });
+        
+        const histTotalIncEl = document.getElementById('histTotalInc');
+        const histTotalExpEl = document.getElementById('histTotalExp');
+        const histNetEl = document.getElementById('histNet');
+        
+        if (histTotalIncEl) histTotalIncEl.textContent = formatCurrency(totalInc);
+        if (histTotalExpEl) histTotalExpEl.textContent = formatCurrency(totalExp);
+        if (histNetEl) {
+            histNetEl.textContent = formatCurrency(totalInc - totalExp);
+            histNetEl.style.color = (totalInc - totalExp) >= 0 ? 'var(--primary)' : 'var(--danger)';
         }
-        return dateMatch && searchMatch;
-    }).sort((a,b)=>new Date(b.date)-new Date(a.date));
 
-    // --- নতুন যোগ করা হিসাবের লজিক শুরু ---
-    let totalInc = 0;
-    let totalExp = 0;
-    filtered.forEach(t => {
-        if(t.type === 'income') totalInc += t.amount;
-        else totalExp += t.amount;
-    });
-    
-    // UI-তে ব্যালেন্স আপডেট করা
-    const histTotalIncEl = document.getElementById('histTotalInc');
-    const histTotalExpEl = document.getElementById('histTotalExp');
-    const histNetEl = document.getElementById('histNet');
-    
-    if (histTotalIncEl) histTotalIncEl.textContent = formatCurrency(totalInc);
-    if (histTotalExpEl) histTotalExpEl.textContent = formatCurrency(totalExp);
-    if (histNetEl) {
-        histNetEl.textContent = formatCurrency(totalInc - totalExp);
-        histNetEl.style.color = (totalInc - totalExp) >= 0 ? 'var(--primary)' : 'var(--danger)';
+        list.innerHTML = '';
+        document.getElementById('noTransactionsMsg').style.display = filtered.length ? 'none' : 'block';
+        
+        filtered.forEach(t => {
+            const li = document.createElement('li');
+            li.className = t.type === 'income' ? 'income-item' : (t.type === 'expense' ? 'expense-item' : 'transfer-item');
+            const dateDisplay = new Date(t.date).toLocaleDateString('en-IN', {day:'numeric', month:'short'});
+            
+            let displayCat = '';
+            if(t.type === 'transfer'){
+                displayCat = `<i class="fas fa-exchange-alt"></i> Transfer <span style="font-size: 11px; color: var(--text-muted);">(${t.account} ➔ ${t.toAccount})</span>`;
+            } else {
+                displayCat = `${t.category} <span style="font-size: 11px; color: var(--info);">(${t.account || 'Cash'})</span>`;
+            }
+
+            let amountPrefix = t.type === 'income' ? '+' : (t.type === 'expense' ? '-' : '⇄');
+
+            li.innerHTML = `<div class="transaction-click-area" onclick="showDetails(${t.id})"><div class="transaction-info"><strong>${displayCat}</strong><span>${dateDisplay}</span>${t.details ? `<em>${t.details.substring(0,15)}${t.details.length>15?'...':''}</em>` : ''}</div><div class="transaction-amount">${amountPrefix} ${formatCurrency(t.amount)}</div></div><div class="action-buttons"><button class="edit-btn" onclick="editTransaction(${t.id})"><i class="fas fa-edit"></i></button><button class="delete-btn" onclick="deleteTransaction(${t.id})"><i class="fas fa-trash-alt"></i></button></div>`;
+            list.appendChild(li);
+        });
+        // Remove updateSummary() here to prevent recursive loop causing issues.
     }
-    // --- নতুন যোগ করা হিসাবের লজিক শেষ ---
-
-    // লিস্ট রেন্ডার করা
-    list.innerHTML = '';
-    document.getElementById('noTransactionsMsg').style.display = filtered.length ? 'none' : 'block';
-    
-    filtered.forEach(t => {
-        const li = document.createElement('li');
-        li.className = t.type === 'income' ? 'income-item' : 'expense-item';
-        const dateDisplay = new Date(t.date).toLocaleDateString('en-IN', {day:'numeric', month:'short'});
-        li.innerHTML = `<div class="transaction-click-area" onclick="showDetails(${t.id})"><div class="transaction-info"><strong>${t.category}</strong><span>${dateDisplay}</span>${t.details ? `<em>${t.details.substring(0,15)}${t.details.length>15?'...':''}</em>` : ''}</div><div class="transaction-amount">${t.type==='income'?'+':'-'} ${formatCurrency(t.amount)}</div></div><div class="action-buttons"><button class="edit-btn" onclick="editTransaction(${t.id})"><i class="fas fa-edit"></i></button><button class="delete-btn" onclick="deleteTransaction(${t.id})"><i class="fas fa-trash-alt"></i></button></div>`;
-        list.appendChild(li);
-    });
-    updateSummary();
-}
     
     function showDetails(id) {
         const t = transactions.find(x => x.id === id); if(!t) return;
         const fullDate = new Date(t.date).toLocaleString('en-IN', { dateStyle: 'full', timeStyle: 'short' });
-        Swal.fire({ title: t.category, html: `<div style="text-align:left; font-size:15px;"><p><strong>Type:</strong> ${t.type.toUpperCase()}</p><p><strong>Amount:</strong> <span style="color:${t.type==='income'?'#00B894':'#E84118'};font-weight:bold;font-size:18px;">${formatCurrency(t.amount)}</span></p><p><strong>Date:</strong> ${fullDate}</p><p><strong>Details:</strong> ${t.details || 'N/A'}</p></div>`, confirmButtonColor: 'var(--info)' });
+        let accInfo = `<p><strong>Account:</strong> ${t.account || 'Cash'}</p>`;
+        if(t.type === 'transfer') accInfo = `<p><strong>From:</strong> ${t.account}<br><strong>To:</strong> ${t.toAccount}</p>`;
+        
+        Swal.fire({ title: t.type === 'transfer' ? 'Transfer' : t.category, html: `<div style="text-align:left; font-size:15px;"><p><strong>Type:</strong> ${t.type.toUpperCase()}</p><p><strong>Amount:</strong> <span style="color:${t.type==='income'?'#00B894':(t.type==='expense'?'#E84118':'#FDCB6E')};font-weight:bold;font-size:18px;">${formatCurrency(t.amount)}</span></p>${accInfo}<p><strong>Date:</strong> ${fullDate}</p><p><strong>Details:</strong> ${t.details || 'N/A'}</p></div>`, confirmButtonColor: 'var(--info)' });
     }
 
     function editTransaction(id) {
         const t = transactions.find(x => x.id === id); if(!t) return;
         document.getElementById('amount').value = t.amount;
         document.getElementById('type').value = t.type;
-        document.getElementById('category').value = t.category;
+        toggleTransferMode();
+        if(t.type === 'transfer'){
+            document.getElementById('toAccount').value = t.toAccount || accounts[0];
+        } else {
+            document.getElementById('category').value = t.category;
+        }
+        document.getElementById('account').value = t.account || accounts[0];
         document.getElementById('date').value = t.date; 
         document.getElementById('details').value = t.details;
         editingTransactionId = id;
@@ -1637,10 +1431,109 @@ function renderTransactions() {
     function cancelEdit() {
         editingTransactionId = null;
         document.getElementById('transactionForm').reset();
+        toggleTransferMode();
         setDateTimeLocalNow();
         const saveBtn = document.getElementById('saveBtn');
         saveBtn.innerHTML = '<i class="fas fa-save"></i> Save Record';
         document.getElementById('cancelEditBtn').style.display = 'none';
+    }
+
+    function toggleTransferMode() {
+        const type = document.getElementById('type').value;
+        const catGroup = document.getElementById('categoryGroup');
+        const toAccGroup = document.getElementById('transferToGroup');
+        const accLabel = document.getElementById('accountLabel');
+
+        if (type === 'transfer') {
+            catGroup.style.display = 'none';
+            toAccGroup.style.display = 'flex';
+            accLabel.textContent = 'From Account:';
+            accLabel.style.color = 'var(--danger)';
+        } else {
+            catGroup.style.display = 'block';
+            toAccGroup.style.display = 'none';
+            accLabel.textContent = 'Account:';
+            accLabel.style.color = 'var(--text-main)';
+        }
+    }
+
+    // যাতে পুরনো ফাংশন কলের কারণে কোনো এরর না আসে, তাই এটি ফাঁকা রাখা হলো
+    function renderAccountBalances() { }
+
+    // Account Balances Popup খোলার ফাংশন
+    function openAccountBalancesPopup() {
+        let html = '<div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 15px;">';
+        
+        accounts.forEach(acc => {
+            let bal = 0;
+            transactions.forEach(t => {
+                const actualAccount = t.account || accounts[0]; 
+                if (actualAccount === acc) {
+                    if (t.type === 'income') bal += t.amount;
+                    else if (t.type === 'expense') bal -= t.amount;
+                    else if (t.type === 'transfer') bal -= t.amount; // Out
+                }
+                if (t.type === 'transfer' && t.toAccount === acc) {
+                    bal += t.amount; // In
+                }
+            });
+            
+            const balClass = bal >= 0 ? 'income-text' : 'expense-text';
+            
+            // বক্সে ক্লিক করলে showAccountHistory কল হবে
+            html += `<div onclick="showAccountHistory('${acc}')" style="background: var(--input-bg); padding: 15px 10px; border-radius: 8px; border: 1px solid var(--border-color); display: flex; flex-direction: column; align-items: center; justify-content: center; cursor: pointer; transition: transform 0.2s;">
+                        <span style="font-size: 13px; color: var(--text-muted); font-weight: 600;">${acc}</span>
+                        <span class="${balClass}" style="font-size: 18px; font-weight: 700;">${formatCurrency(bal)}</span>
+                     </div>`;
+        });
+        
+        html += '</div><p style="font-size: 11px; color: var(--text-muted); text-align: center; margin-top: 15px;">* Click on any account to view its transactions.</p>';
+
+        Swal.fire({
+            title: '<i class="fas fa-wallet" style="color:var(--info);"></i> Account Balances',
+            html: html,
+            showCloseButton: true,
+            showConfirmButton: false,
+            allowOutsideClick: false,  /* এই লাইনটি পপআপকে বাইরে ক্লিক করলে বন্ধ হতে দেবে না */
+            customClass: { popup: 'swal-wide' }
+        });
+    }
+
+    // নির্দিষ্ট অ্যাকাউন্টের ট্রানজ্যাকশন দেখানোর ফাংশন (Back Button সহ)
+    function showAccountHistory(accName) {
+        const filtered = transactions.filter(t => {
+            const actualAcc = t.account || accounts[0];
+            return actualAcc === accName || (t.type === 'transfer' && t.toAccount === accName);
+        }).sort((a,b) => new Date(b.date) - new Date(a.date));
+        
+        let htmlContent = '<ul class="swal-list">';
+        if (filtered.length === 0) htmlContent += '<li style="text-align:center;">No transactions found.</li>';
+        else {
+            filtered.forEach(t => {
+                const dateStr = new Date(t.date).toLocaleString('en-IN', { dateStyle: 'medium', timeStyle: 'short' });
+                const clr = t.type === 'income' ? '#00B894' : (t.type === 'expense' ? '#E84118' : '#FDCB6E');
+                const catStr = t.type === 'transfer' ? `Transfer: ${t.account} ➔ ${t.toAccount}` : `${t.category}`;
+                htmlContent += `<li><span class="swal-amt" style="color: ${clr}">${formatCurrency(t.amount)}</span><strong>${catStr}</strong><span>${dateStr}</span>${t.details ? `<br><span style="font-style:italic;">"${t.details}"</span>` : ''}</li>`;
+            });
+        }
+        htmlContent += '</ul>';
+
+        Swal.fire({ 
+            title: `<i class="fas fa-history" style="color:var(--info);"></i> ${accName}`, 
+            html: htmlContent, 
+            showCloseButton: true, 
+            showCancelButton: true,
+            cancelButtonText: '<i class="fas fa-arrow-left"></i> Back to Balances',
+            cancelButtonColor: 'var(--primary)',
+            showConfirmButton: false,
+            allowOutsideClick: false,
+            customClass: { popup: 'swal-wide' } 
+        }).then((result) => {
+            // যদি Cancel (Back) বাটনে ক্লিক করা হয়, তবে আবার ব্যালেন্স পপআপ ওপেন হবে
+            if (result.dismiss === Swal.DismissReason.cancel) {
+                openAccountBalancesPopup();
+            }
+        });
     }
 
     async function addTransaction(e) {
@@ -1648,21 +1541,23 @@ function renderTransactions() {
         
         const amt = parseFloat(document.getElementById('amount').value);
         const type = document.getElementById('type').value;
-        const cat = document.getElementById('category').value;
+        const cat = type === 'transfer' ? 'Transfer' : document.getElementById('category').value;
+        const acc = document.getElementById('account').value;
+        const toAcc = document.getElementById('toAccount').value;
         const date = document.getElementById('date').value;
         const dets = document.getElementById('details').value;
 
-        if (isNaN(amt) || amt <= 0) { 
-            Swal.fire('Error', 'Please enter a valid amount.', 'warning'); return; 
-        }
-        if (!cat) { 
+        if (isNaN(amt) || amt <= 0) { Swal.fire('Error', 'Please enter a valid amount.', 'warning'); return; }
+        if (!date) { Swal.fire('Error', 'Select a date.', 'warning'); return; }
+
+        if (type === 'transfer') {
+            if (acc === toAcc) { Swal.fire('Error', 'Cannot transfer to the same account.', 'warning'); return; }
+            if (!toAcc) { Swal.fire('Error', 'Select a destination account.', 'warning'); return; }
+        } else if (!cat) {
             Swal.fire('Error', 'Select a category.', 'warning'); return; 
         }
-        if (!date) { 
-            Swal.fire('Error', 'Select a date.', 'warning'); return; 
-        }
 
-        const txObj = { amount: amt, type, category: cat, date, details: dets };
+        const txObj = { amount: amt, type, category: cat, account: acc, toAccount: (type === 'transfer' ? toAcc : null), date, details: dets };
 
         try {
             if (editingTransactionId) {
@@ -1671,14 +1566,14 @@ function renderTransactions() {
                     const updatedTx = { ...txObj, id: editingTransactionId };
                     transactions[index] = updatedTx; 
                     await dbSet(STORE_TX, updatedTx); 
-                    saveToFirestore(updatedTx);       
+                    saveToFirestore(updatedTx);        
                     Swal.fire({ title: 'Updated', icon: 'success', timer: 1500, showConfirmButton: false });
                 }
             } else {
                 const tx = { ...txObj, id: Date.now() };
                 transactions.push(tx); 
                 await dbSet(STORE_TX, tx); 
-                saveToFirestore(tx);       
+                saveToFirestore(tx);        
                 Swal.fire({ title: 'Saved', icon: 'success', timer: 1500, showConfirmButton: false });
             }
             
@@ -1697,16 +1592,9 @@ function renderTransactions() {
                 transactions = transactions.filter(t => t.id !== id); 
                 await dbDelete(STORE_TX, id); 
                 await deleteFromFirestore(id); 
-                renderTransactions(); renderIncomeChart(); renderExpenseChart(); updateSummary(); 
+                refreshUI(); 
             }
         });
-    }
-    
-    // --- Categories & Settings ---
-    function renderCategoryList() {
-        const d = document.getElementById('categoryListDisplay');
-        // Added Edit icon here
-        d.innerHTML = categories.length ? `<ul>${categories.map(c => `<li style="display:flex;justify-content:space-between;padding:8px;border-bottom:1px solid var(--border-color)"><span>${c}</span><div><i class="fas fa-edit" style="color:var(--info);cursor:pointer;margin-right:15px" onclick="renameCategory('${c}')"></i><i class="fas fa-trash" style="color:var(--danger);cursor:pointer" onclick="removeCategory('${c}')"></i></div></li>`).join('')}</ul>` : 'No categories.';
     }
     
     async function saveCurrencySymbol() {
@@ -1721,81 +1609,6 @@ function renderTransactions() {
         }
     }
 
-    async function addCategory() {
-        const n = document.getElementById('newCategoryName').value.trim();
-        if (n && !categories.includes(n)) { 
-            categories.push(n); await dbSet(STORE_CATS, {name:n}); renderCategoryList(); updateCatOpts(); 
-            saveCategoriesToFirestore(); 
-            document.getElementById('newCategoryName').value=''; Swal.fire({ title: 'Added', icon: 'success', timer: 1500, showConfirmButton: false }); 
-        } else if(categories.includes(n)) {
-            Swal.fire('Error', 'Category already exists!', 'warning');
-        }
-    }
-    
-    // New Feature: Rename Category
-    async function renameCategory(oldName) {
-        const { value: newName } = await Swal.fire({
-            title: 'Rename Category',
-            input: 'text',
-            inputValue: oldName,
-            showCancelButton: true,
-            confirmButtonText: 'Rename',
-            inputValidator: (value) => {
-                if (!value || value.trim() === '') return 'Category name cannot be empty!';
-                if (categories.includes(value.trim()) && value.trim() !== oldName) return 'Category already exists!';
-            }
-        });
-
-        if (newName && newName.trim() !== oldName) {
-            const updatedName = newName.trim();
-            
-            // 1. Update Categories Array
-            const index = categories.indexOf(oldName);
-            if (index > -1) categories[index] = updatedName;
-
-            // 2. Update DB Categories
-            await dbDelete(STORE_CATS, oldName);
-            await dbSet(STORE_CATS, {name: updatedName});
-            saveCategoriesToFirestore();
-
-            // 3. Update all past transactions linked to this category
-            let txUpdated = false;
-            const syncPromises = [];
-            for (let i = 0; i < transactions.length; i++) {
-                if (transactions[i].category === oldName) {
-                    transactions[i].category = updatedName;
-                    txUpdated = true;
-                    await dbSet(STORE_TX, transactions[i]);
-                    if(currentUser) syncPromises.push(saveToFirestore(transactions[i]));
-                }
-            }
-            
-            if(txUpdated && syncPromises.length > 0) {
-                await Promise.all(syncPromises);
-            }
-
-            // 4. Update UI
-            renderCategoryList();
-            updateCatOpts();
-            refreshUI();
-            
-            Swal.fire({ title: 'Renamed!', text: 'Category and linked transactions updated successfully.', icon: 'success', timer: 2000, showConfirmButton: false });
-        }
-    }
-
-    async function removeCategory(n) {
-        Swal.fire({ title: 'Delete Category?', text: 'Transactions under this category will remain unchanged.', showCancelButton: true }).then(async r => {
-            if (r.isConfirmed) { 
-                categories = categories.filter(c => c !== n); await dbDelete(STORE_CATS, n); renderCategoryList(); updateCatOpts(); 
-                saveCategoriesToFirestore(); 
-            }
-        });
-    }
-
-    function updateCatOpts() {
-        const s = document.getElementById('category'); s.innerHTML = '';
-        categories.forEach(c => s.add(new Option(c, c)));
-    }
     async function changeAppPin() {
         const p = document.getElementById('newAppPin').value;
         if (p.length === 4) { await dbSet(STORE_PIN, {key:'pin', value:p}); Swal.fire('PIN Updated'); document.getElementById('newAppPin').value=''; }
@@ -1803,7 +1616,7 @@ function renderTransactions() {
     }
     async function resetApp() {
         Swal.fire({ title: 'RESET ALL?', text:'Irreversible!', icon:'warning', showCancelButton:true }).then(async r=>{
-            if(r.isConfirmed){ await dbStoreAction(STORE_TX, 'readwrite', s=>s.clear()); await dbStoreAction(STORE_CATS, 'readwrite', s=>s.clear()); await dbStoreAction(STORE_PIN, 'readwrite', s=>s.clear()); window.location.reload(); }
+            if(r.isConfirmed){ await dbStoreAction(STORE_TX, 'readwrite', s=>s.clear()); await dbStoreAction(STORE_CATS, 'readwrite', s=>s.clear()); await dbStoreAction(STORE_PIN, 'readwrite', s=>s.clear()); await dbStoreAction(STORE_ACCTS, 'readwrite', s=>s.clear()); window.location.reload(); }
         });
     }
     
@@ -1811,7 +1624,7 @@ function renderTransactions() {
     function checkFilePickerSupport() { if (typeof window.showSaveFilePicker === 'undefined') { Swal.fire({ title: 'Browser Not Supported', text: 'Use Chrome, Edge or a modern desktop browser.', icon: 'error' }); return false; } return true; }
     async function exportData() {
         if (!checkFilePickerSupport()) return;
-        const data = { transactions, categories, pin: await getAppPin(), currencySymbol: globalCurrencySymbol };
+        const data = { transactions, categories, accounts, pin: await getAppPin(), currencySymbol: globalCurrencySymbol };
         const jsonStr = JSON.stringify(data, null, 2); 
         const defaultDate = new Date().toISOString().split('T')[0];
         try {
@@ -1825,48 +1638,31 @@ function renderTransactions() {
         if(!f) return;
         
         Swal.fire({
-            title: 'Overwrite Everything?',
-            text: "This will DELETE all current cloud & local data and replace it with this backup.",
-            icon: 'warning',
-            showCancelButton: true,
-            confirmButtonColor: '#d33',
-            cancelButtonColor: '#3085d6',
-            confirmButtonText: 'Yes, Overwrite!'
+            title: 'Overwrite Everything?', text: "This will DELETE all current cloud & local data and replace it with this backup.", icon: 'warning', showCancelButton: true, confirmButtonColor: '#d33', cancelButtonColor: '#3085d6', confirmButtonText: 'Yes, Overwrite!'
         }).then((result) => {
-            if (result.isConfirmed) {
-                startImportProcess(f);
-            } else {
-                document.getElementById('importFile').value = '';
-            }
+            if (result.isConfirmed) { startImportProcess(f); } 
+            else { document.getElementById('importFile').value = ''; }
         });
     }
 
     function startImportProcess(file) {
         const r = new FileReader();
-        
         r.onload = async (ev) => {
             try {
                 const d = JSON.parse(ev.target.result);
-                
                 const totalTx = d.transactions ? d.transactions.length : 0;
                 const totalCats = d.categories ? d.categories.length : 0;
-                const totalItems = totalTx + totalCats;
+                const totalAccts = d.accounts ? d.accounts.length : 0;
+                const totalItems = totalTx + totalCats + totalAccts;
                 let processedCount = 0;
 
-                let swalPopup = Swal.fire({
+                Swal.fire({
                     title: 'Importing Data...',
-                    html: `
-                        <p style="font-size:14px; color:var(--text-muted)">Syncing with Cloud Database</p>
-                        <div class="progress-container">
-                            <div id="importProgressBar" class="progress-bar">0%</div>
-                        </div>
-                        <div id="importStatusText" style="font-weight:bold; color:var(--text-main)">Starting...</div>
-                    `,
-                    allowOutsideClick: false,
-                    showConfirmButton: false,
-                    didOpen: () => {
-                        Swal.showLoading();
-                    }
+                    html: `<p style="font-size:14px; color:var(--text-muted)">Syncing with Cloud Database</p>
+                           <div class="progress-container"><div id="importProgressBar" class="progress-bar">0%</div></div>
+                           <div id="importStatusText" style="font-weight:bold; color:var(--text-main)">Starting...</div>`,
+                    allowOutsideClick: false, showConfirmButton: false,
+                    didOpen: () => { Swal.showLoading(); }
                 });
 
                 if(currentUser) {
@@ -1874,11 +1670,8 @@ function renderTransactions() {
                         const ref = firestore.collection('users').doc(currentUser.uid).collection('transactions');
                         const snapshot = await ref.get();
                         const batch = firestore.batch();
-                        snapshot.docs.forEach((doc) => {
-                            batch.delete(doc.ref);
-                        });
+                        snapshot.docs.forEach((doc) => { batch.delete(doc.ref); });
                         await batch.commit();
-                        console.log("Old Cloud Data Wiped");
                     } catch(e) { console.log("Cloud wipe warning:", e); }
                 }
 
@@ -1886,16 +1679,10 @@ function renderTransactions() {
 
                 if(d.transactions) { 
                     await dbStoreAction(STORE_TX, 'readwrite', s=>s.clear()); 
-                    
                     for(const t of d.transactions) { 
                         await dbSet(STORE_TX, t); 
-                        
-                        if(currentUser) {
-                            syncPromises.push(saveToFirestore(t)); 
-                        }
-
-                        processedCount++;
-                        updateProgressBar(processedCount, totalItems);
+                        if(currentUser) { syncPromises.push(saveToFirestore(t)); }
+                        processedCount++; updateProgressBar(processedCount, totalItems);
                     } 
                 }
 
@@ -1903,14 +1690,18 @@ function renderTransactions() {
                     await dbStoreAction(STORE_CATS, 'readwrite', s=>s.clear()); 
                     for(const c of d.categories) {
                         await dbSet(STORE_CATS, {name:c}); 
-                        
-                        processedCount++;
-                        updateProgressBar(processedCount, totalItems);
+                        processedCount++; updateProgressBar(processedCount, totalItems);
                     }
-                    if(currentUser) {
-                        categories = d.categories;
-                        syncPromises.push(saveCategoriesToFirestore());
+                    if(currentUser) { categories = d.categories; syncPromises.push(saveCategoriesToFirestore()); }
+                }
+
+                if(d.accounts) { 
+                    await dbStoreAction(STORE_ACCTS, 'readwrite', s=>s.clear()); 
+                    for(const a of d.accounts) {
+                        await dbSet(STORE_ACCTS, {name:a}); 
+                        processedCount++; updateProgressBar(processedCount, totalItems);
                     }
+                    accounts = d.accounts;
                 }
 
                 if(d.pin) await dbSet(STORE_PIN, {key:'pin', value:d.pin});
@@ -1924,20 +1715,8 @@ function renderTransactions() {
                     await Promise.all(syncPromises);
                 }
 
-                Swal.fire({
-                    icon: 'success',
-                    title: 'Import 100% Complete!',
-                    text: 'All data restored successfully.',
-                    timer: 1500,
-                    showConfirmButton: false
-                }).then(() => {
-                    window.location.reload();
-                });
-
-            } catch(err) { 
-                console.error(err);
-                Swal.fire('Error', 'Invalid Backup File', 'error'); 
-            }
+                Swal.fire({ icon: 'success', title: 'Import Complete!', text: 'All data restored successfully.', timer: 1500, showConfirmButton: false }).then(() => { window.location.reload(); });
+            } catch(err) { Swal.fire('Error', 'Invalid Backup File', 'error'); }
         };
         r.readAsText(file);
     }
@@ -1945,15 +1724,9 @@ function renderTransactions() {
     function updateProgressBar(current, total) {
         if(total === 0) return;
         const percentage = Math.round((current / total) * 100);
-        
         const bar = document.getElementById('importProgressBar');
         const text = document.getElementById('importStatusText');
-        
-        if(bar && text) {
-            bar.style.width = percentage + '%';
-            bar.innerText = percentage + '%';
-            text.innerText = `Processing ${current} of ${total} items...`;
-        }
+        if(bar && text) { bar.style.width = percentage + '%'; bar.innerText = percentage + '%'; text.innerText = `Processing ${current} of ${total} items...`; }
     }
     
     function exportDashboardPDF(){
@@ -1968,92 +1741,39 @@ function renderTransactions() {
         doc.save(`history_${new Date().toISOString().split('T')[0]}.pdf`);
     }
 
-// --- Custom Theme Modal Logic ---
+    // --- Custom Theme Modal Logic ---
     const THEMES = ['dark', 'light', 'ocean', 'nature', 'magenta', 'orangered', 'purple'];
-
-function applyTheme() {
+    function applyTheme() {
         const isAuto = localStorage.getItem('autoTheme') !== 'false';
         const savedManualTheme = localStorage.getItem('manualTheme') || 'light';
-        let activeTheme = 'light';
+        let activeTheme = isAuto ? THEMES[new Date().getDay()] : savedManualTheme;
         
-        if (isAuto) {
-            const todayIndex = new Date().getDay(); 
-            activeTheme = THEMES[todayIndex];
-        } else {
-            activeTheme = savedManualTheme;
-        }
-        
-        if(activeTheme === 'light') {
-            document.documentElement.removeAttribute('data-theme');
-        } else {
-            document.documentElement.setAttribute('data-theme', activeTheme);
-        }
+        if(activeTheme === 'light') { document.documentElement.removeAttribute('data-theme'); } 
+        else { document.documentElement.setAttribute('data-theme', activeTheme); }
         
         updateModalUIState(isAuto, activeTheme);
 
-        // --- নতুন যোগ করা অংশ (বাটনের নাম এবং থিমের নাম ডায়নামিক করার জন্য) ---
-        const themeNamesDisplay = {
-            'light': 'Light Theme',
-            'dark': 'Dark Theme',
-            'ocean': 'Ocean Blue',
-            'nature': 'Nature Green',
-            'magenta': 'Magenta',
-            'orangered': 'Orange Red',
-            'purple': 'Purple Night'
-        };
+        const themeNamesDisplay = { 'light': 'Light Theme', 'dark': 'Dark Theme', 'ocean': 'Ocean Blue', 'nature': 'Nature Green', 'magenta': 'Magenta', 'orangered': 'Orange Red', 'purple': 'Purple Night' };
         const btnText = document.getElementById('themeBtnTextDisplay');
-        if(btnText) {
-            // যদি অটো মোড অন থাকে তবে Auto লেখাও দেখাবে
-            const modeText = isAuto ? " (Auto)" : "";
-            btnText.textContent = "Theme: " + (themeNamesDisplay[activeTheme] || 'Light') + modeText;
-        }
-        // -----------------------------------------------------------------
-        
-        // চার্ট রিফ্রেশ করার জন্য
-        if(typeof refreshUI === 'function') {
-            setTimeout(refreshUI, 100); 
-        }
+        if(btnText) { const modeText = isAuto ? " (Auto)" : ""; btnText.textContent = "Theme: " + (themeNamesDisplay[activeTheme] || 'Light') + modeText; }
+        if(typeof refreshUI === 'function') { setTimeout(refreshUI, 100); }
     }
-
-    function openThemeModal() {
-        applyTheme(); // Open করার সময় কারেন্ট স্টেট সিঙ্ক করে নেবে
-        document.getElementById('themeModalOverlay').style.display = 'flex';
-    }
-
-    function closeThemeModal() {
-        document.getElementById('themeModalOverlay').style.display = 'none';
-    }
-
-    function toggleAutoTheme() {
-        const isAuto = document.getElementById('modalAutoThemeToggle').checked;
-        localStorage.setItem('autoTheme', isAuto);
-        applyTheme();
-    }
-
-    function selectManualTheme(themeName) {
-        // ম্যানুয়াল থিম সিলেক্ট করলে অটো থিম অফ হয়ে যাবে
-        localStorage.setItem('autoTheme', 'false');
-        localStorage.setItem('manualTheme', themeName);
-        applyTheme();
-    }
-
+    function openThemeModal() { applyTheme(); document.getElementById('themeModalOverlay').style.display = 'flex'; }
+    function closeThemeModal() { document.getElementById('themeModalOverlay').style.display = 'none'; }
+    function toggleAutoTheme() { const isAuto = document.getElementById('modalAutoThemeToggle').checked; localStorage.setItem('autoTheme', isAuto); applyTheme(); }
+    function selectManualTheme(themeName) { localStorage.setItem('autoTheme', 'false'); localStorage.setItem('manualTheme', themeName); applyTheme(); }
     function updateModalUIState(isAuto, activeTheme) {
-        // টগল সুইচ আপডেট
         const toggleBtn = document.getElementById('modalAutoThemeToggle');
         if(toggleBtn) toggleBtn.checked = isAuto;
-        
-        // সব বাটনের active ক্লাস রিমুভ করা
-        document.querySelectorAll('.theme-btn').forEach(btn => {
-            btn.classList.remove('active');
-        });
-        
-        // কারেন্ট থিম অনুযায়ী বাটনে active ক্লাস (সাদা বর্ডার) অ্যাড করা
+        document.querySelectorAll('.theme-btn').forEach(btn => { btn.classList.remove('active'); });
         const activeBtn = document.querySelector(`.theme-btn[data-theme-name="${activeTheme}"]`);
         if(activeBtn) activeBtn.classList.add('active');
     }
 
     function initAppUI() {
-        renderCategoryList(); updateCatOpts(); renderTransactions();
+        renderCategoryList(); updateCatOpts(); 
+        renderAccountList(); updateAcctOpts(); 
+        renderTransactions(); renderAccountBalances();
         document.getElementById('mainAppContent').style.display = 'block';
         openTab('dashboard', document.getElementById('tabButtonDashboard'));
         updateEmailDisplay();
@@ -2062,49 +1782,206 @@ function applyTheme() {
 
     document.addEventListener('DOMContentLoaded', async () => {
         applyTheme();
-        
-        // Listen for Auth State
         auth.onAuthStateChanged(async (user) => {
             if (user) {
-                // Logged In
                 currentUser = user;
                 document.getElementById('authOverlay').style.display = 'none';
-                
                 await loadLocalData();
                 document.getElementById('securityOverlay').style.display = 'flex';
                 document.getElementById('closePinScreen').style.display = 'none';
-                
-                // Update email display if Settings tab is active
                 updateEmailDisplay();
             } else {
-                // Logged Out
                 currentUser = null;
                 document.getElementById('authOverlay').style.display = 'flex';
                 document.getElementById('securityOverlay').style.display = 'none';
                 document.getElementById('mainAppContent').style.display = 'none';
             }
         });
-
         if('serviceWorker' in navigator) { window.addEventListener('load', () => { navigator.serviceWorker.register('service-worker.js').catch(err => console.log('SW failed: ', err)); }); }
     });
-    // --- Top Month History Popup Function ---
+
     function showMonthModal(ym, type) {
-        // ডেটা ফিল্টার করা (নির্দিষ্ট মাস এবং ইনকাম/এক্সপেন্স অনুযায়ী)
         const filtered = transactions.filter(t => {
             const tYM = getYM(t.date);
             let scopeMatch = (tYM === ym);
-            let typeMatch = (type === 'all') ? true : (t.type === type);
+            let typeMatch = (type === 'all') ? (t.type !== 'transfer') : (t.type === type);
             return scopeMatch && typeMatch;
         }).sort((a,b) => new Date(b.date) - new Date(a.date));
         
-        // পপআপের টাইটেল ঠিক করা
         const monthName = new Date(ym + "-01").toLocaleDateString('en-IN', {month: 'long', year: 'numeric'});
         let title = `${monthName} - All Transactions`;
         if(type === 'income') title = `${monthName} - Income Details`;
         if(type === 'expense') title = `${monthName} - Expense Details`;
-        
-        // আপনার আগে থেকে তৈরি করা SweetAlert Modal কল করা
         showTransactionsModal(title, filtered);
+    }
+
+    // --- Categories & Accounts Management Functions ---
+    function renderCategoryList() {
+        const d = document.getElementById('categoryListDisplay');
+        if (d) {
+            d.innerHTML = categories.length ? `<ul>${categories.map(c => `<li style="display:flex;justify-content:space-between;padding:8px;border-bottom:1px solid var(--border-color)"><span>${c}</span><div><i class="fas fa-edit" style="color:var(--info);cursor:pointer;margin-right:15px" onclick="renameCategory('${c}')"></i><i class="fas fa-trash" style="color:var(--danger);cursor:pointer" onclick="removeCategory('${c}')"></i></div></li>`).join('')}</ul>` : 'No categories.';
+        }
+    }
+
+    function updateCatOpts() {
+        const s = document.getElementById('category'); 
+        if (s) {
+            s.innerHTML = '';
+            categories.forEach(c => s.add(new Option(c, c)));
+        }
+    }
+
+    function renderAccountList() {
+        const d = document.getElementById('accountListDisplay');
+        if (d) {
+            d.innerHTML = accounts.length ? `<ul>${accounts.map(a => `<li style="display:flex;justify-content:space-between;padding:8px;border-bottom:1px solid var(--border-color)"><span>${a}</span><div><i class="fas fa-edit" style="color:var(--info);cursor:pointer;margin-right:15px" onclick="renameAccount('${a}')"></i><i class="fas fa-trash" style="color:var(--danger);cursor:pointer" onclick="removeAccount('${a}')"></i></div></li>`).join('')}</ul>` : 'No accounts.';
+        }
+    }
+
+    function updateAcctOpts() {
+        const s = document.getElementById('account'); 
+        const to = document.getElementById('toAccount'); 
+        if (s) {
+            s.innerHTML = '';
+            accounts.forEach(a => s.add(new Option(a, a)));
+        }
+        if (to) {
+            to.innerHTML = '';
+            accounts.forEach(a => to.add(new Option(a, a)));
+        }
+    }
+
+    async function addCategory() {
+        const n = document.getElementById('newCategoryName').value.trim();
+        if (n && !categories.includes(n)) { 
+            categories.push(n); await dbSet(STORE_CATS, {name:n}); renderCategoryList(); updateCatOpts(); 
+            saveCategoriesToFirestore(); 
+            document.getElementById('newCategoryName').value=''; Swal.fire({ title: 'Added', icon: 'success', timer: 1500, showConfirmButton: false }); 
+        } else if(categories.includes(n)) {
+            Swal.fire('Error', 'Category already exists!', 'warning');
+        }
+    }
+
+    async function renameCategory(oldName) {
+        const { value: newName } = await Swal.fire({
+            title: 'Rename Category', input: 'text', inputValue: oldName, showCancelButton: true, confirmButtonText: 'Rename',
+            inputValidator: (value) => {
+                if (!value || value.trim() === '') return 'Category name cannot be empty!';
+                if (categories.includes(value.trim()) && value.trim() !== oldName) return 'Category already exists!';
+            }
+        });
+        if (newName && newName.trim() !== oldName) {
+            const updatedName = newName.trim();
+            const index = categories.indexOf(oldName);
+            if (index > -1) categories[index] = updatedName;
+            await dbDelete(STORE_CATS, oldName);
+            await dbSet(STORE_CATS, {name: updatedName});
+            saveCategoriesToFirestore();
+            let txUpdated = false;
+            const syncPromises = [];
+            for (let i = 0; i < transactions.length; i++) {
+                if (transactions[i].category === oldName) {
+                    transactions[i].category = updatedName;
+                    txUpdated = true;
+                    await dbSet(STORE_TX, transactions[i]);
+                    if(currentUser) syncPromises.push(saveToFirestore(transactions[i]));
+                }
+            }
+            if(txUpdated && syncPromises.length > 0) { await Promise.all(syncPromises); }
+            renderCategoryList(); updateCatOpts(); refreshUI();
+            Swal.fire({ title: 'Renamed!', text: 'Category and linked transactions updated successfully.', icon: 'success', timer: 2000, showConfirmButton: false });
+        }
+    }
+
+    async function removeCategory(n) {
+        Swal.fire({ title: 'Delete Category?', text: 'Transactions under this category will remain unchanged.', showCancelButton: true }).then(async r => {
+            if (r.isConfirmed) { 
+                categories = categories.filter(c => c !== n); await dbDelete(STORE_CATS, n); renderCategoryList(); updateCatOpts(); 
+                saveCategoriesToFirestore(); 
+            }
+        });
+    }
+
+    async function addAccount() {
+        const n = document.getElementById('newAccountName').value.trim();
+        if (n && !accounts.includes(n)) { 
+            accounts.push(n); await dbSet(STORE_ACCTS, {name:n}); 
+            renderAccountList(); updateAcctOpts(); renderAccountBalances();
+            document.getElementById('newAccountName').value=''; 
+            Swal.fire({ title: 'Added', icon: 'success', timer: 1500, showConfirmButton: false }); 
+        } else if(accounts.includes(n)) {
+            Swal.fire('Error', 'Account already exists!', 'warning');
+        }
+    }
+
+    async function removeAccount(n) {
+        Swal.fire({ title: 'Delete Account?', text: 'Transactions under this account will remain unchanged.', showCancelButton: true }).then(async r => {
+            if (r.isConfirmed) { 
+                accounts = accounts.filter(a => a !== n); 
+                await dbDelete(STORE_ACCTS, n); 
+                renderAccountList(); updateAcctOpts(); renderAccountBalances();
+            }
+        });
+    }
+    async function renameAccount(oldName) {
+        const { value: newName } = await Swal.fire({
+            title: 'Rename Account', 
+            input: 'text', 
+            inputValue: oldName, 
+            showCancelButton: true, 
+            confirmButtonText: 'Rename',
+            inputValidator: (value) => {
+                if (!value || value.trim() === '') return 'Account name cannot be empty!';
+                if (accounts.includes(value.trim()) && value.trim() !== oldName) return 'Account already exists!';
+            }
+        });
+
+        if (newName && newName.trim() !== oldName) {
+            const updatedName = newName.trim();
+            
+            // ১. Accounts Array আপডেট করা
+            const index = accounts.indexOf(oldName);
+            if (index > -1) accounts[index] = updatedName;
+
+            // ২. Database আপডেট করা
+            await dbDelete(STORE_ACCTS, oldName);
+            await dbSet(STORE_ACCTS, {name: updatedName});
+
+            // ৩. পুরনো ট্রানজ্যাকশন এবং ট্রান্সফারগুলো আপডেট করা
+            let txUpdated = false;
+            const syncPromises = [];
+            for (let i = 0; i < transactions.length; i++) {
+                let changed = false;
+                
+                if (transactions[i].account === oldName) {
+                    transactions[i].account = updatedName;
+                    changed = true;
+                }
+                
+                // ট্রান্সফারের ক্ষেত্রে toAccount ও চেক করতে হবে
+                if (transactions[i].type === 'transfer' && transactions[i].toAccount === oldName) {
+                    transactions[i].toAccount = updatedName;
+                    changed = true;
+                }
+
+                if (changed) {
+                    txUpdated = true;
+                    await dbSet(STORE_TX, transactions[i]);
+                    if(currentUser) syncPromises.push(saveToFirestore(transactions[i]));
+                }
+            }
+            
+            if(txUpdated && syncPromises.length > 0) { 
+                await Promise.all(syncPromises); 
+            }
+
+            // ৪. UI রিফ্রেশ করা
+            renderAccountList(); 
+            updateAcctOpts(); 
+            refreshUI(); 
+            
+            Swal.fire({ title: 'Renamed!', text: 'Account and linked transactions updated successfully.', icon: 'success', timer: 2000, showConfirmButton: false });
+        }
     }
     </script>
 </body>
