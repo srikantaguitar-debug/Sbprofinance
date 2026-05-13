@@ -551,25 +551,41 @@
                     <p style="font-size:10px; color:var(--text-muted); margin:5px 0 0; text-align: center;">* Current year averages are calculated up to the current month.</p>
                 </div>
                 <div style="margin-top: 15px; border-top: 1px dashed var(--border-color); padding-top: 15px;">
-                        <h4 style="text-align: center; margin: 0 0 10px 0; font-size: 14px; color: var(--info);"><i class="fas fa-trophy"></i> Top Months (<span id="bestMonthYearLabel">Year</span>)</h4>
-                        <div style="display: flex; gap: 8px; text-align: center;">
-                            <div style="flex: 1; padding: 10px 5px; background: var(--input-bg); border-radius: 8px; border: 1px solid #007ACC;">
-                                <h5 style="margin:0; font-size:10px; color: var(--text-muted);">Max Balance</h5>
-                                <div id="topBalMonth" style="font-weight:bold; font-size:13px; color:#007ACC; margin-top:3px;">-</div>
-                                <div id="topBalAmt" style="font-size:11px; color:var(--text-main);">₹0.00</div>
-                            </div>
-                            <div style="flex: 1; padding: 10px 5px; background: var(--input-bg); border-radius: 8px; border: 1px solid #00B894;">
-                                <h5 style="margin:0; font-size:10px; color: var(--text-muted);">Max Income</h5>
-                                <div id="topIncMonth" style="font-weight:bold; font-size:13px; color:#00B894; margin-top:3px;">-</div>
-                                <div id="topIncAmt" style="font-size:11px; color:var(--text-main);">₹0.00</div>
-                            </div>
-                            <div style="flex: 1; padding: 10px 5px; background: var(--input-bg); border-radius: 8px; border: 1px solid #E84118;">
-                                <h5 style="margin:0; font-size:10px; color: var(--text-muted);">Max Expense</h5>
-                                <div id="topExpMonth" style="font-weight:bold; font-size:13px; color:#E84118; margin-top:3px;">-</div>
-                                <div id="topExpAmt" style="font-size:11px; color:var(--text-main);">₹0.00</div>
-                            </div>
-                        </div>
-                    </div>
+    
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; padding: 0 5px;">
+        <h4 style="margin: 0; font-size: 14px; color: var(--info);"><i class="fas fa-trophy"></i> Highlights</h4>
+        <div style="display: flex; gap: 5px;">
+            <select id="topBottomType" onchange="updateTopBottomMonths()" style="padding: 4px 8px; font-size: 11px; border: 1px solid var(--info); border-radius: 6px; font-family: 'Poppins', sans-serif;">
+                <option value="top">Top (Max)</option>
+                <option value="bottom">Lowest (Min)</option>
+            </select>
+            <select id="topBottomYear" onchange="updateTopBottomMonths()" style="padding: 4px 8px; font-size: 11px; border: 1px solid var(--info); border-radius: 6px; font-family: 'Poppins', sans-serif;">
+                </select>
+        </div>
+    </div>
+
+    <div style="display: flex; gap: 8px; text-align: center;">
+        
+        <div style="flex: 1; padding: 10px 5px; background: var(--input-bg); border-radius: 8px; border: 1px solid #007ACC;">
+            <h5 id="balLabel" style="margin:0; font-size:10px; color: var(--text-muted);">Max Balance</h5>
+            <div id="topBalMonth" style="font-weight:bold; font-size:13px; color:#007ACC; margin-top:3px;">-</div>
+            <div id="topBalAmt" style="font-size:11px; color:var(--text-main);">₹0.00</div>
+        </div>
+        
+        <div style="flex: 1; padding: 10px 5px; background: var(--input-bg); border-radius: 8px; border: 1px solid #00B894;">
+            <h5 id="incLabel" style="margin:0; font-size:10px; color: var(--text-muted);">Max Income</h5>
+            <div id="topIncMonth" style="font-weight:bold; font-size:13px; color:#00B894; margin-top:3px;">-</div>
+            <div id="topIncAmt" style="font-size:11px; color:var(--text-main);">₹0.00</div>
+        </div>
+        
+        <div style="flex: 1; padding: 10px 5px; background: var(--input-bg); border-radius: 8px; border: 1px solid #E84118;">
+            <h5 id="expLabel" style="margin:0; font-size:10px; color: var(--text-muted);">Max Expense</h5>
+            <div id="topExpMonth" style="font-weight:bold; font-size:13px; color:#E84118; margin-top:3px;">-</div>
+            <div id="topExpAmt" style="font-size:11px; color:var(--text-main);">₹0.00</div>
+        </div>
+
+    </div>
+</div>
 
                <div style="margin-top: 30px; margin-bottom: 30px; padding: 15px; background: var(--bg-card); border-radius: 8px; border: 1px solid var(--border-color);">
                         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
@@ -1024,7 +1040,16 @@
         if (name === 'dashboard') { populateChartFilters(); renderIncomeChart(); renderExpenseChart(); renderAccountBalances(); }
         else if (name === 'history') { populateChartFilters(); renderTransactions(); }
         else if (name === 'settings') { renderCategoryList(); renderAccountList(); updateEmailDisplay(); }
-        else if (name === 'analysis') { populateAnalysisYear(); requestAnimationFrame(() => { requestAnimationFrame(() => { renderAllAnalysisCharts(); }); }); }
+        else if (name === 'analysis') { 
+    populateAnalysisYear(); 
+    populateTopBottomYearFilter(); // নতুন অ্যাড হলো
+    requestAnimationFrame(() => { 
+        requestAnimationFrame(() => { 
+            renderAllAnalysisCharts(); 
+            updateTopBottomMonths(); // নতুন অ্যাড হলো
+        }); 
+    }); 
+}
         else if (name === 'addTransaction') { if(!editingTransactionId) setDateTimeLocalNow(); }
         updateSummary();
     }
@@ -1319,38 +1344,6 @@
         document.getElementById('avgBalComp').innerHTML = compBalHtml;
         document.getElementById('avgIncComp').innerHTML = compIncHtml;
         document.getElementById('avgExpComp').innerHTML = compExpHtml;
-
-        const maxInc = Math.max(...incDS[0].data); const maxExp = Math.max(...expDS[0].data); const maxBal = Math.max(...balDS[0].data);
-        const maxIncIdx = maxInc > 0 ? incDS[0].data.indexOf(maxInc) : -1;
-        const maxExpIdx = maxExp > 0 ? expDS[0].data.indexOf(maxExp) : -1;
-        const maxBalIdx = (maxInc > 0 || maxExp > 0) ? balDS[0].data.indexOf(maxBal) : -1;
-
-        const bestLabelEl = document.getElementById('bestMonthYearLabel'); if(bestLabelEl) bestLabelEl.textContent = base;
-
-        const topBalMonthEl = document.getElementById('topBalMonth'); if(topBalMonthEl) topBalMonthEl.textContent = maxBalIdx !== -1 ? months[maxBalIdx] : 'N/A';
-        const topBalAmtEl = document.getElementById('topBalAmt'); if(topBalAmtEl) topBalAmtEl.textContent = maxBalIdx !== -1 ? formatCurrency(maxBal) : '₹0.00';
-
-        const topIncMonthEl = document.getElementById('topIncMonth'); if(topIncMonthEl) topIncMonthEl.textContent = maxIncIdx !== -1 ? months[maxIncIdx] : 'N/A';
-        const topIncAmtEl = document.getElementById('topIncAmt'); if(topIncAmtEl) topIncAmtEl.textContent = maxIncIdx !== -1 ? formatCurrency(maxInc) : '₹0.00';
-
-        const topExpMonthEl = document.getElementById('topExpMonth'); if(topExpMonthEl) topExpMonthEl.textContent = maxExpIdx !== -1 ? months[maxExpIdx] : 'N/A';
-        const topExpAmtEl = document.getElementById('topExpAmt'); if(topExpAmtEl) topExpAmtEl.textContent = maxExpIdx !== -1 ? formatCurrency(maxExp) : '₹0.00';
-        
-        const attachClick = (elementId, maxIdx, type) => {
-            const el = document.getElementById(elementId); if (!el) return;
-            const card = el.parentElement; 
-            if(maxIdx !== -1) {
-                card.style.cursor = 'pointer'; card.style.transition = 'transform 0.2s';
-                card.onmousedown = () => card.style.transform = 'scale(0.95)';
-                card.onmouseup = () => card.style.transform = 'scale(1)';
-                card.onmouseleave = () => card.style.transform = 'scale(1)';
-                card.onclick = () => { const ym = base + '-' + String(maxIdx + 1).padStart(2, '0'); showMonthModal(ym, type); };
-            } else { card.style.cursor = 'default'; card.onclick = null; }
-        };
-
-        attachClick('topBalMonth', maxBalIdx, 'all');
-        attachClick('topIncMonth', maxIncIdx, 'income');
-        attachClick('topExpMonth', maxExpIdx, 'expense');
     }
 
     function renderLine(id, lbls, ds, instance, setInst){
@@ -2067,6 +2060,89 @@
             Swal.fire({ title: 'Renamed!', text: 'Account and linked transactions updated successfully.', icon: 'success', timer: 2000, showConfirmButton: false });
         }
     }
+    // Year ড্রপ-ডাউন ফিল করার জন্য
+function populateTopBottomYearFilter() {
+    const selYear = document.getElementById('topBottomYear');
+    if (!selYear) return;
+    const curr = new Date().getFullYear();
+    const years = [...new Set(transactions.map(t => getY(t.date)))];
+    if(!years.includes(String(curr))) years.push(String(curr));
+    years.sort((a,b) => b - a);
+
+    selYear.innerHTML = '';
+    years.forEach(y => selYear.add(new Option(y, y)));
+    selYear.value = String(curr);
+}
+
+// Top/Lowest ক্যালকুলেট করার জন্য
+function updateTopBottomMonths() {
+    const year = document.getElementById('topBottomYear').value;
+    const type = document.getElementById('topBottomType').value;
+    if (!year) return;
+
+    const isTop = (type === 'top');
+    const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+
+    const balData = getMonthlyData(year, 'balance');
+    const incData = getMonthlyData(year, 'income');
+    const expData = getMonthlyData(year, 'expense');
+
+    // কারেন্ট ইয়ার হলে ফিউচার মাসগুলো (যেগুলোতে ০ আছে) ইগনোর করার জন্য
+    const currYear = new Date().getFullYear().toString();
+    const currMonth = new Date().getMonth(); 
+    const limit = (year === currYear) ? currMonth : 11;
+
+    function getExtremum(arr) {
+        let bestIdx = -1;
+        let bestVal = isTop ? -Infinity : Infinity;
+
+        for(let i = 0; i <= limit; i++) {
+            if(isTop) {
+                if(arr[i] > bestVal && arr[i] !== 0) { bestVal = arr[i]; bestIdx = i; }
+            } else {
+                if(arr[i] < bestVal) { bestVal = arr[i]; bestIdx = i; }
+            }
+        }
+        return { idx: bestIdx, val: bestIdx !== -1 ? bestVal : 0 };
+    }
+
+    const balRes = getExtremum(balData);
+    const incRes = getExtremum(incData);
+    const expRes = getExtremum(expData);
+
+    // Label আপডেট (Max বা Min)
+    const prefix = isTop ? 'Max' : 'Min';
+    document.getElementById('balLabel').textContent = `${prefix} Balance`;
+    document.getElementById('incLabel').textContent = `${prefix} Income`;
+    document.getElementById('expLabel').textContent = `${prefix} Expense`;
+
+    // Data আপডেট
+    document.getElementById('topBalMonth').textContent = balRes.idx !== -1 ? months[balRes.idx] : '-';
+    document.getElementById('topBalAmt').textContent = balRes.idx !== -1 ? formatCurrency(balRes.val) : '₹0.00';
+
+    document.getElementById('topIncMonth').textContent = incRes.idx !== -1 ? months[incRes.idx] : '-';
+    document.getElementById('topIncAmt').textContent = incRes.idx !== -1 ? formatCurrency(incRes.val) : '₹0.00';
+
+    document.getElementById('topExpMonth').textContent = expRes.idx !== -1 ? months[expRes.idx] : '-';
+    document.getElementById('topExpAmt').textContent = expRes.idx !== -1 ? formatCurrency(expRes.val) : '₹0.00';
+
+    // Click Handlers
+    const attachClick = (elementId, resIdx, categoryType) => {
+        const el = document.getElementById(elementId); if (!el) return;
+        const card = el.parentElement;
+        if(resIdx !== -1) {
+            card.style.cursor = 'pointer'; card.style.transition = 'transform 0.2s';
+            card.onmousedown = () => card.style.transform = 'scale(0.95)';
+            card.onmouseup = () => card.style.transform = 'scale(1)';
+            card.onmouseleave = () => card.style.transform = 'scale(1)';
+            card.onclick = () => { const ym = year + '-' + String(resIdx + 1).padStart(2, '0'); showMonthModal(ym, categoryType); };
+        } else { card.style.cursor = 'default'; card.onclick = null; }
+    };
+
+    attachClick('topBalMonth', balRes.idx, 'all');
+    attachClick('topIncMonth', incRes.idx, 'income');
+    attachClick('topExpMonth', expRes.idx, 'expense');
+}
     </script>
 </body>
 </html>
