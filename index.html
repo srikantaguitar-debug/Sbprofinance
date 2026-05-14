@@ -1688,47 +1688,44 @@
 
                 Swal.fire({
                     title: 'Importing Data...',
-                    html: `<p style="font-size:14px; color:var(--danger); font-weight:bold;">Force Wiping Cloud Data...</p>
+                    html: `<p style="font-size:14px; color:var(--danger); font-weight:bold;">Force Wiping Cloud & Local Data...</p>
                            <div class="progress-container"><div id="importProgressBar" class="progress-bar">0%</div></div>
-                           <div id="importStatusText" style="font-weight:bold; color:var(--text-main)">Finding & deleting old data...</div>`,
+                           <div id="importStatusText" style="font-weight:bold; color:var(--text-main)">Deleting old database...</div>`,
                     allowOutsideClick: false, showConfirmButton: false,
                     didOpen: () => { Swal.showLoading(); }
                 });
 
-                // --- 1. WIPE LOCAL DATA ---
+                // --- 1. WIPE LOCAL DATA (IndexedDB) ---
                 transactions = []; categories = []; accounts = [];
                 await dbStoreAction(STORE_TX, 'readwrite', s=>s.clear()); 
                 await dbStoreAction(STORE_CATS, 'readwrite', s=>s.clear()); 
                 await dbStoreAction(STORE_ACCTS, 'readwrite', s=>s.clear()); 
 
-                // --- 2. FORCE FIREBASE WIPE (Force Delete for invisible folders) ---
+                // --- 2. FORCE FIREBASE WIPE (Cloud Data) ---
                 if(currentUser) {
                     try {
                         const userRef = firestore.collection('users').doc(currentUser.uid);
                         
-                        // A. Categories এবং Accounts ডিলিট করা
+                        // A. Categories ও Accounts ডিলিট করা
                         await userRef.update({ categories: firebase.firestore.FieldValue.delete(), accounts: firebase.firestore.FieldValue.delete() }).catch(()=>{});
                         
                         // B. পুরনো মেইন transactions ফোল্ডার ডিলিট করা
                         const oldTxSnapshot = await userRef.collection('transactions').get();
                         if(!oldTxSnapshot.empty) {
-                            const batch1 = firestore.batch();
-                            oldTxSnapshot.docs.forEach((doc) => { batch1.delete(doc.ref); });
-                            await batch1.commit();
+                            // Batch এর বদলে Promise.all ব্যবহার করা হলো যাতে 500 ডেটার লিমিট না থাকে
+                            const deletePromises = oldTxSnapshot.docs.map(doc => doc.ref.delete());
+                            await Promise.all(deletePromises);
                         }
 
-                        // C. নতুন years সাব-কালেকশন ফোর্স ডিলিট করা (2015 থেকে 2035 সাল পর্যন্ত সব চেক করবে)
+                        // C. নতুন years সাব-কালেকশন ফোর্স ডিলিট করা
                         for (let y = 2015; y <= 2035; y++) {
                             const yearStr = y.toString();
                             const txSnapshot = await userRef.collection('years').doc(yearStr).collection('transactions').get();
                             
                             if (!txSnapshot.empty) {
-                                // ওই সালের সব ট্রানজ্যাকশন ডিলিট করবে
-                                const batch2 = firestore.batch();
-                                txSnapshot.docs.forEach((doc) => { batch2.delete(doc.ref); });
-                                await batch2.commit();
+                                const deletePromises = txSnapshot.docs.map(doc => doc.ref.delete());
+                                await Promise.all(deletePromises);
                             }
-                            // ইয়ার ফোল্ডারটিও ডিলিট করবে
                             await userRef.collection('years').doc(yearStr).delete().catch(()=>{});
                         }
                         
