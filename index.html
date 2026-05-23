@@ -640,7 +640,7 @@
                     </div>
 
                     <!-- Capital/Maturity Checkbox Group -->
-                    <div class="form-group" id="excludeStatsGroup" style="display: none; background: rgba(0, 122, 204, 0.1); padding: 10px; border-radius: 8px; border: 1px dashed var(--info); margin-bottom: 15px;">
+                    <div class="form-group" id="excludeStatsGroup" style="background: rgba(0, 122, 204, 0.1); padding: 10px; border-radius: 8px; border: 1px dashed var(--info); margin-bottom: 15px;">
                         <label style="display: flex; align-items: center; gap: 8px; margin: 0; cursor: pointer; color: var(--info); font-weight: 600; font-size: 13px;">
                             <input type="checkbox" id="isExcludeStats" style="width: 16px; height: 16px;">
                             Exclude from Monthly/Yearly Stats (FD / Maturity)
@@ -961,6 +961,17 @@
         } 
         catch (e) { console.log("Saved locally."); }
     }
+    // নতুন: ফায়ারবেস থেকে ডিলিট করার ফাংশন
+    async function deleteFromFirestore(txId, txDate) {
+        if(!currentUser) return;
+        const year = getY(txDate); 
+        try { 
+            await firestore.collection('users').doc(currentUser.uid)
+                           .collection('years').doc(year)
+                           .collection('transactions').doc(String(txId)).delete(); 
+        } 
+        catch (e) { console.log("Delete from cloud failed:", e); }
+    }
 
     // Categories এবং Accounts ফায়ারবেসে সেভ করার ফাংশন
     async function saveUserDataToFirestore() {
@@ -1059,7 +1070,13 @@
         }); 
     }); 
 }
-        else if (name === 'addTransaction') { if(!editingTransactionId) setDateTimeLocalNow(); }
+        else if (name === 'addTransaction') { 
+            if(!editingTransactionId) {
+                setDateTimeLocalNow();
+                // Add ট্যাবে ঢোকার সাথে সাথে চেকবক্সের স্টেট ঠিক করার জন্য
+                setTimeout(() => toggleTransferMode(), 50); 
+            }
+        }
         updateSummary();
     }
 
@@ -1639,10 +1656,20 @@
     async function deleteTransaction(id) {
         Swal.fire({ title: 'Delete?', icon: 'warning', showCancelButton: true }).then(async r => {
             if (r.isConfirmed) { 
+                // ১. ডিলিট করার আগেই ট্রানজ্যাকশনটি খুঁজে বের করতে হবে
+                const tx = transactions.find(t => t.id === id); 
+                if(!tx) return;
+                
+                // ২. প্রথমে ফায়ারবেস ক্লাউড থেকে ডিলিট করুন
+                await deleteFromFirestore(id, tx.date); 
+                
+                // ৩. তারপর লোকাল ডাটাবেস ও অ্যারে থেকে ডিলিট করুন
                 transactions = transactions.filter(t => t.id !== id); 
                 await dbDelete(STORE_TX, id); 
-                const tx = transactions.find(t => t.id === id); await deleteFromFirestore(id, tx.date); 
+                
+                // ৪. UI আপডেট করুন
                 refreshUI(); 
+                Swal.fire({ title: 'Deleted', icon: 'success', timer: 1000, showConfirmButton: false });
             }
         });
     }
