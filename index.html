@@ -639,6 +639,15 @@
                         </div>
                     </div>
 
+                    <!-- Capital/Maturity Checkbox Group -->
+                    <div class="form-group" id="excludeStatsGroup" style="display: none; background: rgba(0, 122, 204, 0.1); padding: 10px; border-radius: 8px; border: 1px dashed var(--info); margin-bottom: 15px;">
+                        <label style="display: flex; align-items: center; gap: 8px; margin: 0; cursor: pointer; color: var(--info); font-weight: 600; font-size: 13px;">
+                            <input type="checkbox" id="isExcludeStats" style="width: 16px; height: 16px;">
+                            Exclude from Monthly/Yearly Stats (FD / Maturity)
+                        </label>
+                        <p style="margin: 4px 0 0 24px; font-size: 11px; color: var(--text-muted); font-weight: normal;">টিক দিলে এটি শুধু আপনার ব্যালেন্স পরিবর্তন করবে, কিন্তু Income/Expense চার্টে বা ড্যাশবোর্ডে যোগ হবে না।</p>
+                    </div>
+
                     <div class="form-group">
                         <label for="date">Date & Time:</label>
                         <input type="datetime-local" id="date" required>
@@ -1072,29 +1081,38 @@
         const filterVal = document.getElementById('monthFilter')?.value || curM;
 
         transactions.forEach(t => {
-            // Transfers do not affect global income/expense summaries
             if(t.type === 'transfer') return;
 
             const ym = getYM(t.date), y = getY(t.date), tDateStr = t.date.split('T')[0];
+            
             if (t.type === 'income') { 
                 lInc += t.amount; 
-                if (y === curY) yInc += t.amount; 
-                if (y === prevY) pYInc += t.amount; 
-                if (ym === curM) mInc += t.amount; 
-                if (tDateStr === todayStr) dInc += t.amount;
+                if (!t.isExcludeStats) {
+                    if (y === curY) yInc += t.amount; 
+                    if (y === prevY) pYInc += t.amount; 
+                    if (ym === curM) mInc += t.amount; 
+                    if (tDateStr === todayStr) dInc += t.amount;
+                }
             } else { 
                 lExp += t.amount; 
-                if (y === curY) yExp += t.amount; 
-                if (y === prevY) pYExp += t.amount; 
-                if (ym === curM) mExp += t.amount; 
-                if (tDateStr === todayStr) dExp += t.amount;
+                if (!t.isExcludeStats) {
+                    if (y === curY) yExp += t.amount; 
+                    if (y === prevY) pYExp += t.amount; 
+                    if (ym === curM) mExp += t.amount; 
+                    if (tDateStr === todayStr) dExp += t.amount;
+                }
             }
+            
             let include = false;
             if (filterVal === 'lifetime') include = true;
             else if (filterVal === 'current_year') include = (y === curY);
             else if (filterVal.length === 4) include = (y === filterVal);
             else include = (ym === filterVal);
-            if (include) { if(t.type==='income') fInc+=t.amount; else fExp+=t.amount; }
+            
+            if (include && !t.isExcludeStats) { 
+                if(t.type==='income') fInc+=t.amount; 
+                else fExp+=t.amount; 
+            }
         });
 
         document.getElementById('yearlyIncome').textContent = formatCurrency(yInc);
@@ -1167,7 +1185,7 @@
         const filter = document.getElementById(filterId).value;
         const isY = filter.length === 4;
         const dataMap = {};
-        transactions.filter(t => t.type === type && (isY ? getY(t.date) === filter : getYM(t.date) === filter)).forEach(t => { dataMap[t.category || 'Others'] = (dataMap[t.category || 'Others'] || 0) + t.amount; });
+        transactions.filter(t => t.type === type && (isY ? getY(t.date) === filter : getYM(t.date) === filter) && !t.isExcludeStats).forEach(t => { dataMap[t.category || 'Others'] = (dataMap[t.category || 'Others'] || 0) + t.amount; });
         const labels = Object.keys(dataMap), data = Object.values(dataMap);
         const total = data.reduce((a, b) => a + b, 0);
         
@@ -1278,8 +1296,12 @@
         const data = Array(12).fill(0);
         transactions.filter(t=>t.type !== 'transfer' && t.date.startsWith(year)).forEach(t=>{
             const m = parseInt(t.date.substring(5,7))-1;
-            if(type==='balance') data[m] += (t.type==='income'?t.amount:-t.amount);
-            else if(t.type===type) data[m] += t.amount;
+            
+            if(type === 'balance') {
+                data[m] += (t.type === 'income' ? t.amount : -t.amount);
+            } else if(t.type === type && !t.isExcludeStats) {
+                data[m] += t.amount;
+            }
         });
         return data;
     }
@@ -1441,6 +1463,9 @@
         document.getElementById('account').value = t.account || accounts[0];
         document.getElementById('date').value = t.date; 
         document.getElementById('details').value = t.details;
+        if (document.getElementById('isExcludeStats')) {
+            document.getElementById('isExcludeStats').checked = t.isExcludeStats || false;
+        }
         editingTransactionId = id;
         const saveBtn = document.getElementById('saveBtn');
         saveBtn.innerHTML = '<i class="fas fa-save"></i> Update Record';
@@ -1451,6 +1476,7 @@
     function cancelEdit() {
         editingTransactionId = null;
         document.getElementById('transactionForm').reset();
+        if (document.getElementById('isExcludeStats')) document.getElementById('isExcludeStats').checked = false;
         toggleTransferMode();
         setDateTimeLocalNow();
         const saveBtn = document.getElementById('saveBtn');
@@ -1463,17 +1489,20 @@
         const catGroup = document.getElementById('categoryGroup');
         const toAccGroup = document.getElementById('transferToGroup');
         const accLabel = document.getElementById('accountLabel');
+        const excludeGroup = document.getElementById('excludeStatsGroup');
 
         if (type === 'transfer') {
             catGroup.style.display = 'none';
             toAccGroup.style.display = 'flex';
             accLabel.textContent = 'From Account:';
             accLabel.style.color = 'var(--danger)';
+            if(excludeGroup) excludeGroup.style.display = 'none';
         } else {
             catGroup.style.display = 'block';
             toAccGroup.style.display = 'none';
             accLabel.textContent = 'Account:';
             accLabel.style.color = 'var(--text-main)';
+            if(excludeGroup) excludeGroup.style.display = 'block';
         }
     }
 
@@ -1577,7 +1606,8 @@
             Swal.fire('Error', 'Select a category.', 'warning'); return; 
         }
 
-        const txObj = { amount: amt, type, category: cat, account: acc, toAccount: (type === 'transfer' ? toAcc : null), date, details: dets };
+        const excludeStats = (type === 'income' || type === 'expense') ? document.getElementById('isExcludeStats').checked : false;
+        const txObj = { amount: amt, type, category: cat, account: acc, toAccount: (type === 'transfer' ? toAcc : null), date, details: dets, isExcludeStats: excludeStats };
 
         try {
             if (editingTransactionId) {
