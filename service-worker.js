@@ -1,17 +1,19 @@
-const CACHE_NAME = 'profinance-cache-v1';
+const CACHE_NAME = 'profinance-cache-v2';
 const urlsToCache = [
-    'index.html',
-    'manifest.json',
-    // PWA Icon files (assuming they are in the 'icons' folder)
-    'icons/icon-192x192.png', 
-    'icons/icon-512x512.png', 
+    './index.html',
+    './manifest.json',
+    './icon-192x192.png',  
+    './icon-512x512.png',  
     // External Libraries (CDNs)
     'https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800;900&display=swap',
     'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css',
     'https://cdn.jsdelivr.net/npm/sweetalert2@11',
     'https://cdn.jsdelivr.net/npm/chart.js',
     'https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js',
-    'https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.25/jspdf.plugin.autotable.min.js'
+    'https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.25/jspdf.plugin.autotable.min.js',
+    'https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js',
+    'https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js',
+    'https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js'
 ];
 
 // Install event: Cache all required assets
@@ -26,6 +28,8 @@ self.addEventListener('install', event => {
                 });
             })
     );
+    // Force the waiting service worker to become the active service worker
+    self.skipWaiting();
 });
 
 // Fetch event: Serve assets from cache if available
@@ -43,7 +47,7 @@ self.addEventListener('fetch', event => {
                 
                 // No cache hit - fetch from network
                 return fetch(event.request).catch(error => {
-                    // Handle network failure here (e.g., if you have an offline page)
+                    // Handle network failure here
                     console.error('Fetching failed:', event.request.url, error);
                 });
             })
@@ -65,4 +69,6 @@ self.addEventListener('activate', event => {
             );
         })
     );
+    // Ensure that the Service Worker takes control of the page immediately
+    self.clients.claim();
 });
