@@ -671,9 +671,13 @@
                 <div class="list-header" style="margin-bottom: 10px;">
                     <div style="display:flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
                         <h2 style="font-size: 20px; margin: 0; color: var(--text-main); font-weight: 600;"><i class="fas fa-list-ul"></i> History</h2>
-                        <div class="form-group" style="margin: 0; width: 50%;">
-                            <select id="monthFilter" onchange="renderTransactions()"></select>
-                        </div>
+                        <div class="form-group" style="margin: 0; width: 55%;">
+    <button id="monthFilterBtn" class="btn-style" style="background: var(--input-bg); border: 1px solid var(--info); color: var(--text-main); width: 100%; display: flex; justify-content: space-between; align-items: center; padding: 8px 12px; font-size: 13px;" onclick="openFilterModal()">
+        <span id="currentFilterText">Loading...</span> 
+        <i class="fas fa-filter" style="color: var(--info);"></i>
+    </button>
+    <input type="hidden" id="monthFilter" value="">
+</div>
                     </div>
                     <div style="margin-top: 5px;">
     <input type="text" id="searchInput" placeholder="Search (Date, Category, Details, Amount)..." onkeyup="renderTransactions()" style="border: 1px solid var(--info);">
@@ -1174,7 +1178,15 @@ function toggleExcludedMode() {
             const selectedYear = document.getElementById('analysisYearFilter').value;
             if(selectedYear) {
                 let ayInc = 0, ayExp = 0;
-                transactions.forEach(t => { if(t.type !== 'transfer' && getY(t.date) === selectedYear) { if(t.type === 'income') ayInc += t.amount; else ayExp += t.amount; } });
+                transactions.forEach(t => {
+                    if(t.type !== 'transfer' && getY(t.date) === selectedYear) {
+                        // এখানে Exclude লজিকটি যোগ করা হলো
+                        if (!t.isExcludeStats || globalShowExcluded) {
+                            if(t.type === 'income') ayInc += t.amount;
+                            else ayExp += t.amount;
+                        }
+                    }
+                });
                 bal = ayInc - ayExp; title = `Net Balance (${selectedYear})`;
             }
         }
@@ -1189,6 +1201,8 @@ function toggleExcludedMode() {
         const periods = new Set([curY, curM]);
         transactions.forEach(t => { periods.add(getY(t.date)); periods.add(getYM(t.date)); });
         const arr = Array.from(periods).sort().reverse();
+        
+        // Income & Expense Charts Dropdowns
         ['incomeChartFilter', 'expenseChartFilter'].forEach(id => {
             const sel = document.getElementById(id); sel.innerHTML = '';
             arr.forEach(p => sel.add(new Option(p.length===4 ? `Year ${p}` : new Date(p+"-01").toLocaleDateString('en-IN',{month:'long',year:'numeric'}), p)));
@@ -1196,14 +1210,15 @@ function toggleExcludedMode() {
             sel.value = (saved && [...sel.options].some(o => o.value === saved)) ? saved : curM;
             sel.onchange = function() { localStorage.setItem('pref_' + id, this.value); if(id === 'incomeChartFilter') renderIncomeChart(); else renderExpenseChart(); };
         });
-        const hist = document.getElementById('monthFilter'); hist.innerHTML = '';
-        hist.add(new Option('--- VIEW TRANSACTIONS ---', ''));
-        hist.add(new Option('All Transactions (Lifetime)', 'lifetime'));
-        hist.add(new Option('All Months (Current Year)', 'current_year'));
-        arr.forEach(p => hist.add(new Option(p.length===4 ? `Year ${p} Total` : new Date(p+"-01").toLocaleDateString('en-IN',{month:'long',year:'numeric'}), p)));
-        const savedHist = localStorage.getItem('pref_monthFilter');
-        hist.value = (savedHist && [...hist.options].some(o => o.value === savedHist)) ? savedHist : curM;
-        hist.onchange = function() { localStorage.setItem('pref_monthFilter', this.value); renderTransactions(); };
+        
+        // --- History Button Update ---
+        const savedHist = localStorage.getItem('pref_monthFilter') || curM;
+        document.getElementById('monthFilter').value = savedHist;
+        updateFilterButtonText(savedHist);
+        
+        if(document.getElementById('history').classList.contains('active')) {
+            renderTransactions();
+        }
     }
 
     Chart.register({
@@ -1444,12 +1459,6 @@ function toggleExcludedMode() {
 
         // 2. Filter and Search
         const filtered = transactions.filter(t => {
-            let dateMatch = false;
-            if(filter==='lifetime') dateMatch = true;
-            else if(filter==='current_year') dateMatch = (getY(t.date) === new Date().getFullYear().toString());
-            else if(filter.length===4) dateMatch = (getY(t.date) === filter);
-            else dateMatch = (getYM(t.date) === (filter || getYM(new Date().toISOString())));
-            
             let searchMatch = true;
             if (searchTerm) { 
                 const dateDisplayStr = new Date(t.date).toLocaleDateString('en-IN', {day:'numeric', month:'short', year:'numeric'}).toLowerCase();
@@ -1457,11 +1466,28 @@ function toggleExcludedMode() {
                 const searchStr = ((t.category||'') + ' ' + (t.details||'') + ' ' + t.amount + ' ' + dateDisplayStr + ' ' + rawDate + ' ' + (t.account||'')).toLowerCase(); 
                 searchMatch = searchStr.includes(searchTerm); 
             }
-            return dateMatch && searchMatch;
+
+            // যদি ইউজার ড্রপ-ডাউন থেকে শুধু 'Excluded Data' সিলেক্ট করে
+            if (filter === 'excluded_only') {
+                return t.isExcludeStats && searchMatch;
+            }
+
+            // সাধারণ ডেট/মান্থ ফিল্টার লজিক
+            let dateMatch = false;
+            if(filter==='lifetime') dateMatch = true;
+            else if(filter==='current_year') dateMatch = (getY(t.date) === new Date().getFullYear().toString());
+            else if(filter.length===4) dateMatch = (getY(t.date) === filter);
+            else dateMatch = (getYM(t.date) === (filter || getYM(new Date().toISOString())));
+            
+            // সাধারণ ফিল্টারের ক্ষেত্রে Excluded ডেটাগুলো লিস্টেও হাইড থাকবে (যদি গ্লোবাল টগল অফ থাকে)
+            let excludeMatch = globalShowExcluded ? true : !t.isExcludeStats;
+
+            return dateMatch && searchMatch && excludeMatch;
         }).sort((a,b)=>new Date(b.date)-new Date(a.date));
 
         let totalInc = 0; let totalExp = 0;
         filtered.forEach(t => {
+            // লিস্টে যা ফিল্টার হয়ে আসবে, শুধু তারই টোটাল হিসাব হবে
             if(t.type === 'income') totalInc += t.amount;
             else if(t.type === 'expense') totalExp += t.amount;
         });
@@ -2306,6 +2332,75 @@ function updateTopBottomMonths() {
     attachClick('topIncMonth', incRes.idx, 'income');
     attachClick('topExpMonth', expRes.idx, 'expense');
 }
+// ১. বাটনের টেক্সট আপডেট করার ফাংশন
+    function updateFilterButtonText(val) {
+        let btnText = "Select Period";
+        if (!val) btnText = "All Transactions";
+        else if (val === 'lifetime') btnText = "Lifetime Data";
+        else if (val === 'excluded_only') btnText = "Excluded (FD/Mat)";
+        else if (val === 'current_year') btnText = "Current Year";
+        else if (val.length === 4) btnText = `Year ${val} Total`;
+        else if (val.length > 4) btnText = new Date(val + "-01").toLocaleDateString('en-IN', { month: 'short', year: 'numeric' });
+        
+        const textSpan = document.getElementById('currentFilterText');
+        if (textSpan) textSpan.textContent = btnText;
+    }
+
+    // ২. সুন্দর পপআপ (Modal) খোলার ফাংশন
+    function openFilterModal() {
+        const cur = new Date(), curM = getYM(cur.toISOString()), curY = cur.getFullYear().toString();
+        const periods = new Set([curY, curM]);
+        transactions.forEach(t => { periods.add(getY(t.date)); periods.add(getYM(t.date)); });
+        const arr = Array.from(periods).sort().reverse();
+        const allYears = [...new Set(arr.map(p => p.substring(0, 4)))];
+
+        let html = '<div style="max-height: 60vh; overflow-y: auto; text-align: left; padding: 5px;">';
+        
+        // Special Filters (Top section)
+        html += `<div style="display: flex; flex-direction: column; gap: 8px; margin-bottom: 20px;">`;
+        html += `<button onclick="applyHistoryFilter('lifetime')" style="padding:10px; border-radius:8px; border:1px solid var(--border-color); background:var(--bg-body); color:var(--text-main); font-weight:600; text-align:left; cursor:pointer;"><i class="fas fa-globe"></i> All Transactions (Lifetime)</button>`;
+        html += `<button onclick="applyHistoryFilter('excluded_only')" style="padding:10px; border-radius:8px; border:1px dashed var(--danger); background:rgba(232, 65, 24, 0.05); color:var(--danger); font-weight:600; text-align:left; cursor:pointer;"><i class="fas fa-eye-slash"></i> Excluded Data (FD/Maturity)</button>`;
+        html += `</div>`;
+
+        // Years and Months (Grid section)
+        allYears.forEach(year => {
+            html += `<h4 style="margin: 0 0 10px 0; color: var(--primary); font-size: 15px; font-weight: 700; border-bottom: 2px solid var(--border-color); padding-bottom: 5px;"><i class="fas fa-calendar"></i> ${year}</h4>`;
+            html += `<div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 20px;">`;
+            
+            // Year Total Button
+            if(arr.includes(year)) {
+                html += `<button onclick="applyHistoryFilter('${year}')" style="padding:10px; border-radius:8px; border:1px solid var(--info); background:rgba(0, 122, 204, 0.1); color:var(--info); font-weight:700; cursor:pointer; grid-column: span 2;">${year} Total</button>`;
+            }
+            
+            // Month Buttons
+            arr.forEach(p => {
+                if (p.length > 4 && p.startsWith(year)) {
+                    const monthName = new Date(p+"-01").toLocaleDateString('en-IN', {month:'short', year:'numeric'});
+                    html += `<button onclick="applyHistoryFilter('${p}')" style="padding:10px; border-radius:8px; border:1px solid var(--border-color); background:var(--bg-body); color:var(--text-main); font-weight:500; cursor:pointer;">${monthName}</button>`;
+                }
+            });
+            html += `</div>`;
+        });
+        html += '</div>';
+
+        Swal.fire({
+            title: '<span style="font-size: 18px; color: var(--info);">Select Time Period</span>',
+            html: html,
+            showConfirmButton: false,
+            showCloseButton: true,
+            background: 'var(--bg-card)',
+            customClass: { popup: 'swal-wide' }
+        });
+    }
+
+    // ৩. ফিল্টার অ্যাপ্লাই করার ফাংশন
+    function applyHistoryFilter(val) {
+        document.getElementById('monthFilter').value = val;
+        localStorage.setItem('pref_monthFilter', val);
+        updateFilterButtonText(val);
+        Swal.close();
+        renderTransactions();
+    }
     </script>
 </body>
 </html>
