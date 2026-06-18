@@ -697,6 +697,18 @@
         
         <div class="settings-grid">
             <div class="settings-item" style="grid-column: span 2;">
+    <div style="display: flex; justify-content: space-between; align-items: center; background: rgba(0, 122, 204, 0.1); padding: 15px; border-radius: 8px; border: 1px dashed var(--info);">
+        <div>
+            <strong style="color: var(--info);"><i class="fas fa-eye"></i> Show Excluded Data</strong>
+            <p style="margin: 0; font-size: 11px; color: var(--text-muted);">Include FD/Maturity in Dashboard & Analysis</p>
+        </div>
+        <label class="switch">
+            <input type="checkbox" id="toggleExcludedData" onchange="toggleExcludedMode()">
+            <span class="slider"></span>
+        </label>
+    </div>
+</div>
+            <div class="settings-item" style="grid-column: span 2;">
     <button class="btn-style btn-settings" onclick="openThemeModal()" style="justify-content: center; background-color: var(--primary) !important; border: 1px solid var(--primary) !important; color: #FFFFFF !important; padding: 15px; font-size: 16px; box-shadow: 0 4px 8px rgba(0,0,0,0.15); transition: background-color 0.3s ease;">
         <i class="fas fa-palette"></i> <span id="themeBtnTextDisplay">Change App Theme</span>
     </button>
@@ -806,6 +818,7 @@
     
     // Global Variables
     let db, transactions = [], categories = DEFAULT_CATEGORIES, accounts = DEFAULT_ACCOUNTS;
+    let globalShowExcluded = false; // By default excluded data will be hidden
     let globalCurrencySymbol = '₹'; 
     let expenseChartInstance = null, incomeChartInstance = null;
     let balChart = null, incChart = null, expChart = null;
@@ -948,7 +961,17 @@
         if(document.getElementById('analysis').classList.contains('active')) renderAllAnalysisCharts();
         document.getElementById('amountLabel').textContent = `Amount (${globalCurrencySymbol}):`;
     }
-
+    
+function toggleExcludedMode() {
+    globalShowExcluded = document.getElementById('toggleExcludedData').checked;
+    refreshUI(); // রিফ্রেশ করলে নতুন মোড অনুযায়ী সব চার্ট রিলোড হবে
+    
+    if(globalShowExcluded) {
+        Swal.fire({title: 'Included!', text: 'Excluded data is now visible in charts.', icon: 'info', timer: 1500, showConfirmButton: false});
+    } else {
+        Swal.fire({title: 'Excluded!', text: 'Charts are back to normal mode.', icon: 'success', timer: 1500, showConfirmButton: false});
+    }
+}
     // নতুন সেভ লজিক (Year অনুযায়ী Sub-collection)
     async function saveToFirestore(tx) {
         if(!currentUser) return;
@@ -1104,7 +1127,7 @@
             
             if (t.type === 'income') { 
                 lInc += t.amount; 
-                if (!t.isExcludeStats) {
+                if (!t.isExcludeStats || globalShowExcluded) {
                     if (y === curY) yInc += t.amount; 
                     if (y === prevY) pYInc += t.amount; 
                     if (ym === curM) mInc += t.amount; 
@@ -1112,7 +1135,7 @@
                 }
             } else { 
                 lExp += t.amount; 
-                if (!t.isExcludeStats) {
+                if (!t.isExcludeStats || globalShowExcluded) {
                     if (y === curY) yExp += t.amount; 
                     if (y === prevY) pYExp += t.amount; 
                     if (ym === curM) mExp += t.amount; 
@@ -1126,7 +1149,7 @@
             else if (filterVal.length === 4) include = (y === filterVal);
             else include = (ym === filterVal);
             
-            if (include && !t.isExcludeStats) { 
+            if (include && (!t.isExcludeStats || globalShowExcluded)) { 
                 if(t.type==='income') fInc+=t.amount; 
                 else fExp+=t.amount; 
             }
@@ -1202,7 +1225,7 @@
         const filter = document.getElementById(filterId).value;
         const isY = filter.length === 4;
         const dataMap = {};
-        transactions.filter(t => t.type === type && (isY ? getY(t.date) === filter : getYM(t.date) === filter) && !t.isExcludeStats).forEach(t => { dataMap[t.category || 'Others'] = (dataMap[t.category || 'Others'] || 0) + t.amount; });
+        transactions.filter(t => t.type === type && (isY ? getY(t.date) === filter : getYM(t.date) === filter) && (!t.isExcludeStats || globalShowExcluded)).forEach(t => { dataMap[t.category || 'Others'] = (dataMap[t.category || 'Others'] || 0) + t.amount; });
         const labels = Object.keys(dataMap), data = Object.values(dataMap);
         const total = data.reduce((a, b) => a + b, 0);
         
@@ -1310,19 +1333,22 @@
     }
 
     function getMonthlyData(year, type){
-        const data = Array(12).fill(0);
-        transactions.filter(t=>t.type !== 'transfer' && t.date.startsWith(year)).forEach(t=>{
-            const m = parseInt(t.date.substring(5,7))-1;
-            
-            if(type === 'balance') {
-                data[m] += (t.type === 'income' ? t.amount : -t.amount);
-            } else if(t.type === type && !t.isExcludeStats) {
-                data[m] += t.amount;
-            }
-        });
-        return data;
-    }
+    const data = Array(12).fill(0);
+    transactions.filter(t=>t.type !== 'transfer' && t.date.startsWith(year)).forEach(t=>{
+        
+        // যদি ডেটাটি excluded হয় এবং ইউজার টগল অন না করে থাকে, তবে এটি স্কিপ করবে
+        if (t.isExcludeStats && !globalShowExcluded) return; 
 
+        const m = parseInt(t.date.substring(5,7))-1;
+        
+        if(type === 'balance') {
+            data[m] += (t.type === 'income' ? t.amount : -t.amount);
+        } else if(t.type === type) {
+            data[m] += t.amount;
+        }
+    });
+    return data;
+}
     function calculateAverage(dataArr, year) {
         const currentYear = new Date().getFullYear().toString();
         const currentMonth = new Date().getMonth() + 1;
@@ -1401,6 +1427,22 @@
         const searchTerm = searchInput ? searchInput.value.toLowerCase() : '';
         const list = document.getElementById('transactionList');
         
+        // 1. Total Running Balance Calculation (Oldest to Newest)
+        let sortedTx = [...transactions].sort((a,b) => new Date(a.date) - new Date(b.date));
+        let txBalances = {};
+        let globalRunningBal = 0; 
+
+        sortedTx.forEach(t => {
+            if (t.type === 'income') {
+                globalRunningBal += t.amount;
+            } else if (t.type === 'expense') {
+                globalRunningBal -= t.amount;
+            }
+            // Transfer হলে মেইন ব্যালেন্স একই থাকে, তাই কিছু যোগ/বিয়োগ হবে না
+            txBalances[t.id] = globalRunningBal;
+        });
+
+        // 2. Filter and Search
         const filtered = transactions.filter(t => {
             let dateMatch = false;
             if(filter==='lifetime') dateMatch = true;
@@ -1430,14 +1472,28 @@
         
         if (histTotalIncEl) histTotalIncEl.textContent = formatCurrency(totalInc);
         if (histTotalExpEl) histTotalExpEl.textContent = formatCurrency(totalExp);
+        
+        // History ট্যাবের ওপরে টোটাল মেইন ব্যালেন্স শো করানো
+        // History ট্যাবের ওপরে ফিল্টার বা সার্চ করা লিস্টের নেট ব্যালেন্স শো করানো
         if (histNetEl) {
-            histNetEl.textContent = formatCurrency(totalInc - totalExp);
-            histNetEl.style.color = (totalInc - totalExp) >= 0 ? 'var(--primary)' : 'var(--danger)';
+            let filteredNetBal = totalInc - totalExp; // ফিল্টার করা ডেটার ক্যালকুলেশন
+            histNetEl.textContent = formatCurrency(filteredNetBal); 
+            histNetEl.style.color = filteredNetBal >= 0 ? 'var(--info)' : 'var(--danger)';
+            histNetEl.style.fontSize = '14px';
+            
+            const parentDiv = histNetEl.parentElement;
+            // টেক্সট "Main Bal:" থাকলে সেটিকে পরিবর্তন করে "Net Bal:" করা হলো
+            if (parentDiv.innerHTML.includes('Main Bal:')) {
+                parentDiv.innerHTML = parentDiv.innerHTML.replace('Main Bal:', 'Net Bal:');
+            } else if (parentDiv.innerHTML.includes('Net:')) {
+                parentDiv.innerHTML = parentDiv.innerHTML.replace('Net:', 'Net Bal:');
+            }
         }
 
         list.innerHTML = '';
         document.getElementById('noTransactionsMsg').style.display = filtered.length ? 'none' : 'block';
         
+        // 3. Render List with Total Running Balance
         filtered.forEach(t => {
             const li = document.createElement('li');
             li.className = t.type === 'income' ? 'income-item' : (t.type === 'expense' ? 'expense-item' : 'transfer-item');
@@ -1451,11 +1507,23 @@
             }
 
             let amountPrefix = t.type === 'income' ? '+' : (t.type === 'expense' ? '-' : '⇄');
+            
+            // Total Running Balance HTML (Blue Circle Area)
+            let balDisplay = '';
+            if (txBalances[t.id] !== undefined) {
+                balDisplay = `<div style="font-size: 11px; font-weight: 600; margin-top: 4px; color: var(--info);">Bal: ${formatCurrency(txBalances[t.id])}</div>`;
+            }
 
-            li.innerHTML = `<div class="transaction-click-area" onclick="showDetails(${t.id})"><div class="transaction-info"><strong>${displayCat}</strong><span>${dateDisplay}</span>${t.details ? `<em>${t.details.substring(0,15)}${t.details.length>15?'...':''}</em>` : ''}</div><div class="transaction-amount">${amountPrefix} ${formatCurrency(t.amount)}</div></div><div class="action-buttons"><button class="edit-btn" onclick="editTransaction(${t.id})"><i class="fas fa-edit"></i></button><button class="delete-btn" onclick="deleteTransaction(${t.id})"><i class="fas fa-trash-alt"></i></button></div>`;
+            li.innerHTML = `<div class="transaction-click-area" onclick="showDetails(${t.id})">
+                                <div class="transaction-info"><strong>${displayCat}</strong><span>${dateDisplay}</span>${t.details ? `<em>${t.details.substring(0,15)}${t.details.length>15?'...':''}</em>` : ''}</div>
+                                <div class="transaction-amount" style="text-align: right;">
+                                    <div>${amountPrefix} ${formatCurrency(t.amount)}</div>
+                                    ${balDisplay}
+                                </div>
+                            </div>
+                            <div class="action-buttons"><button class="edit-btn" onclick="editTransaction(${t.id})"><i class="fas fa-edit"></i></button><button class="delete-btn" onclick="deleteTransaction(${t.id})"><i class="fas fa-trash-alt"></i></button></div>`;
             list.appendChild(li);
         });
-        // Remove updateSummary() here to prevent recursive loop causing issues.
     }
     
     function showDetails(id) {
@@ -1567,19 +1635,55 @@
 
     // নির্দিষ্ট অ্যাকাউন্টের ট্রানজ্যাকশন দেখানোর ফাংশন (Back Button সহ)
     function showAccountHistory(accName) {
-        const filtered = transactions.filter(t => {
+        // 1. Calculate running balance chronologically specifically for this account
+        let accChronological = [...transactions].sort((a,b) => new Date(a.date) - new Date(b.date));
+        let currentBal = 0;
+        let historyWithBal = [];
+
+        accChronological.forEach(t => {
             const actualAcc = t.account || accounts[0];
-            return actualAcc === accName || (t.type === 'transfer' && t.toAccount === accName);
-        }).sort((a,b) => new Date(b.date) - new Date(a.date));
+            let involved = false;
+            let displayPrefix = '';
+            let clr = '';
+
+            if (actualAcc === accName) {
+                if (t.type === 'income') { currentBal += t.amount; displayPrefix = '+'; clr = '#00B894'; }
+                else if (t.type === 'expense') { currentBal -= t.amount; displayPrefix = '-'; clr = '#E84118'; }
+                else if (t.type === 'transfer') { currentBal -= t.amount; displayPrefix = '-'; clr = '#FDCB6E'; }
+                involved = true;
+            }
+            // If money was transferred TO this account
+            if (t.type === 'transfer' && t.toAccount === accName) {
+                currentBal += t.amount;
+                displayPrefix = '+';
+                clr = '#00B894'; 
+                involved = true;
+            }
+            
+            if (involved) {
+                historyWithBal.push({ ...t, runningBal: currentBal, displayPrefix, clr });
+            }
+        });
+
+        // 2. Reverse to show newest first
+        historyWithBal.reverse();
         
         let htmlContent = '<ul class="swal-list">';
-        if (filtered.length === 0) htmlContent += '<li style="text-align:center;">No transactions found.</li>';
+        if (historyWithBal.length === 0) htmlContent += '<li style="text-align:center;">No transactions found.</li>';
         else {
-            filtered.forEach(t => {
+            historyWithBal.forEach(t => {
                 const dateStr = new Date(t.date).toLocaleString('en-IN', { dateStyle: 'medium', timeStyle: 'short' });
-                const clr = t.type === 'income' ? '#00B894' : (t.type === 'expense' ? '#E84118' : '#FDCB6E');
                 const catStr = t.type === 'transfer' ? `Transfer: ${t.account} ➔ ${t.toAccount}` : `${t.category}`;
-                htmlContent += `<li><span class="swal-amt" style="color: ${clr}">${formatCurrency(t.amount)}</span><strong>${catStr}</strong><span>${dateStr}</span>${t.details ? `<br><span style="font-style:italic;">"${t.details}"</span>` : ''}</li>`;
+                
+                htmlContent += `<li>
+                                    <div style="float: right; text-align: right; margin-top: 2px;">
+                                        <span class="swal-amt" style="color: ${t.clr}; font-size: 15px;">${t.displayPrefix} ${formatCurrency(t.amount)}</span><br>
+                                        <span style="font-size: 11px; color: var(--text-main); font-weight: 600;">Bal: ${formatCurrency(t.runningBal)}</span>
+                                    </div>
+                                    <strong>${catStr}</strong>
+                                    <span>${dateStr}</span>
+                                    ${t.details ? `<br><span style="font-style:italic; font-size: 11px;">"${t.details}"</span>` : ''}
+                                </li>`;
             });
         }
         htmlContent += '</ul>';
@@ -1595,7 +1699,6 @@
             allowOutsideClick: false,
             customClass: { popup: 'swal-wide' } 
         }).then((result) => {
-            // যদি Cancel (Back) বাটনে ক্লিক করা হয়, তবে আবার ব্যালেন্স পপআপ ওপেন হবে
             if (result.dismiss === Swal.DismissReason.cancel) {
                 openAccountBalancesPopup();
             }
