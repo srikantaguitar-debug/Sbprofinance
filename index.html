@@ -2031,7 +2031,13 @@ function toggleExcludedMode() {
                 document.getElementById('mainAppContent').style.display = 'none';
             }
         });
-        if('serviceWorker' in navigator) { window.addEventListener('load', () => { navigator.serviceWorker.register('service-worker.js').catch(err => console.log('SW failed: ', err)); }); }
+        if('serviceWorker' in navigator) { 
+    window.addEventListener('load', () => { 
+        navigator.serviceWorker.register('./service-worker.js').then((registration) => {
+            console.log('ServiceWorker registration successful with scope: ', registration.scope);
+        }).catch(err => console.log('SW failed: ', err)); 
+    }); 
+}
     });
 
     function showMonthModal(ym, type) {
