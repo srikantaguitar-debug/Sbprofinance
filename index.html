@@ -1755,14 +1755,16 @@ function toggleExcludedMode() {
                 const dateStr = new Date(t.date).toLocaleString('en-IN', { dateStyle: 'medium', timeStyle: 'short' });
                 const catStr = t.type === 'transfer' ? `Transfer: ${t.account} ➔ ${t.toAccount}` : `${t.category}`;
                 
-                htmlContent += `<li>
-                                    <div style="float: right; text-align: right; margin-top: 2px;">
+                htmlContent += `<li style="display: flex; justify-content: space-between; align-items: center;">
+                                    <div style="flex-grow: 1; padding-right: 10px;">
+                                        <strong>${catStr}</strong><br>
+                                        <span style="font-size: 12px; color: var(--text-muted);">${dateStr}</span>
+                                        ${t.details ? `<br><span style="font-style:italic; font-size: 11px; color: var(--text-muted);">"${t.details}"</span>` : ''}
+                                    </div>
+                                    <div style="text-align: right; white-space: nowrap; flex-shrink: 0;">
                                         <span class="swal-amt" style="color: ${t.clr}; font-size: 15px;">${t.displayPrefix} ${formatCurrency(t.amount)}</span><br>
                                         <span style="font-size: 11px; color: var(--text-main); font-weight: 600;">Bal: ${formatCurrency(t.runningBal)}</span>
                                     </div>
-                                    <strong>${catStr}</strong>
-                                    <span>${dateStr}</span>
-                                    ${t.details ? `<br><span style="font-style:italic; font-size: 11px;">"${t.details}"</span>` : ''}
                                 </li>`;
             });
         }
