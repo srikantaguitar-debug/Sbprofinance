@@ -203,14 +203,44 @@
 
         /* Forms */
         label { display: block; margin-bottom: 4px; font-weight: 500; font-size: 13px; color: var(--text-main); }
-        input, select, textarea { 
+        
+        input, textarea { 
             width: 100%; padding: 12px 14px; font-size: 14px;
             border: 1px solid var(--border-color); border-radius: 8px;
             box-sizing: border-box; background-color: var(--input-bg);
             color: var(--text-main);
             transition: border-color 0.2s, box-shadow 0.2s;
         }
-        input:focus, select:focus, textarea:focus { border-color: var(--info); outline: none; box-shadow: 0 0 0 3px rgba(0, 122, 204, 0.2); }
+
+        /* --- Stylish Custom Dropdowns --- */
+        select { 
+            width: 100%; padding: 12px 14px; font-size: 14px;
+            border: 1px solid var(--border-color); border-radius: 8px;
+            box-sizing: border-box; background-color: var(--input-bg);
+            color: var(--text-main);
+            transition: all 0.2s ease;
+            appearance: none; /* ডিফল্ট বোরিং অ্যারো হাইড করা হলো */
+            -webkit-appearance: none;
+            -moz-appearance: none;
+            cursor: pointer;
+            font-weight: 500;
+            /* কাস্টম সুন্দর অ্যারো আইকন */
+            background-image: url("data:image/svg+xml;charset=UTF-8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23636E72' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: right 12px center;
+            background-size: 16px;
+            padding-right: 35px !important; 
+        }
+
+        input:focus, textarea:focus, select:focus { 
+            border-color: var(--info); outline: none; box-shadow: 0 0 0 3px rgba(0, 122, 204, 0.2); 
+        }
+
+        /* Dark Theme-এর জন্য অ্যারোর কালার অ্যাডজাস্টমেন্ট */
+        [data-theme="dark"] select {
+            background-image: url("data:image/svg+xml;charset=UTF-8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23A0A0A0' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
+        }
+        
         .form-grid { display: flex; gap: 15px; }
         .form-group { margin-bottom: 15px; }
         .form-group.half { flex: 1; }
@@ -479,10 +509,13 @@
 
             <div class="chart-grid">
                  <div class="card chart-card">
-                    <div class="chart-header">
-                        <h2 style="color: #00B894;"><i class="fas fa-circle-notch"></i> Income Breakdown</h2>
-                        <select id="incomeChartFilter" onchange="renderIncomeChart()"></select>
-                    </div>
+                    <div class="chart-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+    <h2 style="color: #00B894; font-size: 16px; margin: 0;"><i class="fas fa-circle-notch"></i> Income Breakdown</h2>
+    <button id="incomeFilterBtn" class="btn-style" style="background: var(--input-bg); border: 1px solid #00B894; color: var(--text-main); padding: 6px 12px; font-size: 12px; border-radius: 6px; display: flex; align-items: center; gap: 6px; cursor: pointer;" onclick="openChartFilterModal('income')">
+        <span id="incomeFilterText">Loading...</span> <i class="fas fa-chevron-down" style="color: #00B894; font-size: 10px;"></i>
+    </button>
+    <input type="hidden" id="incomeChartFilter" value="">
+</div>
                     <div class="chart-container">
                         <canvas id="incomeChart"></canvas>
                     </div>
@@ -490,10 +523,13 @@
                  </div>
 
                  <div class="card chart-card">
-                    <div class="chart-header">
-                        <h2 style="color: var(--danger);"><i class="fas fa-circle-notch"></i> Expense Breakdown</h2>
-                        <select id="expenseChartFilter" onchange="renderExpenseChart()"></select>
-                    </div>
+                    <div class="chart-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+    <h2 style="color: var(--danger); font-size: 16px; margin: 0;"><i class="fas fa-circle-notch"></i> Expense Breakdown</h2>
+    <button id="expenseFilterBtn" class="btn-style" style="background: var(--input-bg); border: 1px solid var(--danger); color: var(--text-main); padding: 6px 12px; font-size: 12px; border-radius: 6px; display: flex; align-items: center; gap: 6px; cursor: pointer;" onclick="openChartFilterModal('expense')">
+        <span id="expenseFilterText">Loading...</span> <i class="fas fa-chevron-down" style="color: var(--danger); font-size: 10px;"></i>
+    </button>
+    <input type="hidden" id="expenseChartFilter" value="">
+</div>
                     <div class="chart-container">
                         <canvas id="expenseChart"></canvas>
                     </div>
@@ -513,96 +549,104 @@
                     
                     <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-bottom: 15px;">
                         <div class="form-group" style="margin: 0;">
-                            <label for="analysisYearFilter" style="font-size: 11px;">Base Year:</label>
-                            <select id="analysisYearFilter" onchange="renderAllAnalysisCharts()" style="padding: 8px; font-size: 12px;"></select>
+                            <label style="font-size: 11px;">Base Year:</label>
+                            <button type="button" class="btn-style" style="background: var(--input-bg); border: 1px solid var(--border-color); color: var(--text-main); width: 100%; display: flex; justify-content: space-between; align-items: center; padding: 8px; font-size: 12px;" onclick="openCustomDropdown('analysisYearFilter', 'analysisYearFilterText', 'Select Base Year')">
+                                <span id="analysisYearFilterText">Loading...</span> <i class="fas fa-chevron-down" style="font-size:10px; opacity:0.6;"></i>
+                            </button>
+                            <select id="analysisYearFilter" onchange="renderAllAnalysisCharts()" style="display:none;"></select>
                         </div>
                         <div class="form-group" style="margin: 0;">
-                            <label for="compareYearFilter" style="font-size: 11px;">Compare 1:</label>
-                            <select id="compareYearFilter" onchange="renderAllAnalysisCharts()" style="padding: 8px; font-size: 12px;"></select>
+                            <label style="font-size: 11px;">Compare 1:</label>
+                            <button type="button" class="btn-style" style="background: var(--input-bg); border: 1px solid var(--border-color); color: var(--text-main); width: 100%; display: flex; justify-content: space-between; align-items: center; padding: 8px; font-size: 12px;" onclick="openCustomDropdown('compareYearFilter', 'compareYearFilterText', 'Select Year to Compare')">
+                                <span id="compareYearFilterText">Loading...</span> <i class="fas fa-chevron-down" style="font-size:10px; opacity:0.6;"></i>
+                            </button>
+                            <select id="compareYearFilter" onchange="renderAllAnalysisCharts()" style="display:none;"></select>
                         </div>
                         <div class="form-group" style="margin: 0;">
-                            <label for="compareYearFilter2" style="font-size: 11px;">Compare 2:</label>
-                            <select id="compareYearFilter2" onchange="renderAllAnalysisCharts()" style="padding: 8px; font-size: 12px;"></select>
+                            <label style="font-size: 11px;">Compare 2:</label>
+                            <button type="button" class="btn-style" style="background: var(--input-bg); border: 1px solid var(--border-color); color: var(--text-main); width: 100%; display: flex; justify-content: space-between; align-items: center; padding: 8px; font-size: 12px;" onclick="openCustomDropdown('compareYearFilter2', 'compareYearFilter2Text', 'Select 2nd Year to Compare')">
+                                <span id="compareYearFilter2Text">Loading...</span> <i class="fas fa-chevron-down" style="font-size:10px; opacity:0.6;"></i>
+                            </button>
+                            <select id="compareYearFilter2" onchange="renderAllAnalysisCharts()" style="display:none;"></select>
                         </div>
                     </div>
 
                     <div style="display: flex; gap: 8px; text-align: center; margin-bottom: 10px;">
-    
-    <div style="flex: 1; padding: 10px 5px; background: rgba(0, 122, 204, 0.1); border-radius: 8px; border: 1px solid #007ACC;">
-        <h4 style="margin:0; font-size:11px; color: var(--text-muted);">Avg Balance</h4>
-        <div id="avgBalBase" style="font-weight:bold; font-size:13px; color:#007ACC;">₹0.00</div>
-        <div id="avgBalComp" style="font-size:9px; color:var(--text-muted); margin-top: 4px;"></div>
-    </div>
-
-    <div style="flex: 1; padding: 10px 5px; background: rgba(0, 184, 148, 0.1); border-radius: 8px; border: 1px solid #00B894;">
-        <h4 style="margin:0; font-size:11px; color: var(--text-muted);">Avg Income</h4>
-        <div id="avgIncBase" style="font-weight:bold; font-size:13px; color:#00B894;">₹0.00</div>
-        <div id="avgIncComp" style="font-size:9px; color:var(--text-muted); margin-top: 4px;"></div>
-    </div>
-
-    <div style="flex: 1; padding: 10px 5px; background: rgba(232, 65, 24, 0.1); border-radius: 8px; border: 1px solid #E84118;">
-        <h4 style="margin:0; font-size:11px; color: var(--text-muted);">Avg Expense</h4>
-        <div id="avgExpBase" style="font-weight:bold; font-size:13px; color:#E84118;">₹0.00</div>
-        <div id="avgExpComp" style="font-size:9px; color:var(--text-muted); margin-top: 4px;"></div>
-    </div>
-    
-
-</div>
-                    <p style="font-size:10px; color:var(--text-muted); margin:5px 0 0; text-align: center;">* Current year averages are calculated up to the current month.</p>
-                </div>
-                <div style="margin-top: 15px; border-top: 1px dashed var(--border-color); padding-top: 15px;">
-    
-    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; padding: 0 5px;">
-        <h4 style="margin: 0; font-size: 14px; color: var(--info);"><i class="fas fa-trophy"></i> Highlights</h4>
-        <div style="display: flex; gap: 5px;">
-            <select id="topBottomType" onchange="updateTopBottomMonths()" style="padding: 4px 8px; font-size: 11px; border: 1px solid var(--info); border-radius: 6px; font-family: 'Poppins', sans-serif;">
-                <option value="top">Top (Max)</option>
-                <option value="bottom">Lowest (Min)</option>
-            </select>
-            <select id="topBottomYear" onchange="updateTopBottomMonths()" style="padding: 4px 8px; font-size: 11px; border: 1px solid var(--info); border-radius: 6px; font-family: 'Poppins', sans-serif;">
-                </select>
-        </div>
-    </div>
-
-    <div style="display: flex; gap: 8px; text-align: center;">
-        
-        <div style="flex: 1; padding: 10px 5px; background: var(--input-bg); border-radius: 8px; border: 1px solid #007ACC;">
-            <h5 id="balLabel" style="margin:0; font-size:10px; color: var(--text-muted);">Max Balance</h5>
-            <div id="topBalMonth" style="font-weight:bold; font-size:13px; color:#007ACC; margin-top:3px;">-</div>
-            <div id="topBalAmt" style="font-size:11px; color:var(--text-main);">₹0.00</div>
-        </div>
-        
-        <div style="flex: 1; padding: 10px 5px; background: var(--input-bg); border-radius: 8px; border: 1px solid #00B894;">
-            <h5 id="incLabel" style="margin:0; font-size:10px; color: var(--text-muted);">Max Income</h5>
-            <div id="topIncMonth" style="font-weight:bold; font-size:13px; color:#00B894; margin-top:3px;">-</div>
-            <div id="topIncAmt" style="font-size:11px; color:var(--text-main);">₹0.00</div>
-        </div>
-        
-        <div style="flex: 1; padding: 10px 5px; background: var(--input-bg); border-radius: 8px; border: 1px solid #E84118;">
-            <h5 id="expLabel" style="margin:0; font-size:10px; color: var(--text-muted);">Max Expense</h5>
-            <div id="topExpMonth" style="font-weight:bold; font-size:13px; color:#E84118; margin-top:3px;">-</div>
-            <div id="topExpAmt" style="font-size:11px; color:var(--text-main);">₹0.00</div>
-        </div>
-
-    </div>
-</div>
-
-               <div style="margin-top: 30px; margin-bottom: 30px; padding: 15px; background: var(--bg-card); border-radius: 8px; border: 1px solid var(--border-color);">
-                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
-                            <h3 id="combinedChartTitle" style="color:#007ACC; font-size:15px; margin: 0;"><i class="fas fa-chart-line"></i> Trend Analysis</h3>
-                            
-                            <select id="analysisChartTypeFilter" onchange="renderAllAnalysisCharts()" style="padding: 6px 10px; font-size: 13px; width: auto; border: 1px solid var(--info); border-radius: 6px; font-weight: 600; cursor: pointer;">
-                                <option value="balance">Net Balance</option>
-                                <option value="income">Income</option>
-                                <option value="expense">Expense</option>
-                            </select>
+                        <div style="flex: 1; padding: 10px 5px; background: rgba(0, 122, 204, 0.1); border-radius: 8px; border: 1px solid #007ACC;">
+                            <h4 style="margin:0; font-size:11px; color: var(--text-muted);">Avg Balance</h4>
+                            <div id="avgBalBase" style="font-weight:bold; font-size:13px; color:#007ACC;">₹0.00</div>
+                            <div id="avgBalComp" style="font-size:9px; color:var(--text-muted); margin-top: 4px;"></div>
                         </div>
-                        
-                        <div class="chart-container">
-                            <canvas id="combinedAnalysisChart"></canvas>
+                        <div style="flex: 1; padding: 10px 5px; background: rgba(0, 184, 148, 0.1); border-radius: 8px; border: 1px solid #00B894;">
+                            <h4 style="margin:0; font-size:11px; color: var(--text-muted);">Avg Income</h4>
+                            <div id="avgIncBase" style="font-weight:bold; font-size:13px; color:#00B894;">₹0.00</div>
+                            <div id="avgIncComp" style="font-size:9px; color:var(--text-muted); margin-top: 4px;"></div>
+                        </div>
+                        <div style="flex: 1; padding: 10px 5px; background: rgba(232, 65, 24, 0.1); border-radius: 8px; border: 1px solid #E84118;">
+                            <h4 style="margin:0; font-size:11px; color: var(--text-muted);">Avg Expense</h4>
+                            <div id="avgExpBase" style="font-weight:bold; font-size:13px; color:#E84118;">₹0.00</div>
+                            <div id="avgExpComp" style="font-size:9px; color:var(--text-muted); margin-top: 4px;"></div>
                         </div>
                     </div>
-                </div> </div> <div id="addTransaction" class="tab-content">
+                    <p style="font-size:10px; color:var(--text-muted); margin:5px 0 0; text-align: center;">* Current year averages are calculated up to the current month.</p>
+                </div>
+
+                <div style="margin-top: 15px; border-top: 1px dashed var(--border-color); padding-top: 15px;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; padding: 0 5px;">
+                        <h4 style="margin: 0; font-size: 14px; color: var(--info);"><i class="fas fa-trophy"></i> Highlights</h4>
+                        <div style="display: flex; gap: 5px;">
+                            <button type="button" class="btn-style" style="background: var(--input-bg); border: 1px solid var(--info); color: var(--text-main); padding: 4px 8px; font-size: 11px; border-radius: 6px; display: flex; align-items: center; gap: 5px;" onclick="openCustomDropdown('topBottomType', 'topBottomTypeText', 'Select Highlight Type')">
+                                <span id="topBottomTypeText">Top (Max)</span> <i class="fas fa-chevron-down" style="font-size:9px; opacity:0.6;"></i>
+                            </button>
+                            <select id="topBottomType" onchange="updateTopBottomMonths()" style="display:none;">
+                                <option value="top">Top (Max)</option>
+                                <option value="bottom">Lowest (Min)</option>
+                            </select>
+
+                            <button type="button" class="btn-style" style="background: var(--input-bg); border: 1px solid var(--info); color: var(--text-main); padding: 4px 8px; font-size: 11px; border-radius: 6px; display: flex; align-items: center; gap: 5px;" onclick="openCustomDropdown('topBottomYear', 'topBottomYearText', 'Select Year')">
+                                <span id="topBottomYearText">Loading...</span> <i class="fas fa-chevron-down" style="font-size:9px; opacity:0.6;"></i>
+                            </button>
+                            <select id="topBottomYear" onchange="updateTopBottomMonths()" style="display:none;"></select>
+                        </div>
+                    </div>
+
+                    <div style="display: flex; gap: 8px; text-align: center;">
+                        <div style="flex: 1; padding: 10px 5px; background: var(--input-bg); border-radius: 8px; border: 1px solid #007ACC;">
+                            <h5 id="balLabel" style="margin:0; font-size:10px; color: var(--text-muted);">Max Balance</h5>
+                            <div id="topBalMonth" style="font-weight:bold; font-size:13px; color:#007ACC; margin-top:3px;">-</div>
+                            <div id="topBalAmt" style="font-size:11px; color:var(--text-main);">₹0.00</div>
+                        </div>
+                        <div style="flex: 1; padding: 10px 5px; background: var(--input-bg); border-radius: 8px; border: 1px solid #00B894;">
+                            <h5 id="incLabel" style="margin:0; font-size:10px; color: var(--text-muted);">Max Income</h5>
+                            <div id="topIncMonth" style="font-weight:bold; font-size:13px; color:#00B894; margin-top:3px;">-</div>
+                            <div id="topIncAmt" style="font-size:11px; color:var(--text-main);">₹0.00</div>
+                        </div>
+                        <div style="flex: 1; padding: 10px 5px; background: var(--input-bg); border-radius: 8px; border: 1px solid #E84118;">
+                            <h5 id="expLabel" style="margin:0; font-size:10px; color: var(--text-muted);">Max Expense</h5>
+                            <div id="topExpMonth" style="font-weight:bold; font-size:13px; color:#E84118; margin-top:3px;">-</div>
+                            <div id="topExpAmt" style="font-size:11px; color:var(--text-main);">₹0.00</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div style="margin-top: 30px; margin-bottom: 30px; padding: 15px; background: var(--bg-card); border-radius: 8px; border: 1px solid var(--border-color);">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+                        <h3 id="combinedChartTitle" style="color:#007ACC; font-size:15px; margin: 0;"><i class="fas fa-chart-line"></i> Trend Analysis</h3>
+                        <button type="button" class="btn-style" style="background: var(--input-bg); border: 1px solid var(--info); color: var(--text-main); padding: 6px 10px; font-size: 13px; border-radius: 6px; display: flex; align-items: center; gap: 6px; cursor: pointer;" onclick="openCustomDropdown('analysisChartTypeFilter', 'analysisChartTypeFilterText', 'Select Chart Type')">
+                            <span id="analysisChartTypeFilterText">Net Balance</span> <i class="fas fa-chevron-down" style="font-size: 10px; color: var(--info);"></i>
+                        </button>
+                        <select id="analysisChartTypeFilter" onchange="renderAllAnalysisCharts()" style="display:none;">
+                            <option value="balance">Net Balance</option>
+                            <option value="income">Income</option>
+                            <option value="expense">Expense</option>
+                        </select>
+                    </div>
+                    <div class="chart-container">
+                        <canvas id="combinedAnalysisChart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div> <div id="addTransaction" class="tab-content">
              <div class="card">
                 <h2 style="font-size: 20px; margin-top: 0; color: var(--info);"><i class="fas fa-plus-circle"></i> Add / Edit Transaction</h2>
                 <form id="transactionForm" onsubmit="addTransaction(event)">
@@ -612,8 +656,11 @@
                             <input type="number" id="amount" placeholder="e.g., 500" required min="1">
                         </div>
                         <div class="form-group half">
-                            <label for="type">Type:</label>
-                            <select id="type" required onchange="toggleTransferMode()">
+                            <label>Type:</label>
+                            <button type="button" class="btn-style" style="background: var(--input-bg); border: 1px solid var(--border-color); color: var(--text-main); width: 100%; display: flex; justify-content: space-between; padding: 12px 14px; font-weight: normal;" onclick="openCustomDropdown('type', 'typeText', 'Select Type')">
+                                <span id="typeText">Income</span> <i class="fas fa-chevron-down" style="opacity:0.6;"></i>
+                            </button>
+                            <select id="type" onchange="toggleTransferMode(); syncAllCustomDropdowns();" style="display:none;">
                                 <option value="income">Income</option>
                                 <option value="expense">Expense</option>
                                 <option value="transfer">Transfer</option>
@@ -623,29 +670,36 @@
                     
                     <div class="form-grid">
                         <div class="form-group half" id="categoryGroup">
-                            <label for="category">Category:</label>
-                            <select id="category"></select>
+                            <label>Category:</label>
+                            <button type="button" class="btn-style" style="background: var(--input-bg); border: 1px solid var(--border-color); color: var(--text-main); width: 100%; display: flex; justify-content: space-between; padding: 12px 14px; font-weight: normal;" onclick="openCustomDropdown('category', 'categoryText', 'Select Category')">
+                                <span id="categoryText">Select...</span> <i class="fas fa-chevron-down" style="opacity:0.6;"></i>
+                            </button>
+                            <select id="category" style="display:none;"></select>
                         </div>
                         <div class="form-group half">
-                            <label for="account" id="accountLabel">Account:</label>
-                            <select id="account" required></select>
+                            <label id="accountLabel">Account:</label>
+                            <button type="button" class="btn-style" style="background: var(--input-bg); border: 1px solid var(--border-color); color: var(--text-main); width: 100%; display: flex; justify-content: space-between; padding: 12px 14px; font-weight: normal;" onclick="openCustomDropdown('account', 'accountText', 'Select Account')">
+                                <span id="accountText">Select...</span> <i class="fas fa-chevron-down" style="opacity:0.6;"></i>
+                            </button>
+                            <select id="account" style="display:none;"></select>
                         </div>
                     </div>
                     
                     <div class="form-grid" id="transferToGroup" style="display: none;">
                         <div class="form-group half" style="width: 100%;">
-                            <label for="toAccount" style="color: var(--primary);">To Account (Receive):</label>
-                            <select id="toAccount"></select>
+                            <label style="color: var(--primary);">To Account (Receive):</label>
+                            <button type="button" class="btn-style" style="background: var(--input-bg); border: 1px solid var(--primary); color: var(--text-main); width: 100%; display: flex; justify-content: space-between; padding: 12px 14px; font-weight: normal;" onclick="openCustomDropdown('toAccount', 'toAccountText', 'Select Destination')">
+                                <span id="toAccountText">Select...</span> <i class="fas fa-chevron-down" style="color:var(--primary); opacity:0.8;"></i>
+                            </button>
+                            <select id="toAccount" style="display:none;"></select>
                         </div>
                     </div>
 
-                    <!-- Capital/Maturity Checkbox Group -->
                     <div class="form-group" id="excludeStatsGroup" style="background: rgba(0, 122, 204, 0.1); padding: 10px; border-radius: 8px; border: 1px dashed var(--info); margin-bottom: 15px;">
                         <label style="display: flex; align-items: center; gap: 8px; margin: 0; cursor: pointer; color: var(--info); font-weight: 600; font-size: 13px;">
                             <input type="checkbox" id="isExcludeStats" style="width: 16px; height: 16px;">
                             Exclude from Monthly/Yearly Stats (FD / Maturity)
                         </label>
-                        <p style="margin: 4px 0 0 24px; font-size: 11px; color: var(--text-muted); font-weight: normal;">টিক দিলে এটি শুধু আপনার ব্যালেন্স পরিবর্তন করবে, কিন্তু Income/Expense চার্টে বা ড্যাশবোর্ডে যোগ হবে না।</p>
                     </div>
 
                     <div class="form-group">
@@ -655,7 +709,7 @@
 
                     <div class="form-group">
                         <label for="details">Details:</label>
-                        <textarea id="details" rows="2" placeholder="e.g., Class fee / Purchase / Transfer note"></textarea>
+                        <textarea id="details" rows="2" placeholder="e.g., Note or Details"></textarea>
                     </div>
                     
                     <div style="display: flex; gap: 10px;">
@@ -665,7 +719,6 @@
                 </form>
             </div>
         </div>
-
         <div id="history" class="tab-content">
             <div class="card">
                 <div class="list-header" style="margin-bottom: 10px;">
@@ -1202,14 +1255,15 @@ function toggleExcludedMode() {
         transactions.forEach(t => { periods.add(getY(t.date)); periods.add(getYM(t.date)); });
         const arr = Array.from(periods).sort().reverse();
         
-        // Income & Expense Charts Dropdowns
-        ['incomeChartFilter', 'expenseChartFilter'].forEach(id => {
-            const sel = document.getElementById(id); sel.innerHTML = '';
-            arr.forEach(p => sel.add(new Option(p.length===4 ? `Year ${p}` : new Date(p+"-01").toLocaleDateString('en-IN',{month:'long',year:'numeric'}), p)));
-            const saved = localStorage.getItem('pref_' + id);
-            sel.value = (saved && [...sel.options].some(o => o.value === saved)) ? saved : curM;
-            sel.onchange = function() { localStorage.setItem('pref_' + id, this.value); if(id === 'incomeChartFilter') renderIncomeChart(); else renderExpenseChart(); };
-        });
+        // --- Income Chart Filter Init ---
+        const savedInc = localStorage.getItem('pref_incomeChartFilter') || curM;
+        document.getElementById('incomeChartFilter').value = savedInc;
+        updateChartFilterButtonText('income', savedInc);
+
+        // --- Expense Chart Filter Init ---
+        const savedExp = localStorage.getItem('pref_expenseChartFilter') || curM;
+        document.getElementById('expenseChartFilter').value = savedExp;
+        updateChartFilterButtonText('expense', savedExp);
         
         // --- History Button Update ---
         const savedHist = localStorage.getItem('pref_monthFilter') || curM;
@@ -2401,6 +2455,151 @@ function updateTopBottomMonths() {
         Swal.close();
         renderTransactions();
     }
+    // ১. চার্ট ফিল্টার বাটনের টেক্সট আপডেট করার ফাংশন
+    function updateChartFilterButtonText(type, val) {
+        let btnText = "";
+        if (val.length === 4) btnText = `Year ${val}`;
+        else btnText = new Date(val + "-01").toLocaleDateString('en-IN', { month: 'short', year: 'numeric' });
+        
+        const textEl = document.getElementById(type === 'income' ? 'incomeFilterText' : 'expenseFilterText');
+        if (textEl) textEl.textContent = btnText;
+    }
+
+    // ২. চার্টের জন্য সুন্দর ফিল্টার পপআপ (Modal) খোলার ফাংশন
+    function openChartFilterModal(type) {
+        const cur = new Date(), curM = getYM(cur.toISOString()), curY = cur.getFullYear().toString();
+        const periods = new Set([curY, curM]);
+        transactions.forEach(t => { periods.add(getY(t.date)); periods.add(getYM(t.date)); });
+        const arr = Array.from(periods).sort().reverse();
+        const allYears = [...new Set(arr.map(p => p.substring(0, 4)))];
+
+        let html = '<div style="max-height: 50vh; overflow-y: auto; text-align: left; padding: 5px;">';
+        const clr = type === 'income' ? '#00B894' : 'var(--danger)';
+
+        allYears.forEach(year => {
+            html += `<h4 style="margin: 0 0 10px 0; color: ${clr}; font-size: 14px; font-weight: 700; border-bottom: 2px solid var(--border-color); padding-bottom: 5px;"><i class="fas fa-calendar-alt"></i> ${year}</h4>`;
+            html += `<div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 15px;">`;
+            
+            // Year Total Button
+            if(arr.includes(year)) {
+                html += `<button onclick="applyChartFilter('${type}', '${year}')" style="padding:8px; border-radius:6px; border:1px solid ${clr}; background:rgba(0,0,0,0.02); color:${clr}; font-weight:700; cursor:pointer; grid-column: span 2;">Year ${year} Total</button>`;
+            }
+            
+            // Month Buttons
+            arr.forEach(p => {
+                if (p.length > 4 && p.startsWith(year)) {
+                    const monthName = new Date(p+"-01").toLocaleDateString('en-IN', {month: 'short', year: 'numeric'});
+                    html += `<button onclick="applyChartFilter('${type}', '${p}')" style="padding:8px; border-radius:6px; border:1px solid var(--border-color); background:var(--bg-body); color:var(--text-main); font-weight:500; cursor:pointer;">${monthName}</button>`;
+                }
+            });
+            html += `</div>`;
+        });
+        html += '</div>';
+
+        Swal.fire({
+            title: `<span style="font-size: 16px; color: ${clr}; font-weight:600;">Filter ${type === 'income' ? 'Income' : 'Expense'} Period</span>`,
+            html: html,
+            showConfirmButton: false,
+            showCloseButton: true,
+            background: 'var(--bg-card)',
+            customClass: { popup: 'swal-wide' }
+        });
+    }
+
+    // ৩. ফিল্টার ভ্যালু অ্যাপ্লাই এবং চার্ট রিফ্রেশ করার ফাংশন
+    function applyChartFilter(type, val) {
+        const id = type === 'income' ? 'incomeChartFilter' : 'expenseChartFilter';
+        document.getElementById(id).value = val;
+        localStorage.setItem('pref_' + id, val);
+        updateChartFilterButtonText(type, val);
+        Swal.close();
+        if (type === 'income') renderIncomeChart(); else renderExpenseChart();
+    }
+    // --- Universal Popup Selection Logic ---
+    function openCustomDropdown(selectId, textId, title) {
+        const selectEl = document.getElementById(selectId);
+        if (!selectEl) return;
+        
+        let html = '<div style="max-height: 50vh; overflow-y: auto; display: flex; flex-direction: column; gap: 8px; padding: 5px;">';
+        
+        for (let i = 0; i < selectEl.options.length; i++) {
+            const opt = selectEl.options[i];
+            // Skip empty/placeholder options
+            if(opt.text.includes('---')) continue; 
+            
+            html += `<button type="button" onclick="applyCustomDropdown('${selectId}', '${textId}', '${opt.value}', '${opt.text}')" 
+                style="padding:12px 15px; border-radius:8px; border:1px solid var(--border-color); background:var(--bg-body); color:var(--text-main); font-weight:600; text-align:left; cursor:pointer; font-size:14px; transition:0.2s;">
+                ${opt.text}
+            </button>`;
+        }
+        html += '</div>';
+
+        Swal.fire({
+            title: `<span style="font-size: 16px; color: var(--info); font-weight:600;">${title}</span>`,
+            html: html,
+            showConfirmButton: false,
+            showCloseButton: true,
+            background: 'var(--bg-card)',
+            customClass: { popup: 'swal-wide' }
+        });
+    }
+
+    function applyCustomDropdown(selectId, textId, val, text) {
+        const selectEl = document.getElementById(selectId);
+        selectEl.value = val;
+        document.getElementById(textId).textContent = text;
+        Swal.close();
+        
+        // ফায়ার অনচেঞ্জ ইভেন্ট
+        if ("createEvent" in document) {
+            var evt = document.createEvent("HTMLEvents");
+            evt.initEvent("change", false, true);
+            selectEl.dispatchEvent(evt);
+        } else {
+            selectEl.fireEvent("onchange");
+        }
+    }
+
+    // ব্যাকগ্রাউন্ডে টেক্সট আপডেট রাখার অটো-ফাংশন
+    function syncAllCustomDropdowns() {
+        const dropdowns = [
+            { id: 'type', textId: 'typeText' }, { id: 'category', textId: 'categoryText' },
+            { id: 'account', textId: 'accountText' }, { id: 'toAccount', textId: 'toAccountText' },
+            { id: 'analysisYearFilter', textId: 'analysisYearFilterText' },
+            { id: 'compareYearFilter', textId: 'compareYearFilterText' },
+            { id: 'compareYearFilter2', textId: 'compareYearFilter2Text' },
+            { id: 'analysisChartTypeFilter', textId: 'analysisChartTypeFilterText' },
+            { id: 'topBottomType', textId: 'topBottomTypeText' }, { id: 'topBottomYear', textId: 'topBottomYearText' }
+        ];
+        
+        dropdowns.forEach(d => {
+            const sel = document.getElementById(d.id);
+            const txt = document.getElementById(d.textId);
+            if (sel && txt && sel.options.length > 0) {
+                const activeOpt = sel.options[sel.selectedIndex];
+                if (activeOpt) txt.textContent = activeOpt.text;
+            }
+        });
+    }
+
+    // আগের ফাংশনগুলোর সাথে sync যুক্ত করা
+    const originalCancelEdit = cancelEdit;
+    cancelEdit = function() { originalCancelEdit(); syncAllCustomDropdowns(); }
+    
+    const originalEditTransaction = editTransaction;
+    editTransaction = function(id) { originalEditTransaction(id); syncAllCustomDropdowns(); }
+
+    const originalUpdateCatOpts = updateCatOpts;
+    updateCatOpts = function() { originalUpdateCatOpts(); syncAllCustomDropdowns(); }
+
+    const originalUpdateAcctOpts = updateAcctOpts;
+    updateAcctOpts = function() { originalUpdateAcctOpts(); syncAllCustomDropdowns(); }
+
+    const originalPopulateAnalysisYear = populateAnalysisYear;
+    populateAnalysisYear = function() { originalPopulateAnalysisYear(); syncAllCustomDropdowns(); }
+
+    const originalPopulateTopBottomYearFilter = populateTopBottomYearFilter;
+    populateTopBottomYearFilter = function() { originalPopulateTopBottomYearFilter(); syncAllCustomDropdowns(); }
     </script>
 </body>
 </html>
