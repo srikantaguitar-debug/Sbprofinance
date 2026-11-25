@@ -653,7 +653,7 @@
                     <div class="form-grid">
                         <div class="form-group half">
                             <label for="amount" id="amountLabel">Amount (₹):</label>
-                            <input type="number" id="amount" placeholder="e.g., 500" required min="1">
+                            <input type="number" id="amount" placeholder="e.g., 500.50" required min="0.01" step="0.01" inputmode="decimal">
                         </div>
                         <div class="form-group half">
                             <label>Type:</label>
@@ -1790,7 +1790,7 @@ function toggleExcludedMode() {
     async function addTransaction(e) {
         if(e) e.preventDefault(); 
         
-        const amt = parseFloat(document.getElementById('amount').value);
+        const amt = Math.round(parseFloat(document.getElementById('amount').value) * 100) / 100;
         const type = document.getElementById('type').value;
         const cat = type === 'transfer' ? 'Transfer' : document.getElementById('category').value;
         const acc = document.getElementById('account').value;
@@ -2089,6 +2089,7 @@ function toggleExcludedMode() {
     function initAppUI() {
         renderCategoryList(); updateCatOpts(); 
         renderAccountList(); updateAcctOpts(); 
+        loadDefaultFormDropdowns();
         renderTransactions(); renderAccountBalances();
         document.getElementById('mainAppContent').style.display = 'block';
         openTab('dashboard', document.getElementById('tabButtonDashboard'));
@@ -2551,6 +2552,12 @@ function updateTopBottomMonths() {
         selectEl.value = val;
         document.getElementById(textId).textContent = text;
         Swal.close();
+
+        // Add Transaction-এর ড্রপ-ডাউনগুলো Default হিসেবে সেভ রাখা (Edit মোডে না থাকলে)
+        const defaultFields = ['type', 'category', 'account', 'toAccount'];
+        if (!editingTransactionId && defaultFields.includes(selectId)) {
+            localStorage.setItem('default_form_' + selectId, val);
+        }
         
         // ফায়ার অনচেঞ্জ ইভেন্ট
         if ("createEvent" in document) {
@@ -2586,7 +2593,7 @@ function updateTopBottomMonths() {
 
     // আগের ফাংশনগুলোর সাথে sync যুক্ত করা
     const originalCancelEdit = cancelEdit;
-    cancelEdit = function() { originalCancelEdit(); syncAllCustomDropdowns(); }
+    cancelEdit = function() { originalCancelEdit(); loadDefaultFormDropdowns(); }
     
     const originalEditTransaction = editTransaction;
     editTransaction = function(id) { originalEditTransaction(id); syncAllCustomDropdowns(); }
@@ -2602,6 +2609,19 @@ function updateTopBottomMonths() {
 
     const originalPopulateTopBottomYearFilter = populateTopBottomYearFilter;
     populateTopBottomYearFilter = function() { originalPopulateTopBottomYearFilter(); syncAllCustomDropdowns(); }
+    // সেভ করা Default ড্রপ-ডাউনগুলো লোড করার ফাংশন
+    function loadDefaultFormDropdowns() {
+        const defaultFields = ['type', 'category', 'account', 'toAccount'];
+        defaultFields.forEach(id => {
+            const savedVal = localStorage.getItem('default_form_' + id);
+            const sel = document.getElementById(id);
+            if (savedVal && sel && [...sel.options].some(o => o.value === savedVal)) {
+                sel.value = savedVal;
+            }
+        });
+        toggleTransferMode();
+        syncAllCustomDropdowns();
+    }
     </script>
 </body>
 </html>
